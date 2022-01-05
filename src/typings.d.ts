@@ -1,5 +1,7 @@
 type Nullable<T = any> = T | null;
 
+type Mutable<T> = { -readonly [K in keyof T]: Mutable<T[K]> };
+
 declare module '*.svg' {
   import React = require('react');
   export const ReactComponent: React.SFC<React.SVGProps<SVGSVGElement>>;

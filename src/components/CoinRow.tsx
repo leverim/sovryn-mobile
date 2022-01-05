@@ -14,7 +14,7 @@ export const CoinRow: React.FC<Props> = ({ item }) => {
   const navigation = useNavigation();
 
   const network = useMemo(() => getAssetNetwork(item.id), [item]);
-  const address = useEvmWallet(network.dPath, 0);
+  const address = useEvmWallet();
   const { value } = useAssetBalance(item, address);
 
   return (

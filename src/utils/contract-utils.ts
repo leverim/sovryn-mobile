@@ -7,13 +7,15 @@ import {
   id as keccak256,
   defaultAbiCoder,
   hexConcat,
+  Result,
 } from 'ethers/lib/utils';
 import { getProvider } from 'utils/RpcEngine';
+import { EvmNetwork, getNetworks } from './networks';
 
 const INSIDE_EVERY_PARENTHESES = /\((?:[^()]|\([^()]*\))*\)/g;
 
 export const functionSignature = (method: string) =>
-  keccak256(method).substr(0, 10);
+  keccak256(method).substring(0, 10);
 
 export const encodeParameters = (
   types: ReadonlyArray<string | ParamType>,
@@ -89,6 +91,79 @@ export async function contractCall<T = Record<string | number, any>>(
       ...request,
     })
     .then(response => decodeParameters(returnTypes, response) as unknown as T);
+}
+
+export type CallData = {
+  address: string;
+  fnName: string;
+  args: any[];
+  key: string;
+  parser?: (val: any) => any;
+};
+
+export async function aggregateCall<
+  T = Record<string, BytesLike | Result | string>,
+>(chainId: number, callData: CallData[]) {
+  const network: EvmNetwork = (getNetworks() as EvmNetwork[]).find(
+    item => item.evm && item.chainId === chainId,
+  )!;
+  const items = callData.map(item => {
+    const { method, types, returnTypes } = prepareFunction(item.fnName);
+    return {
+      target: item.address,
+      callData: encodeFunctionDataWithTypes(method, types, item.args),
+      returns: (data: BytesLike) => {
+        try {
+          return decodeParameters(returnTypes, data);
+        } catch (e) {
+          console.error('decodeParameters::', method, types, returnTypes, data);
+          console.error(e);
+          return data;
+        }
+      },
+      key: item.key,
+      parser: item.parser,
+    };
+  });
+
+  const data = encodeFunctionDataWithTypes(
+    'aggregate((address,bytes)[])',
+    [
+      {
+        components: [
+          { name: 'target', type: 'address' },
+          { name: 'callData', type: 'bytes' },
+        ],
+        name: 'calls',
+        type: 'tuple[]',
+      },
+    ] as any,
+    [items.map(item => ({ target: item.target, callData: item.callData }))],
+  );
+
+  return getProvider(chainId)
+    .call({ to: network.multicallContract, data })
+    .then(result => {
+      const [blockNumber, response] = decodeParameters(
+        ['uint256', 'bytes[]'],
+        result,
+      );
+
+      const returnData: T = {} as T;
+      response.forEach((item: string, index: number) => {
+        const value = items[index].returns(item);
+        const key: string = (items[index].key || index) as string;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        returnData[key] = items[index].parser
+          ? // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            items[index]?.parser(value)
+          : value;
+      });
+
+      return { blockNumber: blockNumber.toString(), returnData };
+    });
 }
 
 export async function contractSend(

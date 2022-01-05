@@ -3,18 +3,15 @@ import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CoinRow } from 'components/CoinRow';
 import { useEvmWallet } from 'hooks/useEvmWallet';
 import { prettifyTx } from 'utils/helpers';
-import { getNetworks } from 'utils/networks';
-import { getAssets } from 'utils/assets';
+import { assets } from 'utils/assets';
 import { getProvider } from 'utils/RpcEngine';
+import { ErrorBoundary } from '@sentry/react-native';
 
 export const WalletScreen: React.FC = () => {
   // todo should be tokens actually
-  const tokens = useMemo(() => getAssets(), []);
+  const tokens = useMemo(() => assets.items, []);
 
-  const address = useEvmWallet(
-    getNetworks().find(item => item.id === 'eth')?.dPath || '',
-    0,
-  );
+  const address = useEvmWallet();
   const [ens, setEns] = useState<Nullable>(null);
 
   useEffect(() => {
@@ -32,7 +29,9 @@ export const WalletScreen: React.FC = () => {
         </View>
         <View style={styles.balanceContainer}>
           {tokens.map(item => (
-            <CoinRow key={item.id} item={item} />
+            <ErrorBoundary key={item.id}>
+              <CoinRow item={item} />
+            </ErrorBoundary>
           ))}
         </View>
       </ScrollView>

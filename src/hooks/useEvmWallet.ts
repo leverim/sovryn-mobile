@@ -1,11 +1,12 @@
-import { useContext, useMemo } from 'react';
 import { AppContext } from 'context/AppContext';
-import { getEvmWallet } from 'utils/wallet';
+import { useContext, useMemo } from 'react';
+import { wallet } from 'utils/wallet';
 
-export function useEvmWallet(dPath: string, index: number = 0) {
-  const { mnemonic } = useContext(AppContext);
+export function useEvmWallet() {
+  const { accountList, accountSelected } = useContext(AppContext);
   return useMemo(
-    () => getEvmWallet(mnemonic as string, dPath, index).address,
-    [mnemonic, dPath, index],
+    () => wallet.address as unknown as string,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [accountSelected, accountList],
   );
 }

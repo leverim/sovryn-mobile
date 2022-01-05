@@ -4,6 +4,7 @@ export type EvmNetworkAttributes = {
   chainId: number;
   rpc: string[];
   explorer: string[];
+  multicallContract: string;
 };
 
 export type Network = {
@@ -43,6 +44,7 @@ export const networks: NetworkType[] = [
       `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
     ],
     explorer: ['https://etherscan.io'],
+    multicallContract: '0x5ba1e12693dc8f9c48aad8770482f4739beed696',
   },
   {
     id: 'bsc',
@@ -68,6 +70,7 @@ export const networks: NetworkType[] = [
       'https://bsc-dataseed4.binance.org',
     ],
     explorer: ['https://bscscan.io'],
+    multicallContract: '0x41263cba59eb80dc200f3e2544eda4ed6a90e76c',
   },
   {
     id: 'rsk',
@@ -80,6 +83,7 @@ export const networks: NetworkType[] = [
     chainId: 30,
     rpc: ['https://public-node.rsk.co', 'https://mainnet.sovryn.app/rpc'],
     explorer: ['https://explorer.rsk.co'],
+    multicallContract: '0x6c62bf5440de2cb157205b15c424bceb5c3368f5',
   },
   {
     id: 'rsk-testnet',
@@ -95,9 +99,14 @@ export const networks: NetworkType[] = [
       'https://testnet.sovryn.app/rpc',
     ],
     explorer: ['https://explorer.testnet.rsk.co'],
+    multicallContract: '0x9e469e1fc7fb4c5d17897b68eaf1afc9df39f103',
   },
 ];
 
 export function getNetworks() {
   return networks;
+}
+
+export function getEvmNetworks(): EvmNetwork[] {
+  return networks.filter(item => item.evm) as EvmNetwork[];
 }

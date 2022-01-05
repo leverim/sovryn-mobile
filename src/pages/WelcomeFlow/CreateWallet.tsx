@@ -1,14 +1,15 @@
 import React, { useCallback, useContext, useMemo } from 'react';
 import { Button, Text, View } from 'react-native';
-import { generateMnemonic } from 'utils/wallet';
+import { generateMnemonic } from 'utils/wallet-utils';
 import { AppContext } from 'context/AppContext';
+import { AccountType } from 'utils/accounts';
 
 export const CreateWallet: React.FC = () => {
   const mnemonic = useMemo(() => generateMnemonic().split(' '), []);
   const { createWallet } = useContext(AppContext);
 
   const handleConfirm = useCallback(() => {
-    createWallet(mnemonic.join(' '))
+    createWallet('Account #1', AccountType.MNEMONIC, mnemonic.join(' '))
       .then(() => {
         console.log('saved');
       })

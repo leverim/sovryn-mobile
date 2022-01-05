@@ -8,7 +8,7 @@
  * @format
  */
 
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -30,7 +30,26 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 export const MainScreen: React.FC = () => {
-  const { mnemonic, loading } = useContext(AppContext);
+  const { address, loading } = useContext(AppContext);
+
+  // useEffect(() => {
+  //   console.log('get loanpools list:');
+  //   contractCall<[string[]]>(
+  //     30,
+  //     '0x5a0d867e0d70fcc6ade25c3f1b89d618b5b4eaa7',
+  //     'getLoanPoolsList(uint256,uint256)(bytes32[])',
+  //     [0, 5],
+  //   )
+  //     .then(e => {
+  //       console.log(e?.[0]);
+  //       console.log(
+  //         'loans',
+  //         e?.[0].map(item => ethers.utils.parseBytes32String(item)),
+  //       );
+  //     })
+  //     .catch(console.error);
+  // }, []);
+
   return (
     <NavigationContainer>
       {loading ? (
@@ -39,7 +58,7 @@ export const MainScreen: React.FC = () => {
         </Stack.Navigator>
       ) : (
         <>
-          {mnemonic === null ? (
+          {address === null ? (
             <Stack.Navigator>
               <Stack.Screen name="Welcome" component={Welcome} />
               <Stack.Screen name="CreateWallet" component={CreateWallet} />
@@ -51,13 +70,15 @@ export const MainScreen: React.FC = () => {
                 name="wallet"
                 component={WalletPage}
                 options={{
+                  title: 'Wallet',
                   tabBarIcon: ({ color }) => <WalletIcon fill={color} />,
                 }}
               />
               <Tab.Screen
-                name="browser"
+                name="swap"
                 component={BrowserPage}
                 options={{
+                  title: 'Swap',
                   tabBarIcon: ({ color }) => <DappIcon fill={color} />,
                 }}
               />
@@ -65,7 +86,7 @@ export const MainScreen: React.FC = () => {
                 name="settings"
                 component={SettingsPage}
                 options={{
-                  headerShown: true,
+                  title: 'Settings',
                   tabBarIcon: ({ color }) => <SettingsIcon fill={color} />,
                 }}
               />

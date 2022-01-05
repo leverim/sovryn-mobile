@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { Asset, getAssetNetwork } from 'utils/assets';
+import { Asset } from 'utils/assets';
 import { noop, prettifyTx } from 'utils/helpers';
 import { useEvmWallet } from 'hooks/useEvmWallet';
 import { useAssetBalance } from 'hooks/useAssetBalance';
@@ -25,10 +25,16 @@ export const WalletDetails: React.FC = () => {
     });
   }, [params, navigation]);
 
-  const network = useMemo(() => getAssetNetwork(params.item.id), [params.item]);
+  // const network = useMemo(() => getAssetNetwork(params.item.id), [params.item]);
 
-  const address = useEvmWallet(network.dPath, 0);
+  const address = useEvmWallet();
   const { value } = useAssetBalance(params.item, address);
+
+  // const { value: info } = useCall(() => {
+  //   return erc20.getInfo(network.chainId, params.item?.address!);
+  // });
+
+  // console.log(info);
 
   return (
     <SafeAreaView style={styles.safeArea}>
