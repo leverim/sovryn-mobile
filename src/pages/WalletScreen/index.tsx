@@ -2,27 +2,28 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CoinRow } from 'components/CoinRow';
 import { useEvmWallet } from 'hooks/useEvmWallet';
-import { currentChainId, prettifyTx } from 'utils/helpers';
+import { currentChainId } from 'utils/helpers';
 import { getProvider } from 'utils/RpcEngine';
 import { ErrorBoundary } from '@sentry/react-native';
 import { tokenUtils } from 'utils/token-utils';
 import { AddressBadge } from 'components/AddressBadge';
 
 export const WalletScreen: React.FC = () => {
+  const chainId = currentChainId();
   const tokens = useMemo(
-    () => tokenUtils.listTokensForChainId(currentChainId()),
-    [],
+    () => tokenUtils.listTokensForChainId(chainId),
+    [chainId],
   );
 
   const address = useEvmWallet();
   const [ens, setEns] = useState<Nullable>(null);
 
   useEffect(() => {
-    getProvider(1)
+    getProvider(chainId)
       .lookupAddress(address)
       .then(result => setEns(result))
       .catch(() => setEns(null));
-  }, [address]);
+  }, [address, chainId]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -34,7 +35,7 @@ export const WalletScreen: React.FC = () => {
         <View style={styles.balanceContainer}>
           {tokens.map(item => (
             <ErrorBoundary key={item.id}>
-              <CoinRow item={item} />
+              <CoinRow token={item} chainId={chainId} />
             </ErrorBoundary>
           ))}
         </View>

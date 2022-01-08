@@ -4,7 +4,13 @@ import { SettingsScreen } from 'pages/SettingsScreen';
 import { AccountSettings } from 'pages/SettingsScreen/AccountSettings';
 import { AccountCreate } from 'pages/SettingsScreen/AccountCreate';
 
-const Stack = createNativeStackNavigator();
+export type SettingsStackProps = {
+  'settings.index': undefined;
+  'settings.account': undefined;
+  'settings.create': undefined;
+};
+
+const Stack = createNativeStackNavigator<SettingsStackProps>();
 
 export const SettingsPage: React.FC = () => {
   return (

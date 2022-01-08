@@ -347,6 +347,8 @@ PODS:
     - React-perflogger (= 0.66.3)
   - RNCAsyncStorage (1.12.1):
     - React-Core
+  - RNCClipboard (1.8.5):
+    - React-Core
   - RNCPicker (2.2.1):
     - React-Core
   - RNDefaultPreference (1.4.3):
@@ -426,6 +428,7 @@ DEPENDENCIES:
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
+  - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - RNDefaultPreference (from `../node_modules/react-native-default-preference`)
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
@@ -521,6 +524,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-community/async-storage"
+  RNCClipboard:
+    :path: "../node_modules/@react-native-clipboard/clipboard"
   RNCPicker:
     :path: "../node_modules/@react-native-picker/picker"
   RNDefaultPreference:
@@ -584,6 +589,7 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: bbbdb3d8fcf327c6e2249ee71b6ef1764b7dc266
   ReactCommon: 9bac022ab71596f2b0fde1268272543184c63971
   RNCAsyncStorage: b03032fdbdb725bea0bd9e5ec5a7272865ae7398
+  RNCClipboard: cc054ad1e8a33d2a74cd13e565588b4ca928d8fd
   RNCPicker: cb57c823d5ce8d2d0b5dfb45ad97b737260dc59e
   RNDefaultPreference: 2f8d6d54230edbd78708ada8d63bb275e5a8415b
   RNDeviceInfo: 0400a6d0c94186d1120c3cbd97b23abc022187a9
