@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import {
   Button,
   SafeAreaView,
@@ -8,15 +8,17 @@ import {
   View,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { Asset } from 'utils/assets';
 import { noop, prettifyTx } from 'utils/helpers';
 import { useEvmWallet } from 'hooks/useEvmWallet';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { AssetLogo } from 'components/AssetLogo';
+import { VestedAssets } from './components/VestedAssets';
+import type { Token } from 'types/token';
+import { AddressBadge } from 'components/AddressBadge';
 
 export const WalletDetails: React.FC = () => {
   // @ts-ignore
-  const { params } = useRoute<{ item: Asset }>();
+  const { params } = useRoute<{ item: Token }>();
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -25,16 +27,8 @@ export const WalletDetails: React.FC = () => {
     });
   }, [params, navigation]);
 
-  // const network = useMemo(() => getAssetNetwork(params.item.id), [params.item]);
-
   const address = useEvmWallet();
   const { value } = useAssetBalance(params.item, address);
-
-  // const { value: info } = useCall(() => {
-  //   return erc20.getInfo(network.chainId, params.item?.address!);
-  // });
-
-  // console.log(info);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -44,13 +38,19 @@ export const WalletDetails: React.FC = () => {
           <Text style={styles.balance}>
             {Number(value).toFixed(6)} {params.item.symbol}
           </Text>
-          <Text style={styles.address}>{prettifyTx(address)}</Text>
-
+          <AddressBadge address={address} />
           <View style={styles.buttons}>
             <Button title="Send" onPress={noop} />
             <Button title="Receive" onPress={noop} />
           </View>
         </View>
+        {params.item.id === 'sov' && (
+          <VestedAssets
+            registryContractName="vestingRegistry"
+            owner={address}
+            asset={params.item}
+          />
+        )}
         <ScrollView>
           <Text>No history.</Text>
         </ScrollView>

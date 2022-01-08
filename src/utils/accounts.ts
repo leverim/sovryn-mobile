@@ -5,6 +5,7 @@ import { getItem, storeItem } from './storage';
 export enum AccountType {
   MNEMONIC,
   PRIVATE_KEY,
+  PUBLIC_ADDRESS,
 }
 
 export type BaseAccount = {

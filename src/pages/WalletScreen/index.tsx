@@ -2,14 +2,17 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CoinRow } from 'components/CoinRow';
 import { useEvmWallet } from 'hooks/useEvmWallet';
-import { prettifyTx } from 'utils/helpers';
-import { assets } from 'utils/assets';
+import { currentChainId, prettifyTx } from 'utils/helpers';
 import { getProvider } from 'utils/RpcEngine';
 import { ErrorBoundary } from '@sentry/react-native';
+import { tokenUtils } from 'utils/token-utils';
+import { AddressBadge } from 'components/AddressBadge';
 
 export const WalletScreen: React.FC = () => {
-  // todo should be tokens actually
-  const tokens = useMemo(() => assets.items, []);
+  const tokens = useMemo(
+    () => tokenUtils.listTokensForChainId(currentChainId()),
+    [],
+  );
 
   const address = useEvmWallet();
   const [ens, setEns] = useState<Nullable>(null);
@@ -25,7 +28,8 @@ export const WalletScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View style={styles.profileContainer}>
-          <Text>{ens || prettifyTx(address)}</Text>
+          <AddressBadge address={address} />
+          {ens && <Text>{ens}</Text>}
         </View>
         <View style={styles.balanceContainer}>
           {tokens.map(item => (

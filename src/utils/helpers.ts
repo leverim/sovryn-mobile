@@ -1,6 +1,24 @@
 import { ImageSourcePropType } from 'react-native';
+import { ContractName } from 'types/contract';
+import { contractUtils } from './contract';
+import { Setting, settings } from './settings';
 
 export const noop = () => {};
+
+export const currentChainId = () => settings.get(Setting.DEFAULT_CHAIN_ID, 30);
+
+export const getContractAddress = (
+  contractName: ContractName,
+  chainId: number = currentChainId(),
+) => {
+  const contract = contractUtils.getContractByName(contractName);
+  if (!contractUtils.contractHasChainId(contract, chainId)) {
+    throw new Error(
+      `Contract ${contractName} does not have ${chainId} chain defined.`,
+    );
+  }
+  return contractUtils.getContractAddressForChainId(contract, chainId);
+};
 
 export const prettifyTx = (
   text: string,

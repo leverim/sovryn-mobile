@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
 import { accounts, AccountType, BaseAccount } from 'utils/accounts';
-import { assets } from 'utils/assets';
 import { cache } from 'utils/cache';
 import { settings } from 'utils/settings';
 import { clearStorage } from 'utils/storage';
@@ -108,12 +107,9 @@ export const AppProvider: React.FC = ({ children }) => {
   );
 
   useEffect(() => {
-    Promise.all([
-      assets.load(),
-      cache.load(),
-      settings.load(),
-      accounts.load(),
-    ]).finally(() => actions.signIn().finally(() => {}));
+    Promise.all([cache.load(), settings.load(), accounts.load()]).finally(() =>
+      actions.signIn().finally(() => {}),
+    );
   }, [actions]);
 
   useEffect(() => {

@@ -1,24 +1,50 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { cache } from 'utils/cache';
+import { contractCall } from 'utils/contract-utils';
+import { useEvmWallet } from './useEvmWallet';
 
-type CallType<T> = () => Promise<T>;
+export function useCall<T = string>(
+  chainId: number,
+  to: string,
+  methodAndTypes: string,
+  args: any[],
+  _default?: T,
+) {
+  const from = useEvmWallet();
+  const key = useMemo(
+    () => `call_${chainId}_${to}_${methodAndTypes}_${args.toString()}_${from}`,
+    [chainId, to, methodAndTypes, args, from],
+  );
 
-export function useCall<T = string>(callback: CallType<T>) {
-  const [value, setValue] = useState<T>();
+  const [value, setValue] = useState<T>(cache.get(key, _default));
+  const [loaded, setLoaded] = useState<boolean>(
+    cache.get(`${key}_loaded`, false),
+  );
   const [loading, setLoading] = useState<boolean>(true);
 
-  const callbackRef = useRef<CallType<T>>(callback);
+  const updateValue = useCallback(
+    async (result: T) => {
+      setValue(result);
+      cache.set(key, result);
+    },
+    [key],
+  );
 
   useEffect(() => {
     setLoading(true);
-    callbackRef
-      .current()
-      .then(setValue)
+    contractCall<T>(chainId, to, methodAndTypes, args)
+      .then(updateValue)
       .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => {
+        setLoading(false);
+        setLoaded(true);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chainId, to, methodAndTypes, JSON.stringify(args), updateValue]);
 
   return {
     value,
     loading,
+    loaded,
   };
 }

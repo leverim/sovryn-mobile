@@ -1,18 +1,22 @@
+import { EventEmitter } from 'events';
+import { RSK_DERIVATION_PATH } from './constants';
 import { getItem, storeItem } from './storage';
 
 export enum Setting {
   SELECTED_ACCOUNT = 'selected_account',
   SELECTED_DPATH = 'selected_dpath',
   IS_TESTNET = 'is_testnet',
+  DEFAULT_CHAIN_ID = 'default_chain_id',
 }
 
 const defaultSettings: Partial<Record<Setting, any>> = {
   [Setting.SELECTED_ACCOUNT]: 0,
-  [Setting.SELECTED_DPATH]: "m/44'/60'/0'/0",
+  [Setting.SELECTED_DPATH]: RSK_DERIVATION_PATH,
   [Setting.IS_TESTNET]: false,
+  [Setting.DEFAULT_CHAIN_ID]: 30,
 };
 
-class SettingsManager {
+class SettingsManager extends EventEmitter {
   private _items: Partial<Record<Setting, any>> = defaultSettings;
 
   public get items() {
@@ -27,10 +31,12 @@ class SettingsManager {
         return {};
       }
     });
+    this.onUpdated();
   }
 
   public async save() {
     await storeItem('settings', JSON.stringify(this._items));
+    this.onUpdated();
   }
 
   public get<T = string>(key: Setting, _default?: T): T {
@@ -46,6 +52,10 @@ class SettingsManager {
   public async set<T = string>(key: Setting, value: T) {
     this._items[key] = value;
     await this.save();
+  }
+
+  protected onUpdated() {
+    this.emit('updated', this._items);
   }
 }
 

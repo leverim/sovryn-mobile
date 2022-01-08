@@ -11,6 +11,10 @@ import {
 } from 'ethers/lib/utils';
 import { getProvider } from 'utils/RpcEngine';
 import { EvmNetwork, getNetworks } from './networks';
+import { currentChainId, getContractAddress } from './helpers';
+import { contractUtils } from './contract';
+import { ContractName } from 'types/contract';
+import { utils } from 'ethers/lib.esm';
 
 const INSIDE_EVERY_PARENTHESES = /\((?:[^()]|\([^()]*\))*\)/g;
 
@@ -72,6 +76,17 @@ export const encodeFunctionDataWithTypes = (
 
 export const prefixHex = (value: string) =>
   isHexString(value) ? value : `0x${value}`;
+
+export async function callToContract<T = Record<string | number, any>>(
+  contractName: ContractName,
+  methodAndTypes: string,
+  args: ReadonlyArray<any>,
+  request?: Deferrable<TransactionRequest>,
+): Promise<T> {
+  const chainId = currentChainId();
+  const to = getContractAddress(contractName, chainId);
+  return contractCall(chainId, to, methodAndTypes, args, request);
+}
 
 export async function contractCall<T = Record<string | number, any>>(
   chainId: number,

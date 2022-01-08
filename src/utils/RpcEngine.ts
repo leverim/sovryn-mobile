@@ -8,7 +8,6 @@ export class RpcEngine {
       item => item.evm && item.chainId === chainId,
     ) as Network & { evm: true } & EvmNetwork;
     this.provider = new providers.JsonRpcProvider(network.rpc[0], chainId);
-    console.log(this.provider);
   }
 }
 

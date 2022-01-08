@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import { Button, SafeAreaView, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { accounts, AccountType } from 'utils/accounts';
@@ -19,6 +19,7 @@ export const AccountSettings: React.FC = () => {
     const { type } = accounts.get(index);
     switch (type) {
       case AccountType.PRIVATE_KEY:
+      case AccountType.PUBLIC_ADDRESS:
         await accounts.select(index);
         break;
       case AccountType.MNEMONIC:
@@ -39,6 +40,9 @@ export const AccountSettings: React.FC = () => {
             {item.type === AccountType.PRIVATE_KEY && (
               <Text>(Private Key)</Text>
             )}
+            {item.type === AccountType.PUBLIC_ADDRESS && (
+              <Text>(Read only)</Text>
+            )}
           </View>
           <View>
             <Text>
@@ -57,7 +61,7 @@ export const AccountSettings: React.FC = () => {
         </View>
       ))}
       <Button
-        title="Add more accounts"
+        title="Add another account"
         onPress={() => navigation.navigate('settings.create')}
       />
     </SafeAreaView>

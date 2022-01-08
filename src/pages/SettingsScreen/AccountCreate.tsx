@@ -11,6 +11,8 @@ import { Picker } from '@react-native-picker/picker';
 import { accounts, AccountType } from 'utils/accounts';
 import { AppContext } from 'context/AppContext';
 import { validateMnemonic, validatePrivateKey } from 'utils/wallet-utils';
+import { currentChainId } from 'utils/helpers';
+import { isAddress } from 'utils/rsk';
 
 export const AccountCreate: React.FC = () => {
   const { createWallet } = useContext(AppContext);
@@ -45,6 +47,10 @@ export const AccountCreate: React.FC = () => {
       return validatePrivateKey(secret);
     }
 
+    if (type === AccountType.PUBLIC_ADDRESS) {
+      return isAddress(secret, currentChainId());
+    }
+
     return false;
   }, [secret, type]);
 
@@ -58,9 +64,15 @@ export const AccountCreate: React.FC = () => {
         onValueChange={itemValue => setType(itemValue)}>
         <Picker.Item label="Mnemonic seed" value={AccountType.MNEMONIC} />
         <Picker.Item label="Private key" value={AccountType.PRIVATE_KEY} />
+        <Picker.Item
+          label="Public Address"
+          value={AccountType.PUBLIC_ADDRESS}
+        />
       </Picker>
       <Text>
-        {type === AccountType.MNEMONIC ? 'Mnemonic seed' : 'Private Key'}
+        {type === AccountType.MNEMONIC && 'Mnemonic seed'}
+        {type === AccountType.PRIVATE_KEY && 'Private key'}
+        {type === AccountType.PUBLIC_ADDRESS && 'Address (Read only)'}
       </Text>
       <TextInput value={secret} onChangeText={setSecret} />
       <Button title="Save" onPress={onSave} disabled={!valid} />

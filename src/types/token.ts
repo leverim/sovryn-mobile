@@ -6,6 +6,8 @@ export type Token = {
   name: string;
   address: Record<number, string>;
   decimals: number;
+  icon: string;
+  native?: boolean;
 };
 
 export type TokenId = typeof tokens[number]['id'];

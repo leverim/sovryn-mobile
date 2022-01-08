@@ -1,19 +1,18 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Asset, getAssetNetwork } from 'utils/assets';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { useEvmWallet } from 'hooks/useEvmWallet';
 import { AssetLogo } from 'components/AssetLogo';
+import { Token } from 'types/token';
 
 type Props = {
-  item: Asset;
+  item: Token;
 };
 
 export const CoinRow: React.FC<Props> = ({ item }) => {
   const navigation = useNavigation();
 
-  const network = useMemo(() => getAssetNetwork(item.id), [item]);
   const address = useEvmWallet();
   const { value } = useAssetBalance(item, address);
 
@@ -30,10 +29,7 @@ export const CoinRow: React.FC<Props> = ({ item }) => {
             <Text style={styles.textRow1}>{Number(value).toFixed(4)}</Text>
           </View>
           <View style={styles.textWrapperRow}>
-            <Text style={styles.textRow2}>
-              {item.symbol}
-              {item.address && <> ({network.name})</>}
-            </Text>
+            <Text style={styles.textRow2}>{item.symbol}</Text>
             {/*<Text style={styles.textRow2}>{Number(value).toFixed(4)}</Text>*/}
           </View>
         </View>

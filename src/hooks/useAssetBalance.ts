@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import { utils } from 'ethers/lib.esm';
-import { Asset, getAssetNetwork } from 'utils/assets';
-import { EvmNetwork } from 'utils/networks';
-import { contractCall } from 'utils/contract-utils';
 import { getProvider } from 'utils/RpcEngine';
 import { cache } from 'utils/cache';
+import { Token } from 'types/token';
+import { currentChainId } from 'utils/helpers';
+import { erc20 } from 'utils/interactions';
+import { tokenUtils } from 'utils/token-utils';
 
-export function useAssetBalance(asset: Asset, owner: string) {
-  const network = getAssetNetwork(asset.id) as EvmNetwork;
-
-  const key = `asset_balance_${asset.id}`;
+export function useAssetBalance(
+  asset: Token,
+  owner: string,
+  chainId: number = currentChainId(),
+) {
+  const address = tokenUtils.getTokenAddressForChainId(asset, chainId);
+  const key = `asset_balance_${address}_${owner}`;
 
   const [balance, setBalance] = useState<string>(cache.get(key, '0'));
   const [loading, setLoading] = useState<boolean>(true);
@@ -24,26 +28,20 @@ export function useAssetBalance(asset: Asset, owner: string) {
 
   useEffect(() => {
     setLoading(true);
-    if (network.evm) {
-      if (asset.address) {
-        contractCall(
-          network.chainId,
-          asset.address,
-          'balanceOf(address)(uint256)',
-          [owner],
-        )
-          .then(result => updateBalance(result.toString()))
-          .catch(console.error)
-          .finally(() => setLoading(false));
-      } else {
-        getProvider(network.chainId)
-          .getBalance(owner)
-          .then(result => updateBalance(result.toString()))
-          .catch(console.error)
-          .finally(() => setLoading(false));
-      }
+    if (address && !asset.native) {
+      erc20
+        .getBalance(chainId, address, owner)
+        .then(result => updateBalance(result.toString()))
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    } else {
+      getProvider(chainId)
+        .getBalance(owner)
+        .then(result => updateBalance(result.toString()))
+        .catch(console.error)
+        .finally(() => setLoading(false));
     }
-  }, [network, asset, owner, updateBalance]);
+  }, [address, chainId, asset, owner, updateBalance]);
 
   return {
     value: utils.formatUnits(balance, asset.decimals),
