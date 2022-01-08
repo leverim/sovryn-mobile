@@ -10,11 +10,10 @@ import {
   Result,
 } from 'ethers/lib/utils';
 import { getProvider } from 'utils/RpcEngine';
-import { EvmNetwork, getNetworks } from './networks';
+import { getNetworks } from './network-utils';
 import { currentChainId, getContractAddress } from './helpers';
-import { contractUtils } from './contract';
 import { ContractName } from 'types/contract';
-import { utils } from 'ethers/lib.esm';
+import { Network } from 'types/network';
 
 const INSIDE_EVERY_PARENTHESES = /\((?:[^()]|\([^()]*\))*\)/g;
 
@@ -119,8 +118,8 @@ export type CallData = {
 export async function aggregateCall<
   T = Record<string, BytesLike | Result | string>,
 >(chainId: number, callData: CallData[]) {
-  const network: EvmNetwork = (getNetworks() as EvmNetwork[]).find(
-    item => item.evm && item.chainId === chainId,
+  const network: Network = getNetworks().find(
+    item => item.chainId === chainId,
   )!;
   const items = callData.map(item => {
     const { method, types, returnTypes } = prepareFunction(item.fnName);

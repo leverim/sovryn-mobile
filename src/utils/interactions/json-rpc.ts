@@ -1,4 +1,5 @@
-import { EvmNetwork, getEvmNetworks } from 'utils/networks';
+import type { Network } from 'types/network';
+import { getNetworks } from 'utils/network-utils';
 
 type JsonRpcRequest = {
   jsonrpc: string;
@@ -23,10 +24,10 @@ type JsonRpcErrorResponse = {
 };
 
 export class JsonRpcProvider {
-  public readonly network: EvmNetwork;
+  public readonly network: Network;
   private _nextId: number = 0;
   constructor(chainId: number) {
-    this.network = getEvmNetworks().find(item => item.chainId === chainId)!;
+    this.network = getNetworks().find(item => item.chainId === chainId)!;
   }
 
   public send(input: JsonRpcRequest | JsonRpcRequest[]) {

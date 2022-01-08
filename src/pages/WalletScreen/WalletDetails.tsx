@@ -8,7 +8,6 @@ import {
   View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { noop } from 'utils/helpers';
 import { useEvmWallet } from 'hooks/useEvmWallet';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { AssetLogo } from 'components/AssetLogo';
@@ -41,7 +40,10 @@ export const WalletDetails: React.FC<Props> = ({
           </Text>
           <AddressBadge address={address} />
           <View style={styles.buttons}>
-            <Button title="Send" onPress={noop} />
+            <Button
+              title="Send"
+              onPress={() => navigation.navigate('wallet.send', params)}
+            />
             <Button
               title="Receive"
               onPress={() => navigation.navigate('wallet.receive', params)}
@@ -55,9 +57,6 @@ export const WalletDetails: React.FC<Props> = ({
             asset={params.token}
           />
         )}
-        <ScrollView>
-          <Text>No history.</Text>
-        </ScrollView>
       </ScrollView>
     </SafeAreaView>
   );

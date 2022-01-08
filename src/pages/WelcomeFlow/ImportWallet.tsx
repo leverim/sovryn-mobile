@@ -1,8 +1,9 @@
 import React, { useCallback, useContext, useMemo, useState } from 'react';
-import { Button, Text, TextInput, View } from 'react-native';
+import { Button, Text, View } from 'react-native';
 import { validateMnemonic } from 'utils/wallet-utils';
 import { AppContext } from 'context/AppContext';
 import { AccountType } from 'utils/accounts';
+import { InputField } from 'components/InputField';
 
 export const ImportWallet: React.FC = () => {
   const { createWallet } = useContext(AppContext);
@@ -29,12 +30,14 @@ export const ImportWallet: React.FC = () => {
   return (
     <View>
       <Text>Enter your seed phrase:</Text>
-      <TextInput
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoCompleteType="off"
+      <InputField
         value={seed}
         onChangeText={setSeed}
+        multiline
+        numberOfLines={6}
+        autoCapitalize="none"
+        autoCorrect={false}
+        autoComplete="off"
       />
       <Button title="Confirm" onPress={handleConfirm} disabled={!valid} />
     </View>

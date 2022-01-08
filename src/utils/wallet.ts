@@ -1,4 +1,5 @@
 import { Wallet as EthersWallet, utils } from 'ethers';
+import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { Account, accounts, AccountType } from './accounts';
 import { RSK_DERIVATION_PATH } from './constants';
 import { Setting, settings } from './settings';
@@ -16,7 +17,7 @@ export class Wallet {
   ) {
     this.account = accounts.get(_account);
   }
-  public derive(): UserWallet | undefined {
+  public derive(): UserWallet | EthersWallet | undefined {
     if (!this.account) {
       return undefined;
     }
@@ -30,7 +31,7 @@ export class Wallet {
         case AccountType.PRIVATE_KEY:
           return new EthersWallet(this.account.secret);
         case AccountType.PUBLIC_ADDRESS:
-          return { address: this.account.secret };
+          return { address: this.account.secret } as UserWallet;
         default:
           return undefined;
       }
@@ -42,12 +43,24 @@ export class Wallet {
 }
 
 class WalletManager {
-  private _cache: Record<string, EthersWallet> = {};
+  private _cache: Record<string, UserWallet> = {};
 
   constructor() {}
 
   public get address() {
     return this.derive()?.address.toLowerCase();
+  }
+
+  public get readOnly() {
+    return [AccountType.PUBLIC_ADDRESS].includes(accounts.current.type);
+  }
+
+  public signTransaction(transaction: TransactionRequest): Promise<string> {
+    return (this.derive() as EthersWallet).signTransaction(transaction);
+  }
+
+  public signMessage(message: string): Promise<string> {
+    return (this.derive() as EthersWallet).signMessage(message);
   }
 
   protected derive() {

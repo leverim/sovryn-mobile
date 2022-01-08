@@ -13,6 +13,7 @@ import { AppContext } from 'context/AppContext';
 import { validateMnemonic, validatePrivateKey } from 'utils/wallet-utils';
 import { currentChainId } from 'utils/helpers';
 import { isAddress } from 'utils/rsk';
+import { InputField } from 'components/InputField';
 
 export const AccountCreate: React.FC = () => {
   const { createWallet } = useContext(AppContext);
@@ -57,7 +58,7 @@ export const AccountCreate: React.FC = () => {
   return (
     <SafeAreaView>
       <Text>Name</Text>
-      <TextInput value={name} onChangeText={setName} />
+      <InputField value={name} onChangeText={setName} />
       <Text>Type</Text>
       <Picker
         selectedValue={type}
@@ -74,7 +75,15 @@ export const AccountCreate: React.FC = () => {
         {type === AccountType.PRIVATE_KEY && 'Private key'}
         {type === AccountType.PUBLIC_ADDRESS && 'Address (Read only)'}
       </Text>
-      <TextInput value={secret} onChangeText={setSecret} />
+      <InputField
+        value={secret}
+        onChangeText={setSecret}
+        multiline
+        numberOfLines={6}
+        autoCapitalize="none"
+        autoCorrect={false}
+        autoComplete="off"
+      />
       <Button title="Save" onPress={onSave} disabled={!valid} />
     </SafeAreaView>
   );

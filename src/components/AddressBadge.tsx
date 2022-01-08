@@ -24,6 +24,7 @@ export const AddressBadge: React.FC<AddressBadgeProps> = ({
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 12,
+    width: '100%',
   },
   text: {
     fontWeight: '500',

@@ -1,11 +1,13 @@
 import { ImageSourcePropType } from 'react-native';
 import { ContractName } from 'types/contract';
+import { ChainId } from 'types/network';
 import { contractUtils } from './contract';
 import { Setting, settings } from './settings';
 
 export const noop = () => {};
 
-export const currentChainId = () => settings.get(Setting.DEFAULT_CHAIN_ID, 30);
+export const currentChainId = (): ChainId =>
+  settings.get(Setting.DEFAULT_CHAIN_ID, 30);
 
 export const getContractAddress = (
   contractName: ContractName,

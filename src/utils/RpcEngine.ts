@@ -1,19 +1,20 @@
 import { providers } from 'ethers';
-import { EvmNetwork, getNetworks, Network } from 'utils/networks';
+import type { ChainId, Network } from 'types/network';
+import { getNetworks } from 'utils/network-utils';
 
 export class RpcEngine {
   public readonly provider: providers.JsonRpcProvider;
-  constructor(chainId: number) {
+  constructor(chainId: ChainId) {
     const network = getNetworks().find(
-      item => item.evm && item.chainId === chainId,
-    ) as Network & { evm: true } & EvmNetwork;
+      item => item.chainId === chainId,
+    ) as Network;
     this.provider = new providers.JsonRpcProvider(network.rpc[0], chainId);
   }
 }
 
 const cache: Record<number, RpcEngine> = {};
 
-export const getProvider = (chainId: number = 1) => {
+export const getProvider = (chainId: ChainId = 1) => {
   if (!cache.hasOwnProperty(chainId)) {
     cache[chainId] = new RpcEngine(chainId);
   }
