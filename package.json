@@ -32,6 +32,7 @@
     "react-native-encrypted-storage": "^4.0.2",
     "react-native-get-random-values": "^1.7.1",
     "react-native-qrcode-svg": "^6.1.2",
+    "react-native-restart": "^0.0.23",
     "react-native-safe-area-context": "^3.3.2",
     "react-native-screens": "^3.10.1",
     "react-native-svg": "^12.1.1"

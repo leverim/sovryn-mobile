@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import RNRestart from 'react-native-restart';
 import { getItem, storeItem } from './storage';
 
 export enum AccountType {
@@ -45,6 +46,7 @@ class AccountManager extends EventEmitter {
     this._selected = index;
     await this.save();
     this.onSelected();
+    RNRestart.Restart();
   }
   public get(index: number) {
     return this._accounts[index];

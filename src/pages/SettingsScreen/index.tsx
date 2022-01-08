@@ -1,5 +1,6 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import { Button, SafeAreaView, Text, View } from 'react-native';
+import RNRestart from 'react-native-restart';
 import { AppContext } from 'context/AppContext';
 import { useNavigation } from '@react-navigation/native';
 import { Setting, settings } from 'utils/settings';
@@ -18,6 +19,16 @@ export const SettingsScreen: React.FC = () => {
     });
   }, [navigation]);
 
+  const setDerivationPath = useCallback((path: string) => {
+    settings.set(Setting.SELECTED_DPATH, path);
+    RNRestart.Restart();
+  }, []);
+
+  const setChainId = useCallback((chainId: number) => {
+    settings.set(Setting.DEFAULT_CHAIN_ID, chainId);
+    RNRestart.Restart();
+  }, []);
+
   return (
     <SafeAreaView>
       <Text>SettingsPage</Text>
@@ -26,32 +37,20 @@ export const SettingsScreen: React.FC = () => {
         onPress={() => navigation.navigate('settings.account')}
       />
       <Text>Chain ({settings.get(Setting.DEFAULT_CHAIN_ID)})</Text>
-      <Button
-        title="RSK Mainnet (30)"
-        onPress={() => settings.set(Setting.DEFAULT_CHAIN_ID, 30)}
-      />
-      <Button
-        title="RSK Testnet (31)"
-        onPress={() => settings.set(Setting.DEFAULT_CHAIN_ID, 31)}
-      />
+      <Button title="RSK Mainnet (30)" onPress={() => setChainId(30)} />
+      <Button title="RSK Testnet (31)" onPress={() => setChainId(31)} />
       <Text>Derivation path ({settings.get(Setting.SELECTED_DPATH)}):</Text>
       <Button
-        title={RSK_DERIVATION_PATH}
-        onPress={() =>
-          settings.set(Setting.SELECTED_DPATH, RSK_DERIVATION_PATH)
-        }
+        title={`RSK Mainnet - ${RSK_DERIVATION_PATH}`}
+        onPress={() => setDerivationPath(RSK_DERIVATION_PATH)}
       />
       <Button
-        title={ETH_DERIVATION_PATH}
-        onPress={() =>
-          settings.set(Setting.SELECTED_DPATH, ETH_DERIVATION_PATH)
-        }
+        title={`Ethereum - ${ETH_DERIVATION_PATH}`}
+        onPress={() => setDerivationPath(ETH_DERIVATION_PATH)}
       />
       <Button
-        title={RSK_TESTNET_DERIVATION_PATH}
-        onPress={() =>
-          settings.set(Setting.SELECTED_DPATH, RSK_TESTNET_DERIVATION_PATH)
-        }
+        title={`RSK Testnet - ${RSK_TESTNET_DERIVATION_PATH}`}
+        onPress={() => setDerivationPath(RSK_TESTNET_DERIVATION_PATH)}
       />
       {__DEV__ && (
         <View>
