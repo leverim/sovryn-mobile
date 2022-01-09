@@ -6,13 +6,14 @@ import { WalletDetails } from 'pages/WalletScreen/WalletDetails';
 import { WalletVestings } from 'pages/WalletScreen/WalletVestings';
 import { ReceiveAsset } from 'pages/WalletScreen/ReceiveAsset';
 import { SendAsset } from 'pages/WalletScreen/SendAsset';
+import { ChainId } from 'types/network';
 
 export type WalletStackProps = {
   'wallet.list': undefined;
-  'wallet.details': { token: Token; chainId: number };
+  'wallet.details': { token: Token; chainId: ChainId };
   'wallet.vestings': undefined;
-  'wallet.receive': { token: Token; chainId: number };
-  'wallet.send': { token: Token; chainId: number };
+  'wallet.receive': { token: Token; chainId: ChainId };
+  'wallet.send': { token: Token; chainId: ChainId };
 };
 
 const Stack = createNativeStackNavigator<WalletStackProps>();

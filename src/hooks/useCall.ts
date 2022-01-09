@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { cache } from 'utils/cache';
 import { contractCall } from 'utils/contract-utils';
-import { useEvmWallet } from './useEvmWallet';
+import { useWalletAddress } from './useWalletAddress';
 
 export function useCall<T = string>(
   chainId: number,
@@ -10,7 +10,7 @@ export function useCall<T = string>(
   args: any[],
   _default?: T,
 ) {
-  const from = useEvmWallet();
+  const from = useWalletAddress();
   const key = useMemo(
     () => `call_${chainId}_${to}_${methodAndTypes}_${args.toString()}_${from}`,
     [chainId, to, methodAndTypes, args, from],

@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAssetBalance } from 'hooks/useAssetBalance';
-import { useEvmWallet } from 'hooks/useEvmWallet';
+import { useWalletAddress } from 'hooks/useWalletAddress';
 import { AssetLogo } from 'components/AssetLogo';
 import { Token } from 'types/token';
 
@@ -14,7 +14,7 @@ type Props = {
 export const CoinRow: React.FC<Props> = ({ token, chainId }) => {
   const navigation = useNavigation();
 
-  const address = useEvmWallet();
+  const address = useWalletAddress();
   const { value } = useAssetBalance(token, address, chainId);
 
   return (

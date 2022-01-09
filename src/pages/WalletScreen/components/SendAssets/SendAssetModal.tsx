@@ -1,9 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View, Modal, Pressable } from 'react-native';
+import { StyleSheet, Text, View, Modal } from 'react-native';
 import { utils } from 'ethers/lib.esm';
 import { Token } from 'types/token';
 import { currentChainId, prettifyTx } from 'utils/helpers';
 import { tokenUtils } from 'utils/token-utils';
+import { PressableButton } from 'components/PressableButton';
 
 type SendAssetModalProps = {
   isOpen: boolean;
@@ -11,6 +12,7 @@ type SendAssetModalProps = {
   amount: string;
   fee: string;
   token: Token;
+  loading?: boolean;
   onReject: () => void;
   onConfirm: () => void;
 };
@@ -21,6 +23,7 @@ export const SendAssetModal: React.FC<SendAssetModalProps> = ({
   amount,
   fee,
   token,
+  loading,
   onConfirm,
   onReject,
 }) => {
@@ -47,16 +50,18 @@ export const SendAssetModal: React.FC<SendAssetModalProps> = ({
           </View>
 
           <View style={styles.buttonContainer}>
-            <Pressable
+            <PressableButton
               style={[styles.button, styles.buttonClose]}
-              onPress={onReject}>
-              <Text style={styles.textStyle}>Reject</Text>
-            </Pressable>
-            <Pressable
+              onPress={onReject}
+              title="Reject"
+            />
+            <PressableButton
               style={[styles.button, styles.buttonOpen]}
-              onPress={onConfirm}>
-              <Text style={styles.textStyle}>Transfer</Text>
-            </Pressable>
+              onPress={onConfirm}
+              title="Transfer"
+              loading={loading}
+              disabled={loading}
+            />
           </View>
         </View>
       </View>
@@ -94,6 +99,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginHorizontal: 15,
     elevation: 2,
+    flex: 1,
   },
   buttonOpen: {
     backgroundColor: '#F194FF',
@@ -108,8 +114,9 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    width: '100%',
   },
   dappInfoContainer: {
     flexDirection: 'column',

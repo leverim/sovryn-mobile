@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEvmWallet } from 'hooks/useEvmWallet';
+import { useWalletAddress } from 'hooks/useWalletAddress';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { AssetLogo } from 'components/AssetLogo';
 import { VestedAssets } from './components/VestedAssets';
@@ -27,7 +27,7 @@ export const WalletDetails: React.FC<Props> = ({
     });
   }, [params, navigation]);
 
-  const address = useEvmWallet();
+  const address = useWalletAddress();
   const { value } = useAssetBalance(params.token, address, params.chainId);
 
   return (

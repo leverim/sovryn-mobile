@@ -6,12 +6,15 @@ import { Token } from 'types/token';
 import { currentChainId } from 'utils/helpers';
 import { erc20 } from 'utils/interactions';
 import { tokenUtils } from 'utils/token-utils';
+import { useNavigation } from '@react-navigation/native';
+import { ChainId } from 'types/network';
 
 export function useAssetBalance(
   asset: Token,
   owner: string,
-  chainId: number = currentChainId(),
+  chainId: ChainId = currentChainId(),
 ) {
+  const navigation = useNavigation();
   const address = tokenUtils.getTokenAddressForChainId(asset, chainId);
   const key = `asset_balance_${address}_${owner}`;
 
@@ -26,7 +29,7 @@ export function useAssetBalance(
     [setBalance, key],
   );
 
-  useEffect(() => {
+  const getBalance = useCallback(() => {
     setLoading(true);
     if (address && !asset.native) {
       erc20
@@ -42,6 +45,11 @@ export function useAssetBalance(
         .finally(() => setLoading(false));
     }
   }, [address, chainId, asset, owner, updateBalance]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', getBalance);
+    return unsubscribe;
+  }, [navigation, getBalance]);
 
   return {
     value: utils.formatUnits(balance, asset.decimals),

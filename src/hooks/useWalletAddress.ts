@@ -2,7 +2,7 @@ import { AppContext } from 'context/AppContext';
 import { useContext, useMemo } from 'react';
 import { wallet } from 'utils/wallet';
 
-export function useEvmWallet() {
+export function useWalletAddress() {
   const { accountList, accountSelected } = useContext(AppContext);
   return useMemo(
     () => wallet.address as unknown as string,

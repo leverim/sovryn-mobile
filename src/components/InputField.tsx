@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,6 +15,10 @@ export const InputField: React.FC<Props & TextInputProps> = ({
   label,
   ...props
 }) => {
+  const editable = useMemo(
+    () => props.editable === undefined || props.editable === true,
+    [props.editable],
+  );
   return (
     <View style={styles.container}>
       {label && (
@@ -23,7 +27,10 @@ export const InputField: React.FC<Props & TextInputProps> = ({
         </View>
       )}
       <View style={styles.inputContainer}>
-        <TextInput style={styles.input} {...props} />
+        <TextInput
+          style={[styles.input, !editable && styles.inputReadOnly]}
+          {...props}
+        />
       </View>
     </View>
   );
@@ -34,7 +41,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
-    paddingVertical: 10,
+    marginTop: 16,
     width: '100%',
   },
   labelContainer: {
@@ -52,5 +59,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     fontSize: 16,
+  },
+  inputReadOnly: {
+    opacity: 0.5,
   },
 });

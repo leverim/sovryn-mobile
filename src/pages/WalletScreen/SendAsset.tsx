@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEvmWallet } from 'hooks/useEvmWallet';
+import { useWalletAddress } from 'hooks/useWalletAddress';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { AddressField } from 'components/AddressField';
 import { TokenAmountField } from 'components/TokenAmountField';
@@ -25,7 +25,8 @@ import { wallet } from 'utils/wallet';
 import { SendAssetModal } from './components/SendAssets/SendAssetModal';
 import { TransactionModal } from 'components/TransactionModal';
 import { tokenUtils } from 'utils/token-utils';
-import { currentChainId } from 'utils/helpers';
+import { PressableButton } from 'components/PressableButton';
+import { useAssetBalance } from 'hooks/useAssetBalance';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
 
@@ -48,8 +49,17 @@ export const SendAsset: React.FC<Props> = ({
   const [gasPrice, setGasPrice] = useState('0.06');
 
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const owner = useEvmWallet();
+  const to = useMemo(() => {
+    return params.token.native
+      ? !receiver
+        ? receiver
+        : constants.AddressZero
+      : tokenUtils.getTokenAddressForChainId(params.token, params.chainId);
+  }, [params.token, params.chainId, receiver]);
+
+  const owner = useWalletAddress();
 
   useEffect(() => {
     getProvider(params.chainId)
@@ -82,7 +92,7 @@ export const SendAsset: React.FC<Props> = ({
   useEffect(() => {
     getProvider(params.chainId)
       .estimateGas({
-        to: receiver,
+        to,
         value: params.token.native
           ? utils.parseUnits(amount || '0', params.token.decimals)
           : 0,
@@ -90,43 +100,42 @@ export const SendAsset: React.FC<Props> = ({
         data,
         gasPrice: (Number(gasPrice) * 1e9).toString(),
       })
+      .then(response => response.toNumber())
       .then(response => {
-        setGas(response.toString());
+        setGas(!response ? '21000' : response.toString());
       });
-  }, [params.chainId, params.token, gasPrice, data, nonce, receiver, amount]);
+  }, [params.chainId, params.token, gasPrice, data, nonce, to, amount]);
 
   const [txHash, setTxHash] = useState<string>();
 
   const submit = useCallback(async () => {
-    const signedTransaction = await wallet.signTransaction({
-      to: receiver,
-      value: utils.hexlify(
-        params.token.native
-          ? utils.parseUnits(amount || '0', params.token.decimals)
-          : 0,
-      ),
-      nonce: utils.hexlify(Number(nonce || 0)),
-      data,
-      gasPrice: utils.hexlify(Number(gasPrice || 0) * 1e9),
-      gasLimit: utils.hexlify(Number(gas || 0)),
-    });
+    setLoading(true);
+    try {
+      const signedTransaction = await wallet.signTransaction({
+        to,
+        value: utils.hexlify(
+          params.token.native
+            ? utils.parseUnits(amount || '0', params.token.decimals)
+            : 0,
+        ),
+        nonce: utils.hexlify(Number(nonce || 0)),
+        data,
+        gasPrice: utils.hexlify(Number(gasPrice || 0) * 1e9),
+        gasLimit: utils.hexlify(Number(gas || 0)),
+      });
 
-    const tx = await getProvider(params.chainId).sendTransaction(
-      signedTransaction,
-    );
+      const tx = await getProvider(params.chainId).sendTransaction(
+        signedTransaction,
+      );
 
-    setTxHash(tx.hash);
-    setShowModal(false);
-  }, [
-    params.chainId,
-    params.token,
-    receiver,
-    amount,
-    data,
-    gasPrice,
-    gas,
-    nonce,
-  ]);
+      setTxHash(tx.hash);
+      setShowModal(false);
+      setLoading(false);
+    } catch (e) {
+      console.warn('Sending asset failed: ', e);
+      setLoading(false);
+    }
+  }, [params.chainId, params.token, to, amount, data, gasPrice, gas, nonce]);
 
   const fee = useMemo(
     () => ((Number(gasPrice || 0) * Number(gas || 0)) / 1e8).toFixed(8),
@@ -173,6 +182,54 @@ export const SendAsset: React.FC<Props> = ({
 
   const [showModal, setShowModal] = useState(false);
 
+  const nativeToken = useMemo(
+    () => tokenUtils.getNativeToken(params.chainId),
+    [params.chainId],
+  );
+
+  const { value: tokenBalance } = useAssetBalance(
+    params.token,
+    owner,
+    params.chainId,
+  );
+
+  // TODO: if token is already native - just assign value
+  const { value: nativeBalance } = useAssetBalance(
+    nativeToken,
+    owner,
+    params.chainId,
+  );
+
+  const balanceError = useMemo(() => {
+    const _nativeBalance = utils.parseUnits(
+      nativeBalance || '0',
+      nativeToken.decimals,
+    );
+    const _fee = utils.parseUnits(fee || '0', nativeToken.decimals);
+
+    if (params.token.native) {
+      const _amount = _fee.add(
+        utils.parseUnits(amount || '0', nativeToken.decimals),
+      );
+      if (_amount.gt(_nativeBalance)) {
+        return `Not enough ${nativeToken.symbol} in your wallet.`;
+      }
+    } else {
+      if (_fee.gt(_nativeBalance)) {
+        return `Not enough ${nativeToken.symbol} in your wallet to pay for gas fees.`;
+      }
+
+      if (
+        utils
+          .parseUnits(amount || '0', nativeToken.decimals)
+          .gt(utils.parseUnits(tokenBalance, params.token.decimals))
+      ) {
+        return `Not enough ${params.token.symbol} in your wallet`;
+      }
+    }
+    return undefined;
+  }, [nativeBalance, fee, amount, params.token, nativeToken, tokenBalance]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
@@ -190,6 +247,7 @@ export const SendAsset: React.FC<Props> = ({
                 value={amount}
                 onChangeText={setAmount}
                 token={params.token}
+                fee={params.token.native ? Number(fee) : 0}
               />
               {showAdvanced && (
                 <View style={styles.advanced}>
@@ -214,25 +272,26 @@ export const SendAsset: React.FC<Props> = ({
                     onChangeText={setData}
                     multiline
                     numberOfLines={4}
-                    editable={params.token.native}
+                    editable={false}
+                    // editable={params.token.native}
                   />
                 </View>
               )}
               <Button
                 title={showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
                 onPress={() => setShowAdvanced(prevState => !prevState)}
-                disabled={receiver === '' || receiver === constants.AddressZero}
               />
-              {Number(fee) > 0 && receiver !== '' && amount !== '' && (
+              {Number(fee) > 0 && (
                 <Text>
-                  Tx Fee: {fee}{' '}
-                  {tokenUtils.getNativeToken(currentChainId()).symbol}
+                  Tx Fee: {fee} {nativeToken.symbol}
                 </Text>
               )}
-              <Button
+              {!!balanceError && <Text>{balanceError}</Text>}
+              <PressableButton
                 title={`Send ${params.token.symbol}`}
                 onPress={() => setShowModal(true)}
-                disabled={!isTxValid}
+                disabled={!isTxValid || showModal}
+                loading={showModal}
               />
             </View>
           </TouchableWithoutFeedback>
@@ -243,6 +302,7 @@ export const SendAsset: React.FC<Props> = ({
           amount={amount}
           fee={fee}
           token={params.token}
+          loading={loading}
           onReject={() => setShowModal(false)}
           onConfirm={submit}
         />

@@ -41,6 +41,29 @@ export const tokens = checkTokens([
     native: true,
   },
   {
+    id: 'sov',
+    symbol: 'SOV',
+    name: 'Sovryn',
+    address: {
+      1: '0xbdab72602e9ad40fc6a6852caf43258113b8f7a5',
+      30: '0xEFc78fc7d48b64958315949279Ba181c2114ABBd',
+      31: '0x6a9A07972D07e58F0daf5122d11E069288A375fb',
+    },
+    decimals: 18,
+    icon: 'https://assets.coingecko.com/coins/images/16248/small/sov.PNG',
+  },
+  {
+    id: 'xusd',
+    symbol: 'XUSD',
+    name: 'XUSD',
+    address: {
+      30: '0xb5999795BE0EbB5bAb23144AA5FD6A02D080299F',
+      31: '0x74858FE37d391f81F89472e1D8BC8Ef9CF67B3b1',
+    },
+    decimals: 18,
+    icon: '',
+  },
+  {
     id: 'wrbtc',
     symbol: 'wRBTC',
     name: 'Wrapped Smart Bitcoin',
@@ -63,18 +86,6 @@ export const tokens = checkTokens([
     icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/7605.png',
   },
   {
-    id: 'sov',
-    symbol: 'SOV',
-    name: 'Sovryn',
-    address: {
-      1: '0xbdab72602e9ad40fc6a6852caf43258113b8f7a5',
-      30: '0xEFc78fc7d48b64958315949279Ba181c2114ABBd',
-      31: '0x6a9A07972D07e58F0daf5122d11E069288A375fb',
-    },
-    decimals: 18,
-    icon: 'https://assets.coingecko.com/coins/images/16248/small/sov.PNG',
-  },
-  {
     id: 'rif',
     symbol: 'RIF',
     name: 'RSK Infrastructure Framework',
@@ -84,17 +95,6 @@ export const tokens = checkTokens([
     },
     decimals: 18,
     icon: 'https://cryptologos.cc/logos/rsk-infrastructure-framework-rif-logo.png',
-  },
-  {
-    id: 'xusd',
-    symbol: 'XUSD',
-    name: 'XUSD',
-    address: {
-      30: '0xb5999795BE0EbB5bAb23144AA5FD6A02D080299F',
-      31: '0x74858FE37d391f81F89472e1D8BC8Ef9CF67B3b1',
-    },
-    decimals: 18,
-    icon: '',
   },
   {
     id: 'rusdt',

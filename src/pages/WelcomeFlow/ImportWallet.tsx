@@ -1,9 +1,10 @@
 import React, { useCallback, useContext, useMemo, useState } from 'react';
-import { Button, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { validateMnemonic } from 'utils/wallet-utils';
 import { AppContext } from 'context/AppContext';
 import { AccountType } from 'utils/accounts';
 import { InputField } from 'components/InputField';
+import { PressableButton } from 'components/PressableButton';
 
 export const ImportWallet: React.FC = () => {
   const { createWallet } = useContext(AppContext);
@@ -17,13 +18,17 @@ export const ImportWallet: React.FC = () => {
     return validateMnemonic(seed);
   }, [seed]);
 
+  const [loading, setLoading] = useState(false);
+
   const handleConfirm = useCallback(() => {
+    setLoading(true);
     createWallet('Account #1', AccountType.MNEMONIC, seed)
       .then(() => {
         console.log('saved');
       })
-      .catch(() => {
-        console.error('saving failed');
+      .catch(error => {
+        setLoading(false);
+        console.error('saving failed', error);
       });
   }, [seed, createWallet]);
 
@@ -39,7 +44,13 @@ export const ImportWallet: React.FC = () => {
         autoCorrect={false}
         autoComplete="off"
       />
-      <Button title="Confirm" onPress={handleConfirm} disabled={!valid} />
+      {loading && <Text>Importing, please wait. It might take a while.</Text>}
+      <PressableButton
+        title="Confirm"
+        onPress={handleConfirm}
+        loading={loading}
+        disabled={loading || !valid}
+      />
     </View>
   );
 };

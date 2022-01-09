@@ -14,6 +14,7 @@ import { validateMnemonic, validatePrivateKey } from 'utils/wallet-utils';
 import { currentChainId } from 'utils/helpers';
 import { isAddress } from 'utils/rsk';
 import { InputField } from 'components/InputField';
+import { PressableButton } from 'components/PressableButton';
 
 export const AccountCreate: React.FC = () => {
   const { createWallet } = useContext(AppContext);
@@ -30,9 +31,18 @@ export const AccountCreate: React.FC = () => {
   const [type, setType] = useState<AccountType>(AccountType.MNEMONIC);
   const [secret, setSecret] = useState<string>('');
 
-  const onSave = useCallback(async () => {
-    await createWallet(name, type, secret);
-    navigation.navigate('settings.account');
+  const [loading, setLoading] = useState(false);
+
+  const onSave = useCallback(() => {
+    setLoading(false);
+    createWallet(name, type, secret)
+      .then(() => {
+        navigation.navigate('settings.account');
+      })
+      .catch(error => {
+        setLoading(false);
+        console.error('creating failed', error);
+      });
   }, [name, type, secret, navigation, createWallet]);
 
   const valid = useMemo(() => {
@@ -84,7 +94,12 @@ export const AccountCreate: React.FC = () => {
         autoCorrect={false}
         autoComplete="off"
       />
-      <Button title="Save" onPress={onSave} disabled={!valid} />
+      <PressableButton
+        title="Save"
+        onPress={onSave}
+        disabled={!valid || loading}
+        loading={loading}
+      />
     </SafeAreaView>
   );
 };

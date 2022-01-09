@@ -11,7 +11,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import { prettifyTx } from 'utils/helpers';
-import { useEvmWallet } from 'hooks/useEvmWallet';
+import { useWalletAddress } from 'hooks/useWalletAddress';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
@@ -26,7 +26,7 @@ export const ReceiveAsset: React.FC<Props> = ({
     });
   }, [navigation, params]);
 
-  const address = useEvmWallet();
+  const address = useWalletAddress();
 
   const onCopyToClipboard = useCallback(
     () => Clipboard.setString(address),

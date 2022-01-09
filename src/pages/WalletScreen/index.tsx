@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CoinRow } from 'components/CoinRow';
-import { useEvmWallet } from 'hooks/useEvmWallet';
+import { useWalletAddress } from 'hooks/useWalletAddress';
 import { currentChainId } from 'utils/helpers';
 import { getProvider } from 'utils/RpcEngine';
 import { ErrorBoundary } from '@sentry/react-native';
@@ -15,7 +15,7 @@ export const WalletScreen: React.FC = () => {
     [chainId],
   );
 
-  const address = useEvmWallet();
+  const address = useWalletAddress();
   const [ens, setEns] = useState<Nullable>(null);
 
   useEffect(() => {
@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 5,
     marginHorizontal: 10,
+    marginBottom: 25,
     flex: 1,
   },
 });
