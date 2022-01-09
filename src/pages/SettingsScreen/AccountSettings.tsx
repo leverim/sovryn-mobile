@@ -1,10 +1,12 @@
 import React, { useCallback, useContext, useEffect } from 'react';
-import { Button, SafeAreaView, Text, View } from 'react-native';
+import { Button, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { accounts, AccountType } from 'utils/accounts';
 import { AppContext } from 'context/AppContext';
 import { prettifyTx } from 'utils/helpers';
 import { Wallet } from 'utils/wallet';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { Text } from 'components/Text';
 
 export const AccountSettings: React.FC = () => {
   const { accountList, accountSelected } = useContext(AppContext);
@@ -30,7 +32,7 @@ export const AccountSettings: React.FC = () => {
   }, []);
 
   return (
-    <SafeAreaView>
+    <SafeAreaPage>
       <Text>List of accounts</Text>
       {accountList.map((item, index) => (
         <View key={index}>
@@ -64,6 +66,6 @@ export const AccountSettings: React.FC = () => {
         title="Add another account"
         onPress={() => navigation.navigate('settings.create')}
       />
-    </SafeAreaView>
+    </SafeAreaPage>
   );
 };

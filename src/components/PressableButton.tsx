@@ -1,3 +1,4 @@
+import { DefaultTheme } from '@react-navigation/native';
 import React from 'react';
 import {
   Pressable,
@@ -30,7 +31,7 @@ export const PressableButton: React.FC<PressableButtonProps> = ({
       </View>
       {props.loading && (
         <View style={styles.spinnderContainer}>
-          <ActivityIndicator size="small" />
+          <ActivityIndicator size="small" color={DefaultTheme.colors.primary} />
         </View>
       )}
     </Pressable>
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
   text: {
     fontWeight: '500',
     fontSize: 18,
-    color: 'blue',
+    color: DefaultTheme.colors.primary,
   },
   spinnderContainer: {
     marginLeft: 12,

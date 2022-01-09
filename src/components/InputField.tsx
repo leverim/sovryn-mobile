@@ -1,11 +1,7 @@
+import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import React, { useMemo } from 'react';
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TextInputProps,
-  View,
-} from 'react-native';
+import { StyleSheet, TextInput, TextInputProps, View } from 'react-native';
+import { Text } from './Text';
 
 type Props = {
   label?: string;
@@ -15,6 +11,7 @@ export const InputField: React.FC<Props & TextInputProps> = ({
   label,
   ...props
 }) => {
+  const dark = useIsDarkTheme();
   const editable = useMemo(
     () => props.editable === undefined || props.editable === true,
     [props.editable],
@@ -28,7 +25,12 @@ export const InputField: React.FC<Props & TextInputProps> = ({
       )}
       <View style={styles.inputContainer}>
         <TextInput
-          style={[styles.input, !editable && styles.inputReadOnly]}
+          placeholderTextColor={'gray'}
+          style={[
+            styles.input,
+            !editable && styles.inputReadOnly,
+            dark && styles.inputDark,
+          ]}
           {...props}
         />
       </View>
@@ -62,5 +64,8 @@ const styles = StyleSheet.create({
   },
   inputReadOnly: {
     opacity: 0.5,
+  },
+  inputDark: {
+    color: 'white',
   },
 });

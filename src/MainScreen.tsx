@@ -8,8 +8,12 @@
  * @format
  */
 
-import React, { useContext, useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useContext, useEffect, useMemo } from 'react';
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { Welcome } from 'pages/WelcomeFlow/Welcome';
@@ -25,6 +29,7 @@ import { BrowserPage } from 'pages/MainScreen/BrowserPage';
 import WalletIcon from 'assets/wallet-icon.svg';
 import DappIcon from 'assets/dapp-icon.svg';
 import SettingsIcon from 'assets/settings-icon.svg';
+import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -50,8 +55,11 @@ export const MainScreen: React.FC = () => {
   //     .catch(console.error);
   // }, []);
 
+  const isDark = useIsDarkTheme();
+  const theme = useMemo(() => (isDark ? DarkTheme : DefaultTheme), [isDark]);
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={theme}>
       {loading ? (
         <Stack.Navigator>
           <Stack.Screen name="splash" component={SplashScreen} />
@@ -60,7 +68,11 @@ export const MainScreen: React.FC = () => {
         <>
           {address === null ? (
             <Stack.Navigator>
-              <Stack.Screen name="Welcome" component={Welcome} />
+              <Stack.Screen
+                name="Welcome"
+                component={Welcome}
+                options={{ headerShown: false }}
+              />
               <Stack.Screen name="CreateWallet" component={CreateWallet} />
               <Stack.Screen name="ImportWallet" component={ImportWallet} />
             </Stack.Navigator>

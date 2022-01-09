@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { Button, SafeAreaView, Text, TextInput } from 'react-native';
+import { SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import { accounts, AccountType } from 'utils/accounts';
@@ -15,6 +15,8 @@ import { currentChainId } from 'utils/helpers';
 import { isAddress } from 'utils/rsk';
 import { InputField } from 'components/InputField';
 import { PressableButton } from 'components/PressableButton';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { Text } from 'components/Text';
 
 export const AccountCreate: React.FC = () => {
   const { createWallet } = useContext(AppContext);
@@ -66,7 +68,7 @@ export const AccountCreate: React.FC = () => {
   }, [secret, type]);
 
   return (
-    <SafeAreaView>
+    <SafeAreaPage>
       <Text>Name</Text>
       <InputField value={name} onChangeText={setName} />
       <Text>Type</Text>
@@ -100,6 +102,6 @@ export const AccountCreate: React.FC = () => {
         disabled={!valid || loading}
         loading={loading}
       />
-    </SafeAreaView>
+    </SafeAreaPage>
   );
 };

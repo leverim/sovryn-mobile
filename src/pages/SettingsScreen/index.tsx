@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect } from 'react';
-import { Button, SafeAreaView, Text, View } from 'react-native';
+import { Button, View } from 'react-native';
 import RNRestart from 'react-native-restart';
 import { AppContext } from 'context/AppContext';
 import { useNavigation } from '@react-navigation/native';
@@ -9,6 +9,8 @@ import {
   RSK_DERIVATION_PATH,
   RSK_TESTNET_DERIVATION_PATH,
 } from 'utils/constants';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { Text } from 'components/Text';
 
 export const SettingsScreen: React.FC = () => {
   const { signOut } = useContext(AppContext);
@@ -30,7 +32,7 @@ export const SettingsScreen: React.FC = () => {
   }, []);
 
   return (
-    <SafeAreaView>
+    <SafeAreaPage>
       <Text>SettingsPage</Text>
       <Button
         title="Account Settings"
@@ -58,6 +60,6 @@ export const SettingsScreen: React.FC = () => {
           <Button title="Sign Out" onPress={signOut} />
         </View>
       )}
-    </SafeAreaView>
+    </SafeAreaPage>
   );
 };

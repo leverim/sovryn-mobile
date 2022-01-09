@@ -1,12 +1,5 @@
 import React, { useEffect } from 'react';
-import {
-  Button,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Button, ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { useAssetBalance } from 'hooks/useAssetBalance';
@@ -14,6 +7,9 @@ import { AssetLogo } from 'components/AssetLogo';
 import { VestedAssets } from './components/VestedAssets';
 import { AddressBadge } from 'components/AddressBadge';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { Text } from 'components/Text';
+import { DefaultTheme } from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.details'>;
 
@@ -31,10 +27,16 @@ export const WalletDetails: React.FC<Props> = ({
   const { value } = useAssetBalance(params.token, address, params.chainId);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaPage>
       <ScrollView style={styles.container}>
         <View style={styles.detailsContainer}>
-          <AssetLogo source={params.token.icon} size={64} style={styles.logo} />
+          <View style={styles.logoWrapper}>
+            <AssetLogo
+              source={params.token.icon}
+              size={64}
+              style={styles.logo}
+            />
+          </View>
           <Text style={styles.balance}>
             {Number(value).toFixed(6)} {params.token.symbol}
           </Text>
@@ -58,7 +60,7 @@ export const WalletDetails: React.FC<Props> = ({
           />
         )}
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaPage>
   );
 };
 
@@ -77,7 +79,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 64,
     height: 64,
-    marginBottom: 16,
   },
   balance: {
     fontWeight: 'bold',
@@ -91,5 +92,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  logoWrapper: {
+    width: 84,
+    height: 84,
+    backgroundColor: DefaultTheme.colors.card,
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderRadius: 42,
   },
 });

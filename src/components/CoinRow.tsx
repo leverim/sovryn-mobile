@@ -1,14 +1,17 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { AssetLogo } from 'components/AssetLogo';
 import { Token } from 'types/token';
+import { ChainId } from 'types/network';
+import { Text } from './Text';
+import { utils } from 'ethers/lib.esm';
 
 type Props = {
   token: Token;
-  chainId: number;
+  chainId: ChainId;
 };
 
 export const CoinRow: React.FC<Props> = ({ token, chainId }) => {
@@ -27,7 +30,9 @@ export const CoinRow: React.FC<Props> = ({ token, chainId }) => {
         <View style={styles.textWrapper}>
           <View style={styles.textWrapperRow}>
             <Text style={styles.textRow1}>{token.name}</Text>
-            <Text style={styles.textRow1}>{Number(value).toFixed(4)}</Text>
+            <Text style={styles.textRow1}>
+              {utils.commify(Number(value).toFixed(4))}
+            </Text>
           </View>
           <View style={styles.textWrapperRow}>
             <Text style={styles.textRow2}>{token.symbol}</Text>
@@ -70,8 +75,10 @@ const styles = StyleSheet.create({
   textRow1: {
     fontWeight: 'bold',
     marginBottom: 3,
+    color: 'black',
   },
   textRow2: {
     fontWeight: '300',
+    color: 'black',
   },
 });

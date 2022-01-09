@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Text } from 'react-native';
+import { Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Header } from 'react-native/Libraries/NewAppScreen';
 
@@ -8,7 +8,6 @@ export const Welcome: React.FC = () => {
   return (
     <>
       <Header />
-      <Text>Hello there</Text>
       <Button
         title="Import Wallet"
         onPress={() => navigation.navigate('ImportWallet')}

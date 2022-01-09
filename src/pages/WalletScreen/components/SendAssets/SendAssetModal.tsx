@@ -1,10 +1,13 @@
 import React from 'react';
-import { StyleSheet, Text, View, Modal } from 'react-native';
+import { StyleSheet, View, Modal } from 'react-native';
 import { utils } from 'ethers/lib.esm';
 import { Token } from 'types/token';
 import { currentChainId, prettifyTx } from 'utils/helpers';
 import { tokenUtils } from 'utils/token-utils';
 import { PressableButton } from 'components/PressableButton';
+import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
+import { Text } from 'components/Text';
+import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 
 type SendAssetModalProps = {
   isOpen: boolean;
@@ -27,10 +30,11 @@ export const SendAssetModal: React.FC<SendAssetModalProps> = ({
   onConfirm,
   onReject,
 }) => {
+  const dark = useIsDarkTheme();
   return (
     <Modal animationType="slide" transparent={true} visible={isOpen}>
       <View style={styles.centeredView}>
-        <View style={styles.modalView}>
+        <View style={[styles.modalView, dark && styles.modalViewDark]}>
           <Text style={styles.titleText}>Confirm {token.symbol} transfer</Text>
 
           <View style={styles.walletContainer}>
@@ -93,6 +97,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  modalViewDark: {
+    backgroundColor: DarkTheme.colors.card,
   },
   button: {
     borderRadius: 20,

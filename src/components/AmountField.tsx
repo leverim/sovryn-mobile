@@ -1,7 +1,8 @@
 import { utils } from 'ethers';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Button, StyleSheet, Text, TextInputProps, View } from 'react-native';
+import { Button, StyleSheet, TextInputProps, View } from 'react-native';
 import { InputField } from './InputField';
+import { Text } from './Text';
 
 type Props = {
   label?: string;

@@ -1,10 +1,12 @@
 import React from 'react';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import { ChainId } from 'types/network';
 import { currentChainId, prettifyTx } from 'utils/helpers';
+import { Text } from './Text';
 
 type TransactionBadgeProps = {
   txHash: string;
-  chainId?: number;
+  chainId?: ChainId;
 };
 
 export const TransactionBadge: React.FC<TransactionBadgeProps> = ({

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { CoinRow } from 'components/CoinRow';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { currentChainId } from 'utils/helpers';
@@ -7,6 +7,8 @@ import { getProvider } from 'utils/RpcEngine';
 import { ErrorBoundary } from '@sentry/react-native';
 import { tokenUtils } from 'utils/token-utils';
 import { AddressBadge } from 'components/AddressBadge';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { Text } from 'components/Text';
 
 export const WalletScreen: React.FC = () => {
   const chainId = currentChainId();
@@ -26,7 +28,7 @@ export const WalletScreen: React.FC = () => {
   }, [address, chainId]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaPage>
       <ScrollView>
         <View style={styles.profileContainer}>
           <AddressBadge address={address} />
@@ -40,13 +42,14 @@ export const WalletScreen: React.FC = () => {
           ))}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaPage>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'black',
   },
   profileContainer: {
     marginBottom: 12,

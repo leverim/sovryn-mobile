@@ -1,18 +1,14 @@
 import React, { useCallback, useEffect } from 'react';
-import {
-  Button,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Button, ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import { prettifyTx } from 'utils/helpers';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
+import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { Text } from 'components/Text';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
 
@@ -33,16 +29,21 @@ export const ReceiveAsset: React.FC<Props> = ({
     [address],
   );
 
+  const dark = useIsDarkTheme();
+
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaPage>
       <ScrollView style={styles.container}>
         <View style={styles.detailsContainer}>
           <Text style={styles.title}>Receive {params.token.symbol}</Text>
-          <QRCode
-            value={address}
-            logoBackgroundColor="transparent"
-            size={280}
-          />
+          <View style={[styles.qrWrapper, dark && styles.qrWrapperDark]}>
+            <QRCode
+              value={address}
+              backgroundColor={dark ? 'black' : 'white'}
+              color={dark ? 'white' : 'black'}
+              size={280}
+            />
+          </View>
           <View style={styles.addressContainer}>
             <Text style={styles.address}>
               {prettifyTx(address, 16, 16).toLowerCase()}
@@ -57,7 +58,7 @@ export const ReceiveAsset: React.FC<Props> = ({
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaPage>
   );
 };
 
@@ -91,5 +92,12 @@ const styles = StyleSheet.create({
   },
   note: {
     textAlign: 'center',
+  },
+  qrWrapper: {
+    padding: 8,
+    backgroundColor: 'white',
+  },
+  qrWrapperDark: {
+    backgroundColor: 'black',
   },
 });

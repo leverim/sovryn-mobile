@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useVestedAssets } from 'hooks/useVestedAssets';
 import { VestedAssetRow } from './components/VestedAssets/VestedAssetRow';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { Text } from 'components/Text';
 
 export const WalletVestings: React.FC = () => {
   // @ts-ignore
@@ -21,7 +23,7 @@ export const WalletVestings: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaPage>
       <ScrollView style={styles.container}>
         <View style={styles.detailsContainer}>
           {/* <AssetLogo source={params.item.icon} size={64} style={styles.logo} /> */}
@@ -40,7 +42,7 @@ export const WalletVestings: React.FC = () => {
           ))}
         </ScrollView>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaPage>
   );
 };
 

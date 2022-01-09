@@ -1,12 +1,16 @@
+import { DarkTheme } from '@react-navigation/native';
+import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Modal, Pressable } from 'react-native';
+import { StyleSheet, View, Modal, Pressable } from 'react-native';
+import { ChainId } from 'types/network';
 import { currentChainId } from 'utils/helpers';
 import { getProvider } from 'utils/RpcEngine';
+import { Text } from './Text';
 import { TransactionBadge } from './TransactionBadge';
 
 type SendAssetModalProps = {
   txHash?: string;
-  chainId?: number;
+  chainId?: ChainId;
   onClose: () => void;
 };
 
@@ -50,10 +54,12 @@ export const TransactionModal: React.FC<SendAssetModalProps> = ({
     }
   }, [txHash, chainId]);
 
+  const dark = useIsDarkTheme();
+
   return (
     <Modal animationType="slide" transparent={true} visible={!!txHash}>
       <View style={styles.centeredView}>
-        <View style={styles.modalView}>
+        <View style={[styles.modalView, dark && styles.modalViewDark]}>
           <Text style={styles.titleText}>Transaction {status}</Text>
 
           <View style={styles.walletContainer}>
@@ -97,6 +103,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  modalViewDark: {
+    backgroundColor: DarkTheme.colors.card,
   },
   button: {
     borderRadius: 20,

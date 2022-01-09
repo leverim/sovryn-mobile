@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, View } from 'react-native';
 import { currentChainId } from 'utils/helpers';
 import { isAddress } from 'utils/rsk';
 import { InputField } from './InputField';
+import { Text } from './Text';
 
 type Props = {
   value: string;

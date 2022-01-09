@@ -4,10 +4,8 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
@@ -27,6 +25,8 @@ import { TransactionModal } from 'components/TransactionModal';
 import { tokenUtils } from 'utils/token-utils';
 import { PressableButton } from 'components/PressableButton';
 import { useAssetBalance } from 'hooks/useAssetBalance';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { Text } from 'components/Text';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
 
@@ -83,7 +83,7 @@ export const SendAsset: React.FC<Props> = ({
       setData(
         encodeFunctionData('transfer(address,uint256)', [
           receiver || constants.AddressZero,
-          utils.parseUnits(amount || '0', params.token.decimals).toNumber(),
+          utils.parseUnits(amount || '0', params.token.decimals).toString(),
         ]),
       );
     }
@@ -231,7 +231,7 @@ export const SendAsset: React.FC<Props> = ({
   }, [nativeBalance, fee, amount, params.token, nativeToken, tokenBalance]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaPage>
       <ScrollView style={styles.container}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -313,7 +313,7 @@ export const SendAsset: React.FC<Props> = ({
           }
         />
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaPage>
   );
 };
 

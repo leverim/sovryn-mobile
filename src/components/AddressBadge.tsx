@@ -1,11 +1,13 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { ChainId } from 'types/network';
 import { currentChainId, prettifyTx } from 'utils/helpers';
 import { toChecksumAddress } from 'utils/rsk';
+import { Text } from './Text';
 
 type AddressBadgeProps = {
   address: string;
-  chainId?: number;
+  chainId?: ChainId;
 };
 
 export const AddressBadge: React.FC<AddressBadgeProps> = ({
@@ -14,7 +16,7 @@ export const AddressBadge: React.FC<AddressBadgeProps> = ({
 }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>
+      <Text style={[styles.text]}>
         {prettifyTx(toChecksumAddress(address, chainId))}
       </Text>
     </View>

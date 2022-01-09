@@ -1,10 +1,11 @@
 import React, { useCallback, useContext, useMemo, useState } from 'react';
-import { Text, View } from 'react-native';
 import { validateMnemonic } from 'utils/wallet-utils';
 import { AppContext } from 'context/AppContext';
 import { AccountType } from 'utils/accounts';
 import { InputField } from 'components/InputField';
 import { PressableButton } from 'components/PressableButton';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { Text } from 'components/Text';
 
 export const ImportWallet: React.FC = () => {
   const { createWallet } = useContext(AppContext);
@@ -33,7 +34,7 @@ export const ImportWallet: React.FC = () => {
   }, [seed, createWallet]);
 
   return (
-    <View>
+    <SafeAreaPage>
       <Text>Enter your seed phrase:</Text>
       <InputField
         value={seed}
@@ -51,6 +52,6 @@ export const ImportWallet: React.FC = () => {
         loading={loading}
         disabled={loading || !valid}
       />
-    </View>
+    </SafeAreaPage>
   );
 };

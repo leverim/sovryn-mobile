@@ -1,9 +1,11 @@
 import React, { useCallback, useContext, useMemo, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { generateMnemonic } from 'utils/wallet-utils';
 import { AppContext } from 'context/AppContext';
 import { AccountType } from 'utils/accounts';
 import { PressableButton } from 'components/PressableButton';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { Text } from 'components/Text';
 
 export const CreateWallet: React.FC = () => {
   const mnemonic = useMemo(() => generateMnemonic().split(' '), []);
@@ -13,7 +15,7 @@ export const CreateWallet: React.FC = () => {
 
   const handleConfirm = useCallback(() => {
     setLoading(true);
-    createWallet('Account #1', AccountType.MNEMONIC, mnemonic.join(' '))
+    createWallet('Sovryn Account #1', AccountType.MNEMONIC, mnemonic.join(' '))
       .then(() => {
         console.log('saved');
       })
@@ -24,12 +26,11 @@ export const CreateWallet: React.FC = () => {
   }, [mnemonic, createWallet]);
 
   return (
-    <View>
+    <SafeAreaPage>
       <Text>Create Wallet</Text>
-
       <View>
         {mnemonic.map((word, index) => (
-          <View style={{ backgroundColor: 'white', padding: 3 }} key={word}>
+          <View style={{ padding: 3 }} key={word}>
             <Text>
               #{index + 1}. {word}
             </Text>
@@ -45,6 +46,6 @@ export const CreateWallet: React.FC = () => {
         loading={loading}
         disabled={loading}
       />
-    </View>
+    </SafeAreaPage>
   );
 };

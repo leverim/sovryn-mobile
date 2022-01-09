@@ -1,10 +1,11 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Text } from 'components/Text';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
 
 export const SplashScreen: React.FC = () => {
   return (
-    <View>
+    <SafeAreaPage>
       <Text>Loading...</Text>
-    </View>
+    </SafeAreaPage>
   );
 };
