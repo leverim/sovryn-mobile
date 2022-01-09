@@ -5,9 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Picker } from '@react-native-picker/picker';
 import { accounts, AccountType } from 'utils/accounts';
 import { AppContext } from 'context/AppContext';
 import { validateMnemonic, validatePrivateKey } from 'utils/wallet-utils';
@@ -17,6 +15,7 @@ import { InputField } from 'components/InputField';
 import { PressableButton } from 'components/PressableButton';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
+import { ItemType, Picker } from 'components/Picker';
 
 export const AccountCreate: React.FC = () => {
   const { createWallet } = useContext(AppContext);
@@ -67,27 +66,29 @@ export const AccountCreate: React.FC = () => {
     return false;
   }, [secret, type]);
 
+  const items: ItemType[] = [
+    { value: AccountType.MNEMONIC, label: 'Mnemonic seed' },
+    { value: AccountType.PRIVATE_KEY, label: 'Private key' },
+    { value: AccountType.PUBLIC_ADDRESS, label: 'Address (Read only)' },
+  ];
+
+  const label = useMemo(() => {
+    switch (type) {
+      case AccountType.MNEMONIC:
+        return 'Mnemonic seed';
+      case AccountType.PRIVATE_KEY:
+        return 'Private key';
+      case AccountType.PUBLIC_ADDRESS:
+        return 'Address (read only)';
+    }
+  }, [type]);
+
   return (
     <SafeAreaPage>
-      <Text>Name</Text>
-      <InputField value={name} onChangeText={setName} />
-      <Text>Type</Text>
-      <Picker
-        selectedValue={type}
-        onValueChange={itemValue => setType(itemValue)}>
-        <Picker.Item label="Mnemonic seed" value={AccountType.MNEMONIC} />
-        <Picker.Item label="Private key" value={AccountType.PRIVATE_KEY} />
-        <Picker.Item
-          label="Public Address"
-          value={AccountType.PUBLIC_ADDRESS}
-        />
-      </Picker>
-      <Text>
-        {type === AccountType.MNEMONIC && 'Mnemonic seed'}
-        {type === AccountType.PRIVATE_KEY && 'Private key'}
-        {type === AccountType.PUBLIC_ADDRESS && 'Address (Read only)'}
-      </Text>
+      <InputField label="Name" value={name} onChangeText={setName} />
+      <Picker label="Type" value={type} items={items} onChange={setType} />
       <InputField
+        label={label}
         value={secret}
         onChangeText={setSecret}
         multiline

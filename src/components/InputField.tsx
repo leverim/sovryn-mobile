@@ -56,11 +56,16 @@ const styles = StyleSheet.create({
     width: '100%',
     borderColor: 'gray',
     borderWidth: 1,
+    height: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   input: {
     paddingVertical: 6,
     paddingHorizontal: 12,
     fontSize: 16,
+    height: 40,
+    width: '100%',
   },
   inputReadOnly: {
     opacity: 0.5,
