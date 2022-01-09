@@ -1,10 +1,11 @@
 import { tokens } from 'config/tokens';
+import { ChainId } from './network';
 
 export type Token = {
   id: string;
   symbol: string;
   name: string;
-  address: Record<number, string>;
+  address: Partial<Record<ChainId, string>>;
   decimals: number;
   icon: string;
   native?: boolean;
