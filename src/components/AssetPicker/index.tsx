@@ -17,6 +17,7 @@ import { tokenUtils } from 'utils/token-utils';
 import { Text } from 'components/Text';
 import { TokenId } from 'types/token';
 import DownIcon from 'assets/chevron-down.svg';
+import { AssetLogo } from 'components/AssetLogo';
 
 export const AssetPicker: React.FC<AssetPickerModalProps> = ({
   value,
@@ -52,9 +53,18 @@ export const AssetPicker: React.FC<AssetPickerModalProps> = ({
       <Pressable
         onPress={() => setOpen(prev => !prev)}
         style={styles.inputContainer}>
-        <Text>
-          {selected !== undefined ? selected.symbol : 'Select item...'}
-        </Text>
+        <View style={styles.assetPlaceholderWrapper}>
+          {selected !== undefined ? (
+            <>
+              <View style={styles.assetIconWrapper}>
+                <AssetLogo source={selected.icon} size={24} />
+              </View>
+              <Text>{selected.symbol}</Text>
+            </>
+          ) : (
+            <Text>Select item...</Text>
+          )}
+        </View>
         <View>
           <DownIcon fill={dark ? 'white' : 'black'} />
         </View>
@@ -87,7 +97,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 6,
   },
   inputReadOnly: {
     opacity: 0.5,
@@ -113,5 +123,20 @@ const styles = StyleSheet.create({
   },
   modalItem: {
     marginBottom: 6,
+  },
+  assetPlaceholderWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  assetIconWrapper: {
+    marginRight: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 28,
+    height: 28,
+    backgroundColor: DefaultTheme.colors.card,
+    borderRadius: 14,
   },
 });

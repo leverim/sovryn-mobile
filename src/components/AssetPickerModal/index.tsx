@@ -13,6 +13,8 @@ import { Text } from '../Text';
 import { PressableButton } from '../PressableButton';
 import { TokenId } from 'types/token';
 import { tokenUtils } from 'utils/token-utils';
+import { AssetLogo } from 'components/AssetLogo';
+import { commify } from 'ethers/lib/utils';
 
 export type AssetPickerModalProps = {
   value?: TokenId;
@@ -88,10 +90,18 @@ const Item: React.FC<ItemProps> = ({ tokenId, active, onSelect }) => {
     <Pressable
       onPress={() => onSelect(tokenId)}
       style={[styles.modalItem, active && styles.modalItemActive]}>
-      <View>
-        <Text>{token.name}</Text>
-        <Text>{token.symbol}</Text>
+      <View style={styles.modalItemLeftSide}>
+        <View style={styles.modalItemLogoContainer}>
+          <AssetLogo source={token.icon} size={32} />
+        </View>
+        <View>
+          <Text style={styles.tokenSymbolText}>{token.symbol}</Text>
+          <Text style={styles.tokenNameText}>{token.name}</Text>
+        </View>
       </View>
+      {/* <View>
+        <Text style={styles.balanceText}>{commify(100000.43)}</Text>
+      </View> */}
     </Pressable>
   );
 };
@@ -142,8 +152,39 @@ const styles = StyleSheet.create({
   },
   modalItem: {
     marginBottom: 6,
+    padding: 8,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   modalItemActive: {
-    backgroundColor: 'gray',
+    borderBottomWidth: 1,
+    borderBottomColor: 'gray',
+  },
+  modalItemLeftSide: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  modalItemLogoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: DefaultTheme.colors.card,
+    width: 36,
+    height: 36,
+    marginRight: 8,
+    borderRadius: 18,
+  },
+  tokenSymbolText: {
+    color: 'white',
+    marginBottom: 2,
+  },
+  tokenNameText: {
+    color: 'gray',
+  },
+  balanceText: {
+    color: 'gray',
   },
 });
