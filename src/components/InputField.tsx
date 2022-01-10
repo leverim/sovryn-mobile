@@ -1,14 +1,19 @@
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, TextInput, TextInputProps, View } from 'react-native';
+import debounce from 'lodash/debounce';
 import { Text } from './Text';
 
 type Props = {
   label?: string;
+  debounceDelay?: number;
 };
 
 export const InputField: React.FC<Props & TextInputProps> = ({
   label,
+  debounceDelay = 300,
+  onChangeText,
+  value,
   ...props
 }) => {
   const dark = useIsDarkTheme();
@@ -16,6 +21,25 @@ export const InputField: React.FC<Props & TextInputProps> = ({
     () => props.editable === undefined || props.editable === true,
     [props.editable],
   );
+
+  const [_value, setValue] = useState<string | undefined>(value);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedOnChangeText = useCallback(
+    debounce(text => onChangeText && onChangeText(text), debounceDelay),
+    [debounceDelay, onChangeText],
+  );
+
+  const handleTextChange = useCallback(
+    (text: string) => {
+      setValue(text);
+      debouncedOnChangeText(text);
+    },
+    [debouncedOnChangeText],
+  );
+
+  useEffect(() => setValue(value), [value]);
+
   return (
     <View style={styles.container}>
       {label && (
@@ -26,6 +50,8 @@ export const InputField: React.FC<Props & TextInputProps> = ({
       <View style={styles.inputContainer}>
         <TextInput
           placeholderTextColor={'gray'}
+          value={_value}
+          onChangeText={handleTextChange}
           style={[
             styles.input,
             !editable && styles.inputReadOnly,

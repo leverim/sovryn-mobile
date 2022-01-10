@@ -1,12 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Modal,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import {

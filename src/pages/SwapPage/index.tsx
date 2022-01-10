@@ -36,7 +36,7 @@ export const SwapPage: React.FC = () => {
       <Stack.Screen
         name="swap.index"
         component={SwapIndexScreen}
-        options={{ title: 'Swap' }}
+        options={{ title: 'Swap', headerShown: false }}
       />
       {/* <Stack.Screen name="swap.account" component={AccountSettings} /> */}
       {/* <Stack.Screen name="swap.create" component={AccountCreate} /> */}

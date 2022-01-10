@@ -11,15 +11,16 @@ import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { Text } from '../Text';
 import { PressableButton } from '../PressableButton';
-import { TokenId } from 'types/token';
+import { Token, TokenId } from 'types/token';
 import { tokenUtils } from 'utils/token-utils';
 import { AssetLogo } from 'components/AssetLogo';
-import { commify } from 'ethers/lib/utils';
+import { InputField } from 'components/InputField';
 
 export type AssetPickerModalProps = {
   value?: TokenId;
   items: TokenId[];
   onChange?: (value: TokenId) => void;
+  title?: string;
 };
 
 type AssetPickerExtraProps = {
@@ -29,10 +30,11 @@ type AssetPickerExtraProps = {
 
 export const AssetPickerModal: React.FC<
   AssetPickerModalProps & AssetPickerExtraProps
-> = ({ value, items, onChange, open, onClose }) => {
+> = ({ value, items, onChange, open, onClose, title = 'Choose asset' }) => {
   const dark = useIsDarkTheme();
 
   const [_value, setValue] = useState<TokenId | undefined>(value);
+  const [search, setSearch] = useState('');
 
   const triggerClose = useCallback(() => {
     if (onClose) {
@@ -55,17 +57,42 @@ export const AssetPickerModal: React.FC<
     setValue(value);
   }, [value]);
 
+  const tokens = useMemo(
+    () =>
+      items.map(item => tokenUtils.getTokenById(item)).filter(item => !!item),
+    [items],
+  );
+
+  const filteredItems = useMemo(() => {
+    if (search) {
+      return tokens.filter(
+        item =>
+          item.symbol.toLowerCase().includes(search.toLowerCase()) ||
+          item.name.toLowerCase().includes(search.toLowerCase()),
+      );
+    }
+    return tokens;
+  }, [search, tokens]);
+
   return (
     <Modal animationType="slide" visible={open}>
       <SafeAreaView style={[styles.modal, dark && styles.modalDark]}>
         <View style={styles.modalBody}>
-          <Text style={styles.modalTitle}>Choose asset:</Text>
+          <Text style={styles.modalTitle}>{title}</Text>
+          <View style={styles.searchInput}>
+            <InputField
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search for asset..."
+            />
+          </View>
+
           <ScrollView>
-            {items.map(item => (
+            {filteredItems.map(item => (
               <Item
-                key={item}
-                tokenId={item}
-                active={item === _value}
+                key={item.id}
+                token={item}
+                active={item.id === _value}
                 onSelect={onSelectItem}
               />
             ))}
@@ -78,17 +105,15 @@ export const AssetPickerModal: React.FC<
 };
 
 type ItemProps = {
-  tokenId: TokenId;
+  token: Token;
   active: boolean;
   onSelect: (tokenId: TokenId) => void;
 };
 
-const Item: React.FC<ItemProps> = ({ tokenId, active, onSelect }) => {
-  const token = useMemo(() => tokenUtils.getTokenById(tokenId), [tokenId]);
-
+const Item: React.FC<ItemProps> = ({ token, active, onSelect }) => {
   return (
     <Pressable
-      onPress={() => onSelect(tokenId)}
+      onPress={() => onSelect(token.id as TokenId)}
       style={[styles.modalItem, active && styles.modalItemActive]}>
       <View style={styles.modalItemLeftSide}>
         <View style={styles.modalItemLogoContainer}>
@@ -186,5 +211,8 @@ const styles = StyleSheet.create({
   },
   balanceText: {
     color: 'gray',
+  },
+  searchInput: {
+    marginBottom: 12,
   },
 });

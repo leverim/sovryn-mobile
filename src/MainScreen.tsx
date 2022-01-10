@@ -33,7 +33,7 @@ export const MainScreen: React.FC = () => {
   return (
     <NavigationContainer theme={theme}>
       {loading ? (
-        <Stack.Navigator>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="splash" component={SplashScreen} />
         </Stack.Navigator>
       ) : (
