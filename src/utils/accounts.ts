@@ -53,6 +53,10 @@ class AccountManager extends EventEmitter {
     this.onSelected();
     RNRestart.Restart();
   }
+  public async delete() {
+    this._accounts = [];
+    await this.select(0);
+  }
   public get(index: number) {
     return this._accounts[index];
   }

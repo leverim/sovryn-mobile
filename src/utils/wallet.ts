@@ -40,7 +40,7 @@ export class Wallet {
           return undefined;
       }
     } catch (e) {
-      console.error(e);
+      console.error('unable to generate wallet', e);
       return undefined;
     }
   }

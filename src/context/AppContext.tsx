@@ -99,6 +99,7 @@ export const AppProvider: React.FC = ({ children }) => {
       },
       signOut: async () => {
         // todo disable function if it's not development build.
+        await accounts.delete();
         await clearStorage();
         dispatch({ type: APP_ACTION.SIGN_OUT });
       },

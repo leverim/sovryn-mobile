@@ -55,9 +55,11 @@ export const AccountSettings: React.FC = () => {
             {accountSelected === index ? (
               <Text>Active</Text>
             ) : (
-              <Button onPress={() => onActivate(index)} title="Activate">
-                <Text>Activate</Text>
-              </Button>
+              <>
+                <Button onPress={() => onActivate(index)} title="Activate">
+                  <Text>Activate</Text>
+                </Button>
+              </>
             )}
           </View>
         </View>
