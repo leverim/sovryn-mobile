@@ -1,16 +1,24 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { currentChainId } from 'utils/helpers';
+import { currentChainId, noop } from 'utils/helpers';
 import { tokenUtils } from 'utils/token-utils';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SwapStackProps } from '..';
-import { swapables } from 'config/swapables';
+import { getSwappableToken, swapables } from 'config/swapables';
 import { TokenId } from 'types/token';
 import { AssetPickerWithAmount } from 'components/AssetPicker/AssetPickerWithAmount';
-import { commify } from 'ethers/lib/utils';
+import { commify, formatUnits, parseUnits } from 'ethers/lib/utils';
+import { useDebouncedEffect } from 'hooks/useDebounceEffect';
+import { callToContract } from 'utils/contract-utils';
+import { useSlippage } from 'hooks/useSlippage';
+import { PressableButton } from 'components/PressableButton';
+import { SwapSettingsModal } from '../components/SwapSettingsModal';
+import { erc20, getSwapExpectedReturn } from 'utils/interactions';
+import { contractUtils } from 'utils/contract';
+import { TokenApprovalFlow } from 'components/TokenApprovalFlow';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
@@ -26,17 +34,100 @@ export const SwapIndexScreen: React.FC<Props> = () => {
       .map(item => item.id as TokenId);
   }, [chainId]);
 
-  const [sendToken, setSendToken] = useState(tokens[0]);
-  const [receiveToken, setReceiveToken] = useState(tokens[1]);
+  const [sendTokenId, setSendTokenId] = useState(tokens[0]);
+  const [receiveTokenId, setReceiveTokenId] = useState(tokens[1]);
 
   const [sendAmount, setSendAmount] = useState('');
   const [receiveAmount, setReceiveAmount] = useState('');
+
+  const sendToken = tokenUtils.getTokenById(sendTokenId);
+  const receiveToken = tokenUtils.getTokenById(receiveTokenId);
+
+  const [slippage, setSlippage] = useState('0.1');
+
+  const [sellPrice, setSellPrice] = useState<string>();
+  const [buyPrice, setBuyPrice] = useState<string>();
+
+  const { minReturnFormatted: minReturn, slippage: slippage2 } = useSlippage(
+    receiveAmount,
+    receiveToken.decimals,
+    slippage,
+  );
+
+  const [conversionPath, setConversionPath] = useState<string[]>([]);
+
+  const sourceTokenAddress = useMemo(
+    () =>
+      tokenUtils.getTokenAddressForId(
+        getSwappableToken(sendTokenId, currentChainId()),
+      ),
+    [sendTokenId],
+  );
+
+  const receiveTokenAddress = useMemo(
+    () =>
+      tokenUtils.getTokenAddressForId(
+        getSwappableToken(receiveTokenId, currentChainId()),
+      ),
+    [receiveTokenId],
+  );
+
+  useDebouncedEffect(
+    () => {
+      const run = async () => {
+        const path = await callToContract(
+          'swapNetwork',
+          'conversionPath(address,address)(address[])',
+          [sourceTokenAddress, receiveTokenAddress],
+        ).then(response => response[0]);
+        setConversionPath(path);
+      };
+      run().catch(console.error);
+    },
+    300,
+    [sendAmount, sourceTokenAddress, receiveTokenAddress],
+  );
+
+  useDebouncedEffect(
+    () => {
+      const run = async () => {
+        const amount = await getSwapExpectedReturn(
+          sendTokenId,
+          receiveTokenId,
+          sendAmount,
+        );
+        setReceiveAmount(Number(amount) !== 0 ? amount : '');
+      };
+      run().catch(console.error);
+    },
+    300,
+    [sendAmount, sendTokenId, receiveTokenId, owner],
+  );
+
+  useDebouncedEffect(
+    () => {
+      getSwapExpectedReturn(sendTokenId, receiveTokenId, '1').then(
+        setSellPrice,
+      );
+      getSwapExpectedReturn(receiveTokenId, sendTokenId, '1').then(setBuyPrice);
+    },
+    300,
+    [sourceTokenAddress, receiveTokenAddress],
+  );
+
+  const [showSettings, setShowSettings] = useState(false);
 
   return (
     <SafeAreaPage>
       <ScrollView>
         <View style={styles.container}>
-          <Text style={styles.title}>Swap</Text>
+          <View>
+            <Text style={styles.title}>Swap</Text>
+            <PressableButton
+              title="Settings"
+              onPress={() => setShowSettings(true)}
+            />
+          </View>
           <View>
             <View style={styles.labelWithBalance}>
               <Text>You Pay</Text>
@@ -48,9 +139,10 @@ export const SwapIndexScreen: React.FC<Props> = () => {
               amount={sendAmount}
               onAmountChanged={setSendAmount}
               tokenIdList={tokens}
-              tokenId={sendToken}
-              onTokenChanged={setSendToken}
+              tokenId={sendTokenId}
+              onTokenChanged={setSendTokenId}
               pickerTitle="Send asset"
+              debounceDelay={0}
             />
             <Text>Amount: {sendAmount}</Text>
           </View>
@@ -61,15 +153,48 @@ export const SwapIndexScreen: React.FC<Props> = () => {
               amount={receiveAmount}
               onAmountChanged={setReceiveAmount}
               tokenIdList={tokens}
-              tokenId={receiveToken}
-              onTokenChanged={setReceiveToken}
+              tokenId={receiveTokenId}
+              onTokenChanged={setReceiveTokenId}
               pickerTitle="Receive asset"
               readOnlyAmount
+              debounceDelay={0}
             />
-            <Text>Amount: {receiveAmount}</Text>
+          </View>
+          <TokenApprovalFlow
+            tokenId={sendTokenId}
+            spender={contractUtils.getContractAddress('swapNetwork')}
+            requiredAmount={sendAmount || '0'}>
+            <PressableButton title="Swap" />
+          </TokenApprovalFlow>
+          <View>
+            <View>
+              <Text>Sell Price</Text>
+              <Text>
+                1 {sendToken.symbol} = {sellPrice} {receiveToken.symbol}
+              </Text>
+            </View>
+            <View>
+              <Text>Buy Price</Text>
+              <Text>
+                1 {receiveToken.symbol} = {buyPrice} {sendToken.symbol}
+              </Text>
+            </View>
+            <View>
+              <Text>Transaction Fee</Text>
+              <Text>
+                x {tokenUtils.getNativeToken(currentChainId()).symbol}
+              </Text>
+            </View>
           </View>
         </View>
       </ScrollView>
+      <SwapSettingsModal
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        onGasPriceChange={noop}
+        slippage={slippage}
+        onSlippageChange={value => setSlippage(value)}
+      />
     </SafeAreaPage>
   );
 };

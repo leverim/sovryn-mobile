@@ -6,7 +6,7 @@ export function useDebouncedEffect(
   deps: DependencyList,
 ) {
   const data = useRef<{ firstTime: boolean; clearFunc?: void | unknown }>({
-    firstTime: true,
+    firstTime: false,
   });
   useEffect(() => {
     const { firstTime, clearFunc } = data.current;

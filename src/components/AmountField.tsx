@@ -23,14 +23,10 @@ export const AmountField: React.FC<Props & TextInputProps> = ({
 
   const onChange = useCallback(
     (text: string) => {
-      text = text.replace(',', '.').replace('-', '').replace('e', '');
+      text = text.match(/(\d|.)+/g)?.pop() || '';
       setValue(text);
-      if (onChangeText) {
-        if (!isNaN(Number(text))) {
-          onChangeText(text);
-        } else {
-          onChangeText('');
-        }
+      if (onChangeText && !isNaN(Number(text))) {
+        onChangeText(text);
       }
     },
     [onChangeText],
