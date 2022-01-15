@@ -33,7 +33,7 @@ export const contracts = checkContracts([
   {
     name: 'rbtcWrapper',
     address: {
-      31: '0x6b1a4735b1E25ccE9406B2d5D7417cE53d1cf90e',
+      31: '0x6b1a4735b1e25cce9406b2d5d7417ce53d1cf90e',
     },
   },
   {

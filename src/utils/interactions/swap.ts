@@ -22,7 +22,9 @@ export const getSwapExpectedReturn = (
         tokenUtils.getTokenById(sendToken).decimals,
       ),
     ],
-  ).then(response =>
-    formatUnits(response[0], tokenUtils.getTokenById(receiveToken).decimals),
-  );
+  )
+    .then(response =>
+      formatUnits(response[0], tokenUtils.getTokenById(receiveToken).decimals),
+    )
+    .catch(() => '0');
 };

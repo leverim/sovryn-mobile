@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { currentChainId, noop } from 'utils/helpers';
@@ -10,17 +10,31 @@ import { SwapStackProps } from '..';
 import { getSwappableToken, swapables } from 'config/swapables';
 import { TokenId } from 'types/token';
 import { AssetPickerWithAmount } from 'components/AssetPicker/AssetPickerWithAmount';
-import { commify, formatUnits, parseUnits } from 'ethers/lib/utils';
+import { commify, formatUnits, hexlify, parseUnits } from 'ethers/lib/utils';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
-import { callToContract } from 'utils/contract-utils';
+import { callToContract, encodeFunctionData } from 'utils/contract-utils';
 import { useSlippage } from 'hooks/useSlippage';
 import { PressableButton } from 'components/PressableButton';
 import { SwapSettingsModal } from '../components/SwapSettingsModal';
-import { erc20, getSwapExpectedReturn } from 'utils/interactions';
+import { getSwapExpectedReturn } from 'utils/interactions';
 import { contractUtils } from 'utils/contract';
 import { TokenApprovalFlow } from 'components/TokenApprovalFlow';
+import { AFFILIATE_ACCOUNT, AFFILIATE_FEE } from 'utils/constants';
+import { ContractName } from 'types/contract';
+import { useAssetBalance } from 'hooks/useAssetBalance';
+import { getProvider } from 'utils/RpcEngine';
+import { wallet } from 'utils/wallet';
+import { TransactionModal } from 'components/TransactionModal';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
+
+type CallData = {
+  contractName: ContractName;
+  contractAddress: string;
+  method: string;
+  args: any[];
+  value: string;
+};
 
 export const SwapIndexScreen: React.FC<Props> = () => {
   const chainId = currentChainId();
@@ -48,13 +62,57 @@ export const SwapIndexScreen: React.FC<Props> = () => {
   const [sellPrice, setSellPrice] = useState<string>();
   const [buyPrice, setBuyPrice] = useState<string>();
 
-  const { minReturnFormatted: minReturn, slippage: slippage2 } = useSlippage(
+  const { minReturn } = useSlippage(
     receiveAmount,
     receiveToken.decimals,
     slippage,
   );
 
   const [conversionPath, setConversionPath] = useState<string[]>([]);
+
+  const nativeToken = tokenUtils.getNativeToken(currentChainId());
+
+  const callData = useMemo(() => {
+    const useBtcProxy = [sendTokenId, receiveTokenId].includes(
+      nativeToken.id as TokenId,
+    );
+    const amount = parseUnits(sendAmount || '0', sendToken.decimals).toString();
+
+    return {
+      contractName: useBtcProxy ? 'rbtcWrapper' : 'swapNetwork',
+      contractAddress: contractUtils.getContractAddress(
+        useBtcProxy ? 'rbtcWrapper' : 'swapNetwork',
+        currentChainId(),
+      ),
+      method: useBtcProxy
+        ? 'convertByPath(address[],uint256,uint256)'
+        : 'convertByPath(address[],uint256,uint256,address,address,uint256)',
+      args: useBtcProxy
+        ? [conversionPath, amount, minReturn]
+        : [
+            conversionPath,
+            amount,
+            minReturn,
+            owner,
+            AFFILIATE_ACCOUNT,
+            AFFILIATE_FEE,
+          ],
+      value: useBtcProxy
+        ? sendTokenId === (nativeToken.id as TokenId)
+          ? amount
+          : '0'
+        : '0',
+    } as CallData;
+  }, [
+    conversionPath,
+    minReturn,
+    nativeToken.id,
+    owner,
+    receiveTokenId,
+    sendAmount,
+    sendToken.decimals,
+    sendTokenId,
+  ]);
 
   const sourceTokenAddress = useMemo(
     () =>
@@ -117,6 +175,81 @@ export const SwapIndexScreen: React.FC<Props> = () => {
 
   const [showSettings, setShowSettings] = useState(false);
 
+  const handleSetSendTokenId = useCallback(
+    (tokenId: TokenId) => {
+      if (tokenId === receiveTokenId) {
+        setReceiveTokenId(tokens.filter(item => item !== tokenId)[0]);
+      }
+      setSendTokenId(tokenId);
+    },
+    [receiveTokenId, tokens],
+  );
+
+  const handleSetReceiveTokenId = useCallback(
+    (tokenId: TokenId) => {
+      if (tokenId === sendTokenId) {
+        setSendTokenId(tokens.filter(item => item !== tokenId)[0]);
+      }
+      setReceiveTokenId(tokenId);
+    },
+    [sendTokenId, tokens],
+  );
+
+  const { value } = useAssetBalance(sendToken, owner, currentChainId());
+
+  const [txHash, setTxHash] = useState<string>();
+  const [loading, setLoading] = useState(false);
+
+  const handleSwapButton = useCallback(async () => {
+    setLoading(true);
+    try {
+      const nonce = await getProvider(chainId)
+        .getTransactionCount(owner)
+        .then(response => response.toString());
+
+      const gasPrice = await getProvider(chainId)
+        .getGasPrice()
+        .then(response => formatUnits(response, 9).toString());
+
+      const data = encodeFunctionData(callData.method, callData.args);
+
+      const gas = await getProvider(chainId)
+        .estimateGas({
+          to: callData.contractAddress,
+          value: callData.value,
+          nonce: hexlify(Number(nonce || 0)),
+          data,
+          gasPrice: hexlify(Number(gasPrice || 0) * 1e9),
+        })
+        .then(response => response.toString());
+
+      const signedTransaction = await wallet.signTransaction({
+        to: callData.contractAddress,
+        value: hexlify(parseUnits(callData.value, 0)),
+        nonce: hexlify(Number(nonce || 0)),
+        data: data,
+        gasPrice: hexlify(Number(gasPrice || 0) * 1e9),
+        gasLimit: hexlify(Number(gas || 0) * 30),
+      });
+
+      const tx = await getProvider(chainId).sendTransaction(signedTransaction);
+
+      setTxHash(tx.hash);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setTxHash(undefined);
+      setLoading(false);
+    }
+  }, [
+    callData.args,
+    callData.contractAddress,
+    callData.method,
+    callData.value,
+    chainId,
+    owner,
+  ]);
+
   return (
     <SafeAreaPage>
       <ScrollView>
@@ -131,8 +264,8 @@ export const SwapIndexScreen: React.FC<Props> = () => {
           <View>
             <View style={styles.labelWithBalance}>
               <Text>You Pay</Text>
-              <Pressable onPress={() => setSendAmount('0.15')}>
-                <Text>Balance: {commify(0)}</Text>
+              <Pressable onPress={() => setSendAmount(value)}>
+                <Text>Balance: {commify(value)}</Text>
               </Pressable>
             </View>
             <AssetPickerWithAmount
@@ -140,11 +273,10 @@ export const SwapIndexScreen: React.FC<Props> = () => {
               onAmountChanged={setSendAmount}
               tokenIdList={tokens}
               tokenId={sendTokenId}
-              onTokenChanged={setSendTokenId}
+              onTokenChanged={handleSetSendTokenId}
               pickerTitle="Send asset"
               debounceDelay={0}
             />
-            <Text>Amount: {sendAmount}</Text>
           </View>
 
           <View>
@@ -154,7 +286,7 @@ export const SwapIndexScreen: React.FC<Props> = () => {
               onAmountChanged={setReceiveAmount}
               tokenIdList={tokens}
               tokenId={receiveTokenId}
-              onTokenChanged={setReceiveTokenId}
+              onTokenChanged={handleSetReceiveTokenId}
               pickerTitle="Receive asset"
               readOnlyAmount
               debounceDelay={0}
@@ -162,9 +294,14 @@ export const SwapIndexScreen: React.FC<Props> = () => {
           </View>
           <TokenApprovalFlow
             tokenId={sendTokenId}
-            spender={contractUtils.getContractAddress('swapNetwork')}
+            spender={callData.contractAddress}
             requiredAmount={sendAmount || '0'}>
-            <PressableButton title="Swap" />
+            <PressableButton
+              title="Swap"
+              onPress={handleSwapButton}
+              disabled={loading}
+              loading={loading}
+            />
           </TokenApprovalFlow>
           <View>
             <View>
@@ -193,8 +330,9 @@ export const SwapIndexScreen: React.FC<Props> = () => {
         onClose={() => setShowSettings(false)}
         onGasPriceChange={noop}
         slippage={slippage}
-        onSlippageChange={value => setSlippage(value)}
+        onSlippageChange={setSlippage}
       />
+      <TransactionModal txHash={txHash} onClose={() => setTxHash(undefined)} />
     </SafeAreaPage>
   );
 };

@@ -104,7 +104,11 @@ export async function contractCall<T = Record<string | number, any>>(
       ]),
       ...request,
     })
-    .then(response => decodeParameters(returnTypes, response) as unknown as T);
+    .then(response => decodeParameters(returnTypes, response) as unknown as T)
+    .catch(error => {
+      console.log('contractCallFailed', chainId, to, methodAndTypes, args);
+      throw error;
+    });
 }
 
 export type CallData = {
