@@ -12,7 +12,7 @@ List of planned and available features:
 - [ ] Lending
 - [ ] Liquidity mining
 - [ ] Borrowing
-- [ ] Swapping
+- [x] Swapping
 - [ ] Leverage trading
 - [ ] Staking
 - [ ] Voting in bitocracy
