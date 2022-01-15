@@ -1,12 +1,12 @@
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo } from 'react';
 import { Button, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { accounts, AccountType } from 'utils/accounts';
 import { AppContext } from 'context/AppContext';
-import { prettifyTx } from 'utils/helpers';
 import { Wallet } from 'utils/wallet';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
+import { Setting, settings } from 'utils/settings';
 
 export const AccountSettings: React.FC = () => {
   const { accountList, accountSelected } = useContext(AppContext);
@@ -31,6 +31,8 @@ export const AccountSettings: React.FC = () => {
     }
   }, []);
 
+  const dPath = useMemo(() => settings.get(Setting.SELECTED_DPATH), []);
+
   return (
     <SafeAreaPage>
       <Text>List of accounts</Text>
@@ -47,17 +49,17 @@ export const AccountSettings: React.FC = () => {
             )}
           </View>
           <View>
-            <Text>
-              {prettifyTx(new Wallet(index).derive()?.address || '0x')}
-            </Text>
+            <Text>{new Wallet(index, 0, dPath).derive()?.address || '0x'}</Text>
           </View>
           <View>
             {accountSelected === index ? (
               <Text>Active</Text>
             ) : (
-              <Button onPress={() => onActivate(index)} title="Activate">
-                <Text>Activate</Text>
-              </Button>
+              <>
+                <Button onPress={() => onActivate(index)} title="Activate">
+                  <Text>Activate</Text>
+                </Button>
+              </>
             )}
           </View>
         </View>

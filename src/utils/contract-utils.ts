@@ -13,7 +13,7 @@ import { getProvider } from 'utils/RpcEngine';
 import { getNetworks } from './network-utils';
 import { currentChainId, getContractAddress } from './helpers';
 import { ContractName } from 'types/contract';
-import { Network } from 'types/network';
+import { ChainId, Network } from 'types/network';
 
 const INSIDE_EVERY_PARENTHESES = /\((?:[^()]|\([^()]*\))*\)/g;
 
@@ -88,7 +88,7 @@ export async function callToContract<T = Record<string | number, any>>(
 }
 
 export async function contractCall<T = Record<string | number, any>>(
-  chainId: number,
+  chainId: ChainId,
   to: string,
   methodAndTypes: string,
   args: ReadonlyArray<any>,
@@ -104,7 +104,11 @@ export async function contractCall<T = Record<string | number, any>>(
       ]),
       ...request,
     })
-    .then(response => decodeParameters(returnTypes, response) as unknown as T);
+    .then(response => decodeParameters(returnTypes, response) as unknown as T)
+    .catch(error => {
+      console.log('contractCallFailed', chainId, to, methodAndTypes, args);
+      throw error;
+    });
 }
 
 export type CallData = {

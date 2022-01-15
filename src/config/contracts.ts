@@ -30,4 +30,16 @@ export const contracts = checkContracts([
       31: '0xa29CCeD858D46a0F91CC48646fa849D47eC96090',
     },
   },
+  {
+    name: 'rbtcWrapper',
+    address: {
+      31: '0x6b1a4735b1e25cce9406b2d5d7417ce53d1cf90e',
+    },
+  },
+  {
+    name: 'swapNetwork',
+    address: {
+      31: '0x61172B53423E205a399640e5283e51FE60EC2256',
+    },
+  },
 ]);

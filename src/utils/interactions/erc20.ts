@@ -1,4 +1,5 @@
-import { aggregateCall, contractCall } from 'utils/contract-utils';
+import { ChainId } from 'types/network';
+import { aggregateCall, contractCall, contractSend } from 'utils/contract-utils';
 
 export const erc20 = {
   getInfo(chainId: number, address: string) {
@@ -33,13 +34,13 @@ export const erc20 = {
       },
     ]).then(({ returnData }) => returnData);
   },
-  getBalance(chainId: number, tokenAddress: string, ownerAddress: string) {
+  getBalance(chainId: ChainId, tokenAddress: string, ownerAddress: string) {
     return contractCall(chainId, tokenAddress, 'balanceOf(address)(uint256)', [
       ownerAddress,
     ]);
   },
   getAllowance(
-    chainId: number,
+    chainId: ChainId,
     tokenAddress: string,
     ownerAddress: string,
     spenderAddress: string,
@@ -47,8 +48,8 @@ export const erc20 = {
     return contractCall(
       chainId,
       tokenAddress,
-      'allowance(address, address)(uint256)',
+      'allowance(address,address)(uint256)',
       [ownerAddress, spenderAddress],
-    );
+    ).then(response => response[0]);
   },
 };

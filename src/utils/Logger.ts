@@ -2,7 +2,7 @@
 
 // import { addBreadcrumb, captureException, captureMessage, withScope } from '@sentry/react-native';
 import DefaultPreference from 'react-native-default-preference';
-import { METRICS_OPT_IN, AGREED, DEBUG } from 'constants/storage';
+import { METRICS_OPT_IN, AGREED, DEBUG } from 'utils/constants';
 
 /**
  * Wrapper class that allows us to override

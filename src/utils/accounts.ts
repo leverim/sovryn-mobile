@@ -1,7 +1,9 @@
 import { EventEmitter } from 'events';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import RNRestart from 'react-native-restart';
+import { mnemonicToSeedSync } from 'bip39';
 import { getItem, storeItem } from './storage';
+import { addHexPrefix } from 'ethereumjs-util';
 
 export enum AccountType {
   MNEMONIC,
@@ -32,6 +34,9 @@ class AccountManager extends EventEmitter {
     return this._selected;
   }
   public async create(name: string, type: AccountType, secret: string) {
+    if (type === AccountType.MNEMONIC) {
+      secret = addHexPrefix(mnemonicToSeedSync(secret).toString('hex'));
+    }
     this._accounts.push({
       name,
       type,
@@ -47,6 +52,10 @@ class AccountManager extends EventEmitter {
     await this.save();
     this.onSelected();
     RNRestart.Restart();
+  }
+  public async delete() {
+    this._accounts = [];
+    await this.select(0);
   }
   public get(index: number) {
     return this._accounts[index];

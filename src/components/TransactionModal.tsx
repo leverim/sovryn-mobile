@@ -47,10 +47,13 @@ export const TransactionModal: React.FC<SendAssetModalProps> = ({
 
       check();
       return () => {
+        setStatus('none');
         if (timer) {
           clearTimeout(timer);
         }
       };
+    } else {
+      setStatus('none');
     }
   }, [txHash, chainId]);
 
@@ -85,6 +88,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     width: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalView: {
     margin: 0,

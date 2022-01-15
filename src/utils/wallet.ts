@@ -1,5 +1,8 @@
 import { Wallet as EthersWallet, utils } from 'ethers';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
+import { addHexPrefix, stripHexPrefix, publicToAddress } from 'ethereumjs-util';
+import { Buffer } from 'buffer';
+import hdkey from 'hdkey';
 import { Account, accounts, AccountType } from './accounts';
 import { RSK_DERIVATION_PATH } from './constants';
 import { Setting, settings } from './settings';
@@ -24,19 +27,20 @@ export class Wallet {
     try {
       switch (this.account.type) {
         case AccountType.MNEMONIC:
-          return EthersWallet.fromMnemonic(
-            this.account.secret,
-            `${this._dPath}/${this._index}`,
+          const node = hdkey.fromMasterSeed(
+            Buffer.from(stripHexPrefix(this.account.secret), 'hex'),
           );
+          const dkey = node.derive(`${this._dPath}/${this._index}`);
+          return new EthersWallet(dkey.privateKey);
         case AccountType.PRIVATE_KEY:
-          return new EthersWallet(this.account.secret);
+          return new EthersWallet(addHexPrefix(this.account.secret));
         case AccountType.PUBLIC_ADDRESS:
           return { address: this.account.secret } as UserWallet;
         default:
           return undefined;
       }
     } catch (e) {
-      console.error(e);
+      console.error('unable to generate wallet', e);
       return undefined;
     }
   }

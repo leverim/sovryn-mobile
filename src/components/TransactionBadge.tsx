@@ -27,7 +27,6 @@ export const TransactionBadge: React.FC<TransactionBadgeProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 12,
     width: '100%',
   },
   text: {
