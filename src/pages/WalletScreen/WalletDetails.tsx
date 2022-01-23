@@ -10,6 +10,7 @@ import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { DefaultTheme } from '@react-navigation/native';
+import { commifyDecimals } from 'utils/helpers';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.details'>;
 
@@ -38,7 +39,7 @@ export const WalletDetails: React.FC<Props> = ({
             />
           </View>
           <Text style={styles.balance}>
-            {Number(value).toFixed(6)} {params.token.symbol}
+            {commifyDecimals(value)} {params.token.symbol}
           </Text>
           <AddressBadge address={address} />
           <View style={styles.buttons}>

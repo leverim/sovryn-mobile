@@ -52,11 +52,13 @@ export const SendAsset: React.FC<Props> = ({
   const [loading, setLoading] = useState(false);
 
   const to = useMemo(() => {
-    return params.token.native
-      ? !receiver
-        ? receiver
-        : constants.AddressZero
-      : tokenUtils.getTokenAddressForChainId(params.token, params.chainId);
+    return (
+      params.token.native
+        ? !receiver
+          ? constants.AddressZero
+          : receiver
+        : tokenUtils.getTokenAddressForChainId(params.token, params.chainId)
+    ).toLowerCase();
   }, [params.token, params.chainId, receiver]);
 
   const owner = useWalletAddress();
@@ -82,7 +84,7 @@ export const SendAsset: React.FC<Props> = ({
     if (!params.token.native) {
       setData(
         encodeFunctionData('transfer(address,uint256)', [
-          receiver || constants.AddressZero,
+          (receiver || constants.AddressZero).toLowerCase(),
           utils.parseUnits(amount || '0', params.token.decimals).toString(),
         ]),
       );

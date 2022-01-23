@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { VestingData } from 'hooks/useVestedAssets';
-import { currentChainId, prettifyTx } from 'utils/helpers';
+import { commifyDecimals, currentChainId, prettifyTx } from 'utils/helpers';
 import { utils } from 'ethers/lib.esm';
 import { useCall } from 'hooks/useCall';
 import { Token } from 'types/token';
@@ -29,10 +29,7 @@ export const VestedAssetRow: React.FC<VestedAssetRowProps> = ({
     <View>
       <Text>{prettifyTx(vesting.vestingAddress)}</Text>
       <Text>
-        Balance:{' '}
-        {utils.commify(
-          Number(utils.formatUnits(balance, asset.decimals)).toFixed(4),
-        )}{' '}
+        Balance: {commifyDecimals(utils.formatUnits(balance, asset.decimals))}{' '}
         {asset.symbol}
       </Text>
       {loading && <Text>Loading</Text>}

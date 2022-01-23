@@ -1,3 +1,4 @@
+import { commify, formatUnits, parseUnits } from 'ethers/lib/utils';
 import { ImageSourcePropType } from 'react-native';
 import { ContractName } from 'types/contract';
 import { ChainId } from 'types/network';
@@ -52,3 +53,11 @@ export const prepareImageSource = (
   }
   return null;
 };
+
+export const floorDecimals = (value: number | string, decimals: number = 8) =>
+  Number(Math.floor(Number(`${value}e${decimals}`)) + 'e-' + decimals);
+
+export const commifyDecimals = (
+  value: number | string,
+  decimals: number = 6,
+): string => commify(floorDecimals(value, decimals));
