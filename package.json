@@ -7,7 +7,8 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "postinstall": "npx rn-nodeify --install buffer,stream,crypto --hack --yarn"
   },
   "dependencies": {
     "@ethersproject/shims": "^5.5.0",
@@ -35,6 +36,7 @@
     "react-native-device-info": "^8.4.8",
     "react-native-encrypted-storage": "^4.0.2",
     "react-native-get-random-values": "^1.7.1",
+    "react-native-keychain": "^8.0.0",
     "react-native-qrcode-svg": "^6.1.2",
     "react-native-randombytes": "^3.6.1",
     "react-native-restart": "^0.0.23",
