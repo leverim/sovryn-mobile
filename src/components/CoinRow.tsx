@@ -7,7 +7,7 @@ import { AssetLogo } from 'components/AssetLogo';
 import { Token } from 'types/token';
 import { ChainId } from 'types/network';
 import { Text } from './Text';
-import { utils } from 'ethers/lib.esm';
+import { commifyDecimals } from 'utils/helpers';
 
 type Props = {
   token: Token;
@@ -30,9 +30,7 @@ export const CoinRow: React.FC<Props> = ({ token, chainId }) => {
         <View style={styles.textWrapper}>
           <View style={styles.textWrapperRow}>
             <Text style={styles.textRow1}>{token.name}</Text>
-            <Text style={styles.textRow1}>
-              {utils.commify(Number(value).toFixed(4))}
-            </Text>
+            <Text style={styles.textRow1}>{commifyDecimals(value)}</Text>
           </View>
           <View style={styles.textWrapperRow}>
             <Text style={styles.textRow2}>{token.symbol}</Text>

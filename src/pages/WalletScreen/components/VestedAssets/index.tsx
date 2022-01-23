@@ -6,6 +6,7 @@ import { BigNumber } from 'ethers';
 import { utils } from 'ethers/lib.esm';
 import { useVestedAssets } from 'hooks/useVestedAssets';
 import { Token } from 'types/token';
+import { commifyDecimals } from 'utils/helpers';
 
 type VestedAssetsProps = {
   registryContractName: ContractName;
@@ -49,7 +50,7 @@ export const VestedAssets: React.FC<VestedAssetsProps> = ({
           <View style={styles.textWrapper}>
             <View style={styles.textWrapperRow}>
               <Text style={styles.textRow1}>Vested {asset.symbol}</Text>
-              <Text style={styles.textRow1}>{Number(balance).toFixed(4)}</Text>
+              <Text style={styles.textRow1}>{commifyDecimals(balance)}</Text>
             </View>
           </View>
         </View>

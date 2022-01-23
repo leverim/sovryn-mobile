@@ -7,7 +7,7 @@ import { tokenUtils } from 'utils/token-utils';
 import { PressableButton } from 'components/PressableButton';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { Text } from 'components/Text';
-import { DarkTheme, DefaultTheme } from '@react-navigation/native';
+import { DarkTheme } from '@react-navigation/native';
 
 type SendAssetModalProps = {
   isOpen: boolean;
