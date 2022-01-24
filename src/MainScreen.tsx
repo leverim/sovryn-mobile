@@ -20,8 +20,10 @@ import ExchangeIcon from 'assets/exchange-icon.svg';
 import SettingsIcon from 'assets/settings-icon.svg';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { SwapPage } from 'pages/SwapPage';
-import { PassCodeModal } from 'components/PassCode/PassCodeModal';
 import { AppState } from 'react-native';
+import { CreatePasscode } from 'pages/WelcomeFlow/CreatePasscode';
+import { WelcomeFlow } from 'pages/WelcomeFlow';
+import { passcode } from 'controllers/PassCodeController';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -36,6 +38,10 @@ export const MainScreen: React.FC = () => {
   const [askToUnlock, setAskToUnlock] = useState(true);
 
   useEffect(() => {
+    passcode.hasPasscode().then(result => {
+      console.log(result);
+    });
+
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (appState.current === 'background' && nextAppState === 'active') {
         setAskToUnlock(true);
@@ -49,25 +55,17 @@ export const MainScreen: React.FC = () => {
   }, []);
 
   return (
-    <>
-      <NavigationContainer theme={theme}>
-        {loading ? (
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="splash" component={SplashScreen} />
-          </Stack.Navigator>
-        ) : (
-          <>
-            {address === null ? (
-              <Stack.Navigator>
-                <Stack.Screen
-                  name="Welcome"
-                  component={Welcome}
-                  options={{ headerShown: false }}
-                />
-                <Stack.Screen name="CreateWallet" component={CreateWallet} />
-                <Stack.Screen name="ImportWallet" component={ImportWallet} />
-              </Stack.Navigator>
-            ) : (
+    <NavigationContainer theme={theme}>
+      {loading ? (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="splash" component={SplashScreen} />
+        </Stack.Navigator>
+      ) : (
+        <>
+          {address === null ? (
+            <WelcomeFlow />
+          ) : (
+            <>
               <Tab.Navigator screenOptions={{ headerShown: false }}>
                 <Tab.Screen
                   name="wallet"
@@ -94,14 +92,10 @@ export const MainScreen: React.FC = () => {
                   }}
                 />
               </Tab.Navigator>
-            )}
-          </>
-        )}
-      </NavigationContainer>
-      <PassCodeModal
-        visible={askToUnlock}
-        onUnlocked={() => setAskToUnlock(false)}
-      />
-    </>
+            </>
+          )}
+        </>
+      )}
+    </NavigationContainer>
   );
 };

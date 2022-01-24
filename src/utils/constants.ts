@@ -13,3 +13,8 @@ export const METRICS_OPT_IN = `${prefix}metricsOptIn`;
 export const AGREED = 'agreed';
 
 export const DEBUG = `[${sm} DEBUG]:`;
+
+export const STORAGE_BIOMETRY_CHOICE = `${prefix}biometricsChoice`;
+export const STORAGE_PASSCODE_CHOICE = `${prefix}passcodeChoice`;
+export const STORAGE_PASSCODE_TYPE = `${prefix}passcodeType`;
+export const STORAGE_PASSCODE = `${prefix}passcode`;

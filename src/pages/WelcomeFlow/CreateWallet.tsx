@@ -1,29 +1,24 @@
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { generateMnemonic } from 'utils/wallet-utils';
-import { AppContext } from 'context/AppContext';
-import { AccountType } from 'utils/accounts';
 import { PressableButton } from 'components/PressableButton';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
+import { WelcomeFlowStackProps } from '.';
 
-export const CreateWallet: React.FC = () => {
+type Props = NativeStackScreenProps<WelcomeFlowStackProps, 'onboarding.create'>;
+
+export const CreateWallet: React.FC<Props> = ({ navigation }) => {
   const mnemonic = useMemo(() => generateMnemonic().split(' '), []);
-  const { createWallet } = useContext(AppContext);
 
-  const [loading, setLoading] = useState(false);
-
-  const handleConfirm = useCallback(() => {
-    setLoading(true);
-    createWallet('Sovryn Account #1', AccountType.MNEMONIC, mnemonic.join(' '))
-      .then(() => {
-        console.log('saved');
-      })
-      .catch(error => {
-        setLoading(false);
-        console.error('saving failed', error);
-      });
-  }, [mnemonic, createWallet]);
+  const handleConfirm = useCallback(
+    () =>
+      navigation.navigate('onboarding.passcode', {
+        secret: mnemonic.join(' '),
+      }),
+    [navigation, mnemonic],
+  );
 
   return (
     <SafeAreaPage>
@@ -38,14 +33,7 @@ export const CreateWallet: React.FC = () => {
         ))}
       </View>
 
-      {loading && <Text>Creating, please wait. It might take a while.</Text>}
-
-      <PressableButton
-        title="Confirm"
-        onPress={handleConfirm}
-        loading={loading}
-        disabled={loading}
-      />
+      <PressableButton title="Confirm" onPress={handleConfirm} />
     </SafeAreaPage>
   );
 };

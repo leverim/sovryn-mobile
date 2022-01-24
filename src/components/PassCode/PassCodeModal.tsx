@@ -26,7 +26,7 @@ export const PassCodeModal: React.FC<PassCodeModalProps> = ({
     <Modal
       transparent={true}
       visible={visible}
-      animationType="slide"
+      animationType="fade"
       presentationStyle="overFullScreen">
       <SafeAreaView style={styles.container}>
         <PassCodeKeyboard onPasscode={handlePasscode} />

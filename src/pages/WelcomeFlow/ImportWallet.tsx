@@ -1,14 +1,15 @@
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { validateMnemonic } from 'utils/wallet-utils';
-import { AppContext } from 'context/AppContext';
-import { AccountType } from 'utils/accounts';
 import { InputField } from 'components/InputField';
 import { PressableButton } from 'components/PressableButton';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { WelcomeFlowStackProps } from '.';
 
-export const ImportWallet: React.FC = () => {
-  const { createWallet } = useContext(AppContext);
+type Props = NativeStackScreenProps<WelcomeFlowStackProps, 'onboarding.import'>;
+
+export const ImportWallet: React.FC<Props> = ({ navigation }) => {
   const [seed, setSeed] = useState('');
 
   const valid = useMemo(() => {
@@ -19,19 +20,10 @@ export const ImportWallet: React.FC = () => {
     return validateMnemonic(seed);
   }, [seed]);
 
-  const [loading, setLoading] = useState(false);
-
-  const handleConfirm = useCallback(() => {
-    setLoading(true);
-    createWallet('Account #1', AccountType.MNEMONIC, seed)
-      .then(() => {
-        console.log('saved');
-      })
-      .catch(error => {
-        setLoading(false);
-        console.error('saving failed', error);
-      });
-  }, [seed, createWallet]);
+  const handleConfirm = useCallback(
+    () => navigation.navigate('onboarding.passcode', { secret: seed }),
+    [navigation, seed],
+  );
 
   return (
     <SafeAreaPage>
@@ -45,12 +37,10 @@ export const ImportWallet: React.FC = () => {
         autoCorrect={false}
         autoComplete="off"
       />
-      {loading && <Text>Importing, please wait. It might take a while.</Text>}
       <PressableButton
         title="Confirm"
         onPress={handleConfirm}
-        loading={loading}
-        disabled={loading || !valid}
+        disabled={!valid}
       />
     </SafeAreaPage>
   );
