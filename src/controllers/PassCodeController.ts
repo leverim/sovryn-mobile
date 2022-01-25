@@ -13,13 +13,16 @@ import {
 } from 'react-native-keychain';
 import { Buffer } from 'buffer';
 import { STORAGE_PASSCODE, STORAGE_PASSCODE_TYPE } from 'utils/constants';
+import EventEmitter from 'events';
 
 const PASSCODE_USERNAME = 'sovryn';
+
+const defaultTitle = 'Authenticate to allow unlocking the app using biometrics';
 
 const defaultKeychainOptions: Options = {
   service: 'com.defray.sovryn',
   authenticationPrompt: {
-    title: 'Authenticate to allow unlocking the app using biometrics',
+    title: defaultTitle,
   },
   accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
 };
@@ -30,9 +33,18 @@ export enum PassCodeType {
 }
 
 class PassCodeController {
+  public readonly hub = new EventEmitter({ captureRejections: true });
+
   protected _loaded: boolean = false;
 
   protected _unlocked: boolean = false;
+
+  public async request(title?: string): Promise<string> {
+    console.log('request password', title);
+    return new Promise((resolve, reject) => {
+      this.hub.emit('request', { resolve, reject, title });
+    });
+  }
 
   public async supportedBiometrics() {
     return getSupportedBiometryType(defaultKeychainOptions);
@@ -80,7 +92,9 @@ class PassCodeController {
     return !!code;
   }
 
-  public async unlock() {
+  public async unlock(
+    promptTitle: string = defaultTitle,
+  ): Promise<string | false> {
     const type = await this.getPasscodeType();
 
     if (!type) {
@@ -89,6 +103,9 @@ class PassCodeController {
 
     return getGenericPassword({
       ...defaultKeychainOptions,
+      authenticationPrompt: {
+        title: promptTitle,
+      },
       accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
     }).then(credentials => {
       if (credentials) {

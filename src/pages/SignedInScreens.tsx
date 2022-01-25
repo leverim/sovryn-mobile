@@ -12,6 +12,8 @@ import SettingsIcon from 'assets/settings-icon.svg';
 import { PrivacyOverlay } from 'components/PassCode/PrivacyOverlay';
 import { PassCodeModal } from 'components/PassCode/PassCodeModal';
 import { passcode } from 'controllers/PassCodeController';
+import { TransactionConfirmation } from 'components/TransactionConfirmation/TransactionConfirmation';
+import { PasscodeConfirmation } from 'components/PassCode/PasscodeConfirmation';
 
 export type SignedInScreensTabProps = {
   wallet: undefined;
@@ -89,6 +91,8 @@ export const SignedInScreens = () => {
         onUnlocked={handleUnlock}
       />
       <PrivacyOverlay visible={showPrivacyOverlay} />
+      <TransactionConfirmation />
+      <PasscodeConfirmation />
     </>
   );
 };

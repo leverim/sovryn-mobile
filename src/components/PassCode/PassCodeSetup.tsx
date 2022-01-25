@@ -130,12 +130,14 @@ type PassCodeSetupKeyboardProps = {
   code: string;
   setCode: (value: string) => void;
   title: string;
+  onAbort?: () => void;
 };
 
-const PassCodeSetupKeyboard: React.FC<PassCodeSetupKeyboardProps> = ({
+export const PassCodeSetupKeyboard: React.FC<PassCodeSetupKeyboardProps> = ({
   code,
   setCode,
   title,
+  onAbort,
 }) => {
   return (
     <>
@@ -166,6 +168,7 @@ const PassCodeSetupKeyboard: React.FC<PassCodeSetupKeyboardProps> = ({
           />
         ))}
       </View>
+      {onAbort && <Button title="Abort" onPress={onAbort} />}
     </>
   );
 };

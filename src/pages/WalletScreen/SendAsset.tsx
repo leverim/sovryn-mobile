@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Alert,
   Button,
   Keyboard,
   KeyboardAvoidingView,
@@ -27,6 +28,7 @@ import { PressableButton } from 'components/PressableButton';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
+import { transactionController } from 'controllers/TransactionController';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
 
@@ -113,8 +115,9 @@ export const SendAsset: React.FC<Props> = ({
   const submit = useCallback(async () => {
     setLoading(true);
     try {
-      const signedTransaction = await wallet.signTransaction({
+      const tx = await transactionController.request({
         to,
+        chainId: params.chainId,
         value: utils.hexlify(
           params.token.native
             ? utils.parseUnits(amount || '0', params.token.decimals)
@@ -126,15 +129,32 @@ export const SendAsset: React.FC<Props> = ({
         gasLimit: utils.hexlify(Number(gas || 0)),
       });
 
-      const tx = await getProvider(params.chainId).sendTransaction(
-        signedTransaction,
-      );
+      Alert.alert('Transaction was submitted.');
 
-      setTxHash(tx.hash);
+      console.log('rest', tx);
+
+      // const signedTransaction = await wallet.signTransaction({
+      //   to,
+      //   value: utils.hexlify(
+      //     params.token.native
+      //       ? utils.parseUnits(amount || '0', params.token.decimals)
+      //       : 0,
+      //   ),
+      //   nonce: utils.hexlify(Number(nonce || 0)),
+      //   data,
+      //   gasPrice: utils.hexlify(Number(gasPrice || 0) * 1e9),
+      //   gasLimit: utils.hexlify(Number(gas || 0)),
+      // });
+
+      // const tx = await getProvider(params.chainId).sendTransaction(
+      //   signedTransaction,
+      // );
+
+      // setTxHash(tx.hash);
       setShowModal(false);
       setLoading(false);
     } catch (e) {
-      console.warn('Sending asset failed: ', e);
+      console.log('Sending asset failed: ', e);
       setLoading(false);
     }
   }, [params.chainId, params.token, to, amount, data, gasPrice, gas, nonce]);
@@ -291,7 +311,8 @@ export const SendAsset: React.FC<Props> = ({
               {!!balanceError && <Text>{balanceError}</Text>}
               <PressableButton
                 title={`Send ${params.token.symbol}`}
-                onPress={() => setShowModal(true)}
+                // onPress={() => setShowModal(true)}
+                onPress={submit}
                 disabled={!isTxValid || showModal}
                 loading={showModal}
               />
