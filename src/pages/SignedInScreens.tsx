@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { passcode } from 'controllers/PassCodeController';
 
 import { WalletPage } from './MainScreen/WalletPage';
 import { SwapPage } from './SwapPage';
@@ -12,6 +11,7 @@ import ExchangeIcon from 'assets/exchange-icon.svg';
 import SettingsIcon from 'assets/settings-icon.svg';
 import { PrivacyOverlay } from 'components/PassCode/PrivacyOverlay';
 import { PassCodeModal } from 'components/PassCode/PassCodeModal';
+import { passcode } from 'controllers/PassCodeController';
 
 export type SignedInScreensTabProps = {
   wallet: undefined;
@@ -25,23 +25,19 @@ export const SignedInScreens = () => {
   const appState = useRef(AppState.currentState);
   const isUnlocking = useRef(false);
   const [currentState, setCurrentState] = useState(AppState.currentState);
-  const [askToUnlock, setAskToUnlock] = useState(true);
+  const [askToUnlock, setAskToUnlock] = useState(!passcode.unlocked);
 
   useEffect(() => {
-    passcode.hasPasscode().then(result => {
-      console.log('passcode', result);
-    });
-
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (
         appState.current === 'background' &&
         nextAppState === 'active' &&
         !isUnlocking.current
       ) {
+        passcode.setUnlocked(false);
         setAskToUnlock(true);
         isUnlocking.current = true;
       }
-      console.log('state', appState.current, '->', nextAppState);
       appState.current = nextAppState;
       setCurrentState(nextAppState);
     });
@@ -57,6 +53,7 @@ export const SignedInScreens = () => {
   const handleUnlock = useCallback(() => {
     setAskToUnlock(false);
     isUnlocking.current = false;
+    passcode.setUnlocked(true);
   }, []);
 
   return (

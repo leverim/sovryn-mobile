@@ -19,13 +19,9 @@ const PASSCODE_USERNAME = 'sovryn';
 const defaultKeychainOptions: Options = {
   service: 'com.defray.sovryn',
   authenticationPrompt: {
-    title: 'Sovryn Wallet needs to authenticate',
-    //   subtitle: 'subtitle',
-    //   cancel: 'Abort this',
-    //   description: 'Yep tep.',
+    title: 'Authenticate to allow unlocking the app using biometrics',
   },
   accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-  // accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
 };
 
 export enum PassCodeType {
@@ -35,6 +31,8 @@ export enum PassCodeType {
 
 class PassCodeController {
   protected _loaded: boolean = false;
+
+  protected _unlocked: boolean = false;
 
   public async supportedBiometrics() {
     return getSupportedBiometryType(defaultKeychainOptions);
@@ -106,6 +104,15 @@ class PassCodeController {
     await AsyncStorage.removeItem(STORAGE_PASSCODE_TYPE);
     await EncryptedStorage.removeItem(STORAGE_PASSCODE);
     return resetGenericPassword({ service: defaultKeychainOptions.service });
+  }
+
+  public async setUnlocked(value: boolean) {
+    this._unlocked = value;
+    return this;
+  }
+
+  public get unlocked() {
+    return this._unlocked;
   }
 }
 

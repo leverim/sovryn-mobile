@@ -6,12 +6,11 @@ import LockIcon from 'assets/lock-icon.svg';
 import BiometricsIcon from 'assets/fingerprint-icon.svg';
 import { passcode } from 'controllers/PassCodeController';
 import { AppContext } from 'context/AppContext';
+import { PASSCODE_LENGTH } from 'utils/constants';
 
 type PassCodeKeyboardProps = {
   onPasscodeVerified?: (code: string) => void;
 };
-
-const PASSCODE_CHAR_COUNT = 4;
 
 const KEYBOARD_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
 
@@ -28,9 +27,7 @@ export const PassCodeKeyboard: React.FC<PassCodeKeyboardProps> = ({
     (key: number) => () => {
       if (!loading) {
         setCode(prevCode =>
-          prevCode.length < PASSCODE_CHAR_COUNT
-            ? `${prevCode}${key}`
-            : prevCode,
+          prevCode.length < PASSCODE_LENGTH ? `${prevCode}${key}` : prevCode,
         );
       }
     },
@@ -51,7 +48,6 @@ export const PassCodeKeyboard: React.FC<PassCodeKeyboardProps> = ({
 
   useEffect(() => {
     passcode.supportedBiometrics().then(supported => {
-      console.log(supported);
       setIsBiometricsEnabled(!!supported);
       if (supported) {
         onBiometricsPress();
@@ -62,7 +58,7 @@ export const PassCodeKeyboard: React.FC<PassCodeKeyboardProps> = ({
   const verifyPasscode = useCallback(async () => {
     setLoading(true);
     const verify = await passcode.verify(code);
-    console.log(verify);
+    passcode.setUnlocked(true);
     if (verify) {
       if (onPasscodeVerified) {
         onPasscodeVerified(code);
@@ -74,7 +70,7 @@ export const PassCodeKeyboard: React.FC<PassCodeKeyboardProps> = ({
   }, [code, onPasscodeVerified]);
 
   useEffect(() => {
-    if (code.length === PASSCODE_CHAR_COUNT) {
+    if (code.length === PASSCODE_LENGTH) {
       verifyPasscode();
     }
     return () => setLoading(false);
@@ -87,7 +83,7 @@ export const PassCodeKeyboard: React.FC<PassCodeKeyboardProps> = ({
       </View>
       <Text style={styles.titleText}>Enter Defray Passcode</Text>
       <View style={styles.bulletWrapper}>
-        {[...Array(PASSCODE_CHAR_COUNT)].map((_, item) => (
+        {[...Array(PASSCODE_LENGTH)].map((_, item) => (
           <View
             key={item}
             style={[

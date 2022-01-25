@@ -6,11 +6,12 @@ import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { WelcomeFlowStackProps } from '.';
+import { DEBUG_SEED } from 'utils/constants';
 
 type Props = NativeStackScreenProps<WelcomeFlowStackProps, 'onboarding.import'>;
 
 export const ImportWallet: React.FC<Props> = ({ navigation }) => {
-  const [seed, setSeed] = useState('');
+  const [seed, setSeed] = useState(__DEV__ ? DEBUG_SEED : '');
 
   const valid = useMemo(() => {
     const words = seed.split(' ');
