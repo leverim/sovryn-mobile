@@ -74,7 +74,7 @@ class PassCodeController {
 
   public async verify(password: string) {
     const saved = await EncryptedStorage.getItem(STORAGE_PASSCODE);
-    return ethers.utils.sha256(Buffer.from(password)) === saved;
+    return ethers.utils.sha512(Buffer.from(password)) === saved;
   }
 
   public async hasPasscode() {

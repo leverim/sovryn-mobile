@@ -1,3 +1,4 @@
+import { passcode } from 'controllers/PassCodeController';
 import React, { useEffect, useMemo } from 'react';
 import { accounts, AccountType, BaseAccount } from 'utils/accounts';
 import { cache } from 'utils/cache';
@@ -101,6 +102,7 @@ export const AppProvider: React.FC = ({ children }) => {
         // todo disable function if it's not development build.
         await accounts.delete();
         await clearStorage();
+        passcode.resetPassword();
         dispatch({ type: APP_ACTION.SIGN_OUT });
       },
     }),

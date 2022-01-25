@@ -1,22 +1,25 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from 'components/Text';
 
 import LockIcon from 'assets/lock-icon.svg';
 import BiometricsIcon from 'assets/fingerprint-icon.svg';
 import { passcode } from 'controllers/PassCodeController';
+import { AppContext } from 'context/AppContext';
 
 type PassCodeKeyboardProps = {
-  onPasscode?: (code: string) => void;
+  onPasscodeVerified?: (code: string) => void;
 };
 
-const PASSCODE_CHAR_COUNT = 6;
+const PASSCODE_CHAR_COUNT = 4;
 
 const KEYBOARD_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
 
 export const PassCodeKeyboard: React.FC<PassCodeKeyboardProps> = ({
-  onPasscode,
+  onPasscodeVerified,
 }) => {
+  const { signOut } = useContext(AppContext);
+
   const [loading, setLoading] = useState(false);
   const [code, setCode] = useState('');
   const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(false);
@@ -47,7 +50,6 @@ export const PassCodeKeyboard: React.FC<PassCodeKeyboardProps> = ({
   }, []);
 
   useEffect(() => {
-    console.log('init');
     passcode.supportedBiometrics().then(supported => {
       console.log(supported);
       setIsBiometricsEnabled(!!supported);
@@ -57,15 +59,26 @@ export const PassCodeKeyboard: React.FC<PassCodeKeyboardProps> = ({
     });
   }, [onBiometricsPress]);
 
+  const verifyPasscode = useCallback(async () => {
+    setLoading(true);
+    const verify = await passcode.verify(code);
+    console.log(verify);
+    if (verify) {
+      if (onPasscodeVerified) {
+        onPasscodeVerified(code);
+      }
+    } else {
+      setCode('');
+      Alert.alert('Access denied.');
+    }
+  }, [code, onPasscodeVerified]);
+
   useEffect(() => {
     if (code.length === PASSCODE_CHAR_COUNT) {
-      setLoading(true);
-      if (onPasscode) {
-        onPasscode(code);
-      }
+      verifyPasscode();
     }
     return () => setLoading(false);
-  }, [code, onPasscode]);
+  }, [code, verifyPasscode]);
 
   return (
     <View style={styles.container}>
@@ -97,12 +110,21 @@ export const PassCodeKeyboard: React.FC<PassCodeKeyboardProps> = ({
         ))}
       </View>
       <View style={styles.footerContainer}>
-        {isBiometricsEnabled && (
+        {__DEV__ ? (
+          <Pressable onPress={signOut} style={styles.resetButton}>
+            <Text>Reset</Text>
+          </Pressable>
+        ) : (
+          <View />
+        )}
+        {isBiometricsEnabled ? (
           <Pressable
             onPress={onBiometricsPress}
             style={styles.biometricsButton}>
             <BiometricsIcon fill="white" width={36} height={36} />
           </Pressable>
+        ) : (
+          <View />
         )}
         <Pressable onPress={handleDeletePress} style={styles.deleteButton}>
           <Text>Delete</Text>
@@ -132,7 +154,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'nowrap',
     width: 200,
-    borderWidth: 1,
     marginBottom: 36,
   },
   bullet: {
@@ -175,17 +196,29 @@ const styles = StyleSheet.create({
   footerContainer: {
     marginTop: 60,
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     alignItems: 'center',
     flexWrap: 'nowrap',
-    width: 200,
+    width: 250,
+    marginBottom: 8,
   },
-  biometricsButton: {},
+  biometricsButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   deleteButton: {
-    marginLeft: 36,
     height: 36,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    flex: 1,
+  },
+  resetButton: {
+    height: 36,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flex: 1,
   },
 });
