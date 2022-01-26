@@ -55,8 +55,10 @@ export const prepareImageSource = (
   return null;
 };
 
-export const floorDecimals = (value: number | string, decimals: number = 8) =>
-  Number(Math.floor(Number(`${value}e${decimals}`)) + 'e-' + decimals);
+// export const floorDecimals = (value: number | string, decimals: number = 8) =>
+//   Number(Math.floor(Number(`${value}e${decimals}`)) + 'e-' + decimals);
+
+
 
 export const formatUnits = (
   value: BigNumberish = '0',
@@ -68,7 +70,19 @@ export const parseUnits = (
   unitName?: string | BigNumberish,
 ) => ethers.utils.parseUnits(value, unitName);
 
+export const floorDecimals = (value: number | string, decimals: number) => {
+  try {
+    const [integer, floater] = value.toString().split('.');
+    return `${integer}.${floater.substring(0, decimals)}`;
+  } catch (e) {
+    console.error(
+      `failed to floorDecimals value ${value} with ${decimals} decimals.`,
+    );
+    return '0';
+  }
+};
+
 export const commifyDecimals = (
   value: string | number = '0',
-  decimals: number = 6,
+  decimals: number = 8,
 ): string => commify(floorDecimals(value, decimals));
