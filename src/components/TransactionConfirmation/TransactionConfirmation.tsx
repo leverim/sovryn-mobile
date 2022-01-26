@@ -3,7 +3,10 @@ import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, Button } from 'react-native';
 import { BottomModal, ModalContent } from 'react-native-modals';
-import { TransactionRequest } from '@ethersproject/abstract-provider';
+import {
+  TransactionRequest,
+  TransactionResponse,
+} from '@ethersproject/abstract-provider';
 import { transactionController } from 'controllers/TransactionController';
 import { Text } from 'components/Text';
 import { passcode } from 'controllers/PassCodeController';
@@ -12,8 +15,15 @@ import { wallet } from 'utils/wallet';
 import { currentChainId } from 'utils/helpers';
 import { getProvider } from 'utils/RpcEngine';
 import { ChainId } from 'types/network';
+import { ConfirmationModal } from './ConfirmationModal/ConfirmationModal';
 
 type TransactionConfirmationProps = {};
+
+enum Step {
+  NONE,
+  REQUEST,
+  RESPONSE,
+}
 
 export const TransactionConfirmation: React.FC<
   TransactionConfirmationProps
@@ -21,13 +31,18 @@ export const TransactionConfirmation: React.FC<
   const biometryType = useBiometryType();
   const [loading, setLoading] = useState(false);
   const [request, setRequest] = useState<TransactionRequest>();
+  const [step, setStep] = useState<Step>(Step.REQUEST);
   const ref = useRef<any>();
+  const responseRef = useRef<TransactionResponse>();
 
   useEffect(() => {
     const subscription = transactionController.hub.on(
       'request',
-      (tx, { resolve, reject }) => {
+      (tx: TransactionRequest, { resolve, reject }) => {
+        tx.chainId = tx.chainId || currentChainId(); // make sure chainId is always set.
         setRequest(tx);
+        setStep(Step.REQUEST);
+        responseRef.current = undefined;
         ref.current = { resolve, reject };
       },
     );
@@ -40,8 +55,11 @@ export const TransactionConfirmation: React.FC<
   const dark = useIsDarkTheme();
 
   const onRejectPressed = useCallback(() => {
-    ref.current?.reject(new Error('User rejected transaction'));
     setRequest(undefined);
+    setStep(Step.NONE);
+    responseRef.current = undefined;
+    ref.current?.reject(new Error('User rejected transaction'));
+    ref.current = undefined;
   }, []);
 
   const onConfirmPressed = useCallback(async () => {
@@ -51,24 +69,42 @@ export const TransactionConfirmation: React.FC<
       const tx = await getProvider(
         (request?.chainId || currentChainId()) as ChainId,
       ).sendTransaction(signedTransaction);
-      console.log('tx', tx);
+      responseRef.current = tx;
+      setStep(Step.RESPONSE);
       ref.current?.resolve(tx);
-      setRequest(undefined);
+      ref.current = undefined;
     } catch (error) {
       console.log(error);
     }
   }, [request]);
 
+  const onCloseResponseModal = useCallback(async () => {
+    setStep(Step.NONE);
+    setRequest(undefined);
+    responseRef.current = undefined;
+    ref.current = undefined;
+  }, []);
+
   return (
-    <BottomModal visible={!!request} onSwipeOut={onRejectPressed}>
-      <ModalContent style={[styles.modal, dark && styles.modalDark]}>
-        <View style={[styles.modalView, dark && styles.modalViewDark]}>
-          <Text>{JSON.stringify(request)}</Text>
-          <Button title="Close" onPress={onRejectPressed} />
-          <Button title="Submit" onPress={onConfirmPressed} />
-        </View>
-      </ModalContent>
-    </BottomModal>
+    <>
+      <ConfirmationModal
+        visible={step === Step.REQUEST && !!request}
+        request={request}
+        onConfirm={onConfirmPressed}
+        onReject={onRejectPressed}
+      />
+
+      <BottomModal
+        visible={step === Step.RESPONSE}
+        onSwipeOut={onCloseResponseModal}>
+        <ModalContent style={[styles.modal, dark && styles.modalDark]}>
+          <View style={[styles.modalView, dark && styles.modalViewDark]}>
+            <Text>{JSON.stringify(responseRef.current)}</Text>
+            <Button title="Close" onPress={onCloseResponseModal} />
+          </View>
+        </ModalContent>
+      </BottomModal>
+    </>
   );
 };
 

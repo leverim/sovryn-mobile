@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
   Button,
   Keyboard,
   KeyboardAvoidingView,
@@ -20,7 +19,6 @@ import { AmountField } from 'components/AmountField';
 import { getProvider } from 'utils/RpcEngine';
 import { encodeFunctionData } from 'utils/contract-utils';
 import { utils, constants } from 'ethers/lib.esm';
-import { wallet } from 'utils/wallet';
 import { SendAssetModal } from './components/SendAssets/SendAssetModal';
 import { TransactionModal } from 'components/TransactionModal';
 import { tokenUtils } from 'utils/token-utils';
@@ -115,7 +113,7 @@ export const SendAsset: React.FC<Props> = ({
   const submit = useCallback(async () => {
     setLoading(true);
     try {
-      const tx = await transactionController.request({
+      await transactionController.request({
         to,
         chainId: params.chainId,
         value: utils.hexlify(
@@ -127,11 +125,10 @@ export const SendAsset: React.FC<Props> = ({
         data,
         gasPrice: utils.hexlify(Number(gasPrice || 0) * 1e9),
         gasLimit: utils.hexlify(Number(gas || 0)),
+        customData: {
+          tokenId: params.token.id,
+        },
       });
-
-      Alert.alert('Transaction was submitted.');
-
-      console.log('rest', tx);
 
       // const signedTransaction = await wallet.signTransaction({
       //   to,

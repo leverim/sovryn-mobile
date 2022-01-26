@@ -1,4 +1,5 @@
-import { commify, formatUnits, parseUnits } from 'ethers/lib/utils';
+import { BigNumberish, ethers } from 'ethers';
+import { commify } from 'ethers/lib/utils';
 import { ImageSourcePropType } from 'react-native';
 import { ContractName } from 'types/contract';
 import { ChainId } from 'types/network';
@@ -15,7 +16,7 @@ export const getContractAddress = (
   chainId: number = currentChainId(),
 ) => {
   const contract = contractUtils.getContractByName(contractName);
-  if (!contractUtils.contractHasChainId(contract, chainId)) {
+  if (!contractUtils.contractHasChainId(contract, chainId as ChainId)) {
     throw new Error(
       `Contract ${contractName} does not have ${chainId} chain defined.`,
     );
@@ -57,7 +58,17 @@ export const prepareImageSource = (
 export const floorDecimals = (value: number | string, decimals: number = 8) =>
   Number(Math.floor(Number(`${value}e${decimals}`)) + 'e-' + decimals);
 
+export const formatUnits = (
+  value: BigNumberish = '0',
+  unitName?: string | BigNumberish,
+) => ethers.utils.formatUnits(value, unitName);
+
+export const parseUnits = (
+  value: string = '0',
+  unitName?: string | BigNumberish,
+) => ethers.utils.parseUnits(value, unitName);
+
 export const commifyDecimals = (
-  value: number | string,
+  value: string | number = '0',
   decimals: number = 6,
 ): string => commify(floorDecimals(value, decimals));
