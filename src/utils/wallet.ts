@@ -1,6 +1,6 @@
 import { Wallet as EthersWallet, utils } from 'ethers';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
-import { addHexPrefix, stripHexPrefix, publicToAddress } from 'ethereumjs-util';
+import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import { Buffer } from 'buffer';
 import hdkey from 'hdkey';
 import { Account, accounts, AccountType } from './accounts';
@@ -60,6 +60,7 @@ class WalletManager {
   }
 
   public signTransaction(transaction: TransactionRequest): Promise<string> {
+    delete transaction.customData;
     return (this.derive() as EthersWallet).signTransaction(transaction);
   }
 

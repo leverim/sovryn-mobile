@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { currentChainId, noop } from 'utils/helpers';
+import { currentChainId } from 'utils/helpers';
 import { tokenUtils } from 'utils/token-utils';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
@@ -10,21 +10,19 @@ import { SwapStackProps } from '..';
 import { getSwappableToken, swapables } from 'config/swapables';
 import { TokenId } from 'types/token';
 import { AssetPickerWithAmount } from 'components/AssetPicker/AssetPickerWithAmount';
-import { commify, formatUnits, hexlify, parseUnits } from 'ethers/lib/utils';
+import { commify, hexlify, parseUnits } from 'ethers/lib/utils';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { callToContract, encodeFunctionData } from 'utils/contract-utils';
 import { useSlippage } from 'hooks/useSlippage';
 import { PressableButton } from 'components/PressableButton';
-import { SwapSettingsModal } from '../components/SwapSettingsModal';
 import { getSwapExpectedReturn } from 'utils/interactions';
 import { contractUtils } from 'utils/contract';
 import { TokenApprovalFlow } from 'components/TokenApprovalFlow';
 import { AFFILIATE_ACCOUNT, AFFILIATE_FEE } from 'utils/constants';
 import { ContractName } from 'types/contract';
 import { useAssetBalance } from 'hooks/useAssetBalance';
-import { getProvider } from 'utils/RpcEngine';
-import { wallet } from 'utils/wallet';
-import { TransactionModal } from 'components/TransactionModal';
+import { Button, ButtonIntent } from 'components/Buttons/Button';
+import { transactionController } from 'controllers/TransactionController';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
@@ -197,48 +195,22 @@ export const SwapIndexScreen: React.FC<Props> = () => {
 
   const { value } = useAssetBalance(sendToken, owner, currentChainId());
 
-  const [txHash, setTxHash] = useState<string>();
   const [loading, setLoading] = useState(false);
 
   const handleSwapButton = useCallback(async () => {
     setLoading(true);
     try {
-      const nonce = await getProvider(chainId)
-        .getTransactionCount(owner)
-        .then(response => response.toString());
-
-      const gasPrice = await getProvider(chainId)
-        .getGasPrice()
-        .then(response => formatUnits(response, 9).toString());
-
       const data = encodeFunctionData(callData.method, callData.args);
-
-      const gas = await getProvider(chainId)
-        .estimateGas({
-          to: callData.contractAddress,
-          value: callData.value,
-          nonce: hexlify(Number(nonce || 0)),
-          data,
-          gasPrice: hexlify(Number(gasPrice || 0) * 1e9),
-        })
-        .then(response => response.toString());
-
-      const signedTransaction = await wallet.signTransaction({
+      await transactionController.request({
         to: callData.contractAddress,
         value: hexlify(parseUnits(callData.value, 0)),
-        nonce: hexlify(Number(nonce || 0)),
         data: data,
-        gasPrice: hexlify(Number(gasPrice || 0) * 1e9),
-        gasLimit: hexlify(Number(gas || 0) * 30),
+        // gasPrice: hexlify(Number(gasPrice || 0) * 1e9),
+        // gasLimit: hexlify(Number(gas || 0) * 30),
       });
-
-      const tx = await getProvider(chainId).sendTransaction(signedTransaction);
-
-      setTxHash(tx.hash);
       setLoading(false);
     } catch (error) {
-      console.error(error);
-      setTxHash(undefined);
+      console.log(error);
       setLoading(false);
     }
   }, [
@@ -246,8 +218,6 @@ export const SwapIndexScreen: React.FC<Props> = () => {
     callData.contractAddress,
     callData.method,
     callData.value,
-    chainId,
-    owner,
   ]);
 
   return (
@@ -296,11 +266,12 @@ export const SwapIndexScreen: React.FC<Props> = () => {
             tokenId={sendTokenId}
             spender={callData.contractAddress}
             requiredAmount={sendAmount || '0'}>
-            <PressableButton
+            <Button
               title="Swap"
               onPress={handleSwapButton}
               disabled={loading}
               loading={loading}
+              intent={ButtonIntent.PRIMARY}
             />
           </TokenApprovalFlow>
           <View>
@@ -325,14 +296,6 @@ export const SwapIndexScreen: React.FC<Props> = () => {
           </View>
         </View>
       </ScrollView>
-      <SwapSettingsModal
-        open={showSettings}
-        onClose={() => setShowSettings(false)}
-        onGasPriceChange={noop}
-        slippage={slippage}
-        onSlippageChange={setSlippage}
-      />
-      <TransactionModal txHash={txHash} onClose={() => setTxHash(undefined)} />
     </SafeAreaPage>
   );
 };

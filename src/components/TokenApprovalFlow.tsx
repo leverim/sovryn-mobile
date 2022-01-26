@@ -1,16 +1,15 @@
-import { formatUnits, parseUnits } from 'ethers/lib/utils';
+import { transactionController } from 'controllers/TransactionController';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import React, { useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/token';
-import { currentChainId } from 'utils/helpers';
+import { encodeFunctionData } from 'utils/contract-utils';
+import { currentChainId, parseUnits } from 'utils/helpers';
 import { erc20 } from 'utils/interactions';
 import { tokenUtils } from 'utils/token-utils';
-import { PressableButton } from './PressableButton';
-import { Text } from './Text';
-import { TokenApprovalModal } from './TokenApprovalModal';
+import { Button, ButtonIntent } from './Buttons/Button';
 
 type TokenApprovalFlowProps = {
   tokenId: TokenId;
@@ -18,7 +17,6 @@ type TokenApprovalFlowProps = {
   requiredAmount: string;
   chainId?: ChainId;
   description?: string;
-  gasPrice?: string;
 };
 
 export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
@@ -28,7 +26,6 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
   requiredAmount,
   chainId = currentChainId(),
   description,
-  gasPrice,
 }) => {
   const owner = useWalletAddress();
   const token = useMemo(() => tokenUtils.getTokenById(tokenId), [tokenId]);
@@ -66,10 +63,41 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
       return true;
     }
 
-    return parseUnits(requiredAmount || '0', token.decimals).lte(allowance);
+    return parseUnits(requiredAmount, token.decimals).lte(allowance);
   }, [allowance, token, requiredAmount, native]);
 
-  const [showModal, setShowModal] = useState(false);
+  const handleApprove = useCallback(async () => {
+    setLoading(true);
+    try {
+      await transactionController.request({
+        to: tokenAddress,
+        value: 0,
+        // nonce: hexlify(Number(nonce || 0)),
+        data: encodeFunctionData('approve(address,uint256)', [
+          spender,
+          parseUnits(requiredAmount, token.decimals),
+        ]),
+        // gasPrice: hexlify(Number(gasPrice || 0) * 1e9),
+        // gasLimit: hexlify(Number(gas || 0) * 3),
+        customData: {
+          tokenId: token.id,
+          approvalReason: description,
+          approvalAmount: requiredAmount,
+        },
+      });
+    } catch (_) {
+      //
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    tokenAddress,
+    spender,
+    requiredAmount,
+    token.decimals,
+    token.id,
+    description,
+  ]);
 
   return (
     <View>
@@ -77,25 +105,15 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
         <>{children}</>
       ) : (
         <>
-          <PressableButton title="Approve" onPress={() => setShowModal(true)} />
-          <TokenApprovalModal
-            open={showModal}
-            onClose={() => setShowModal(false)}
-            onCompleted={setAllowance}
-            chainId={chainId}
-            amount={requiredAmount}
-            token={token}
-            tokenAddress={tokenAddress}
-            spender={spender}
-            owner={owner}
-            description={description}
-            gasPrice={gasPrice}
+          <Button
+            title="Approve"
+            onPress={handleApprove}
+            intent={ButtonIntent.PRIMARY}
+            loading={loading}
+            disabled={loading}
           />
         </>
       )}
-      <Text>Allowance: {formatUnits(allowance, token.decimals)}</Text>
-      <Text>Required: {requiredAmount}</Text>
-      <Text>Loading: {loading ? 'yes' : 'no'}</Text>
     </View>
   );
 };

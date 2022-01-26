@@ -1,4 +1,4 @@
-package com.sovrynmobile;
+package com.defray.sovryn;
 
 import com.facebook.react.ReactActivity;
 

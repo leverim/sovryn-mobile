@@ -1,20 +1,22 @@
 import React from 'react';
 import { Button } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { Header } from 'react-native/Libraries/NewAppScreen';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { WelcomeFlowStackProps } from '.';
 
-export const Welcome: React.FC = () => {
-  const navigation = useNavigation();
+type Props = NativeStackScreenProps<WelcomeFlowStackProps, 'onboarding'>;
+
+export const Welcome: React.FC<Props> = ({ navigation }) => {
   return (
     <>
       <Header />
       <Button
         title="Import Wallet"
-        onPress={() => navigation.navigate('ImportWallet')}
+        onPress={() => navigation.navigate('onboarding.import')}
       />
       <Button
         title="Create Wallet"
-        onPress={() => navigation.navigate('CreateWallet')}
+        onPress={() => navigation.navigate('onboarding.create')}
       />
     </>
   );

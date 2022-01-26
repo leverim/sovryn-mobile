@@ -1,4 +1,5 @@
 import React from 'react';
+import { ModalPortal } from 'react-native-modals';
 import { init, wrap } from '@sentry/react-native';
 import { AppProvider } from './src/context/AppContext';
 import { MainScreen } from './src/MainScreen';
@@ -12,6 +13,7 @@ const App = () => {
   return (
     <AppProvider>
       <MainScreen />
+      <ModalPortal />
     </AppProvider>
   );
 };

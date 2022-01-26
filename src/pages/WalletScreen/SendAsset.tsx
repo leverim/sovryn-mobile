@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Button,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -14,19 +13,15 @@ import { useWalletAddress } from 'hooks/useWalletAddress';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { AddressField } from 'components/AddressField';
 import { TokenAmountField } from 'components/TokenAmountField';
-import { InputField } from 'components/InputField';
-import { AmountField } from 'components/AmountField';
 import { getProvider } from 'utils/RpcEngine';
 import { encodeFunctionData } from 'utils/contract-utils';
 import { utils, constants } from 'ethers/lib.esm';
-import { wallet } from 'utils/wallet';
-import { SendAssetModal } from './components/SendAssets/SendAssetModal';
-import { TransactionModal } from 'components/TransactionModal';
 import { tokenUtils } from 'utils/token-utils';
-import { PressableButton } from 'components/PressableButton';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
+import { transactionController } from 'controllers/TransactionController';
+import { Button, ButtonIntent } from 'components/Buttons/Button';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
 
@@ -48,7 +43,6 @@ export const SendAsset: React.FC<Props> = ({
   const [gas, setGas] = useState('21000');
   const [gasPrice, setGasPrice] = useState('0.06');
 
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const to = useMemo(() => {
@@ -108,13 +102,12 @@ export const SendAsset: React.FC<Props> = ({
       });
   }, [params.chainId, params.token, gasPrice, data, nonce, to, amount]);
 
-  const [txHash, setTxHash] = useState<string>();
-
   const submit = useCallback(async () => {
     setLoading(true);
     try {
-      const signedTransaction = await wallet.signTransaction({
+      await transactionController.request({
         to,
+        chainId: params.chainId,
         value: utils.hexlify(
           params.token.native
             ? utils.parseUnits(amount || '0', params.token.decimals)
@@ -124,17 +117,13 @@ export const SendAsset: React.FC<Props> = ({
         data,
         gasPrice: utils.hexlify(Number(gasPrice || 0) * 1e9),
         gasLimit: utils.hexlify(Number(gas || 0)),
+        customData: {
+          tokenId: params.token.id,
+        },
       });
-
-      const tx = await getProvider(params.chainId).sendTransaction(
-        signedTransaction,
-      );
-
-      setTxHash(tx.hash);
-      setShowModal(false);
-      setLoading(false);
     } catch (e) {
-      console.warn('Sending asset failed: ', e);
+      console.log('Sending asset failed: ', e);
+    } finally {
       setLoading(false);
     }
   }, [params.chainId, params.token, to, amount, data, gasPrice, gas, nonce]);
@@ -143,34 +132,6 @@ export const SendAsset: React.FC<Props> = ({
     () => ((Number(gasPrice || 0) * Number(gas || 0)) / 1e8).toFixed(8),
     [gasPrice, gas],
   );
-
-  // TODO: Test if transaction will not fail.
-  // useEffect(() => {
-  //   getProvider(params.chainId)
-  //     .call({
-  //       to: receiver,
-  //       value: params.token.native
-  //         ? utils.parseUnits(amount, params.token.decimals)
-  //         : 0,
-  //       nonce,
-  //       data,
-  //       gasPrice: (Number(gasPrice) * 1e9).toString(),
-  //       gasLimit: gas,
-  //     })
-  //     .then(response => {
-  //       console.log('call static', response);
-  //     })
-  //     .catch(error => console.info(error));
-  // }, [
-  //   receiver,
-  //   nonce,
-  //   data,
-  //   gasPrice,
-  //   amount,
-  //   gas,
-  //   params.token,
-  //   params.chainId,
-  // ]);
 
   const isTxValid = useMemo(
     () =>
@@ -181,8 +142,6 @@ export const SendAsset: React.FC<Props> = ({
       receiver !== constants.AddressZero,
     [receiver, amount, gas, gasPrice],
   );
-
-  const [showModal, setShowModal] = useState(false);
 
   const nativeToken = useMemo(
     () => tokenUtils.getNativeToken(params.chainId),
@@ -251,69 +210,17 @@ export const SendAsset: React.FC<Props> = ({
                 token={params.token}
                 fee={params.token.native ? Number(fee) : 0}
               />
-              {showAdvanced && (
-                <View style={styles.advanced}>
-                  <AmountField
-                    label="Gas Price (gwei)"
-                    value={gasPrice}
-                    onChangeText={setGasPrice}
-                  />
-                  <AmountField
-                    label="Gas Limit"
-                    value={gas}
-                    onChangeText={setGas}
-                  />
-                  <AmountField
-                    label="Nonce"
-                    value={nonce}
-                    onChangeText={setNonce}
-                  />
-                  <InputField
-                    label="Data"
-                    value={data}
-                    onChangeText={setData}
-                    multiline
-                    numberOfLines={4}
-                    editable={false}
-                    // editable={params.token.native}
-                  />
-                </View>
-              )}
-              <Button
-                title={showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
-                onPress={() => setShowAdvanced(prevState => !prevState)}
-              />
-              {Number(fee) > 0 && (
-                <Text>
-                  Tx Fee: {fee} {nativeToken.symbol}
-                </Text>
-              )}
               {!!balanceError && <Text>{balanceError}</Text>}
-              <PressableButton
+              <Button
                 title={`Send ${params.token.symbol}`}
-                onPress={() => setShowModal(true)}
-                disabled={!isTxValid || showModal}
-                loading={showModal}
+                onPress={submit}
+                disabled={!isTxValid || loading}
+                loading={loading}
+                intent={ButtonIntent.PRIMARY}
               />
             </View>
           </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
-        <SendAssetModal
-          isOpen={showModal}
-          receiver={receiver}
-          amount={amount}
-          fee={fee}
-          token={params.token}
-          loading={loading}
-          onReject={() => setShowModal(false)}
-          onConfirm={submit}
-        />
-        <TransactionModal
-          txHash={txHash}
-          onClose={() =>
-            navigation.canGoBack() ? navigation.goBack() : setTxHash(undefined)
-          }
-        />
       </ScrollView>
     </SafeAreaPage>
   );

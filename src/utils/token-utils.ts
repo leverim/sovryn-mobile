@@ -33,4 +33,9 @@ export const tokenUtils = {
       chainId,
     );
   },
+  getTokenByAddress: (address: string, chainId: ChainId = currentChainId()) => {
+    return tokens.find(
+      item => item.address[chainId]?.toLowerCase() === address.toLowerCase(),
+    ) as Token;
+  },
 };

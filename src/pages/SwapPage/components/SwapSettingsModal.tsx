@@ -1,18 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Modal,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
-import { DarkTheme, DefaultTheme } from '@react-navigation/native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Modal, StyleSheet, View } from 'react-native';
+import { DarkTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { Token, TokenId } from 'types/token';
-import { tokenUtils } from 'utils/token-utils';
-import { AssetLogo } from 'components/AssetLogo';
-import { InputField } from 'components/InputField';
 import { AmountField } from 'components/AmountField';
 import { PressableButton } from 'components/PressableButton';
 import { Text } from 'components/Text';
