@@ -36,6 +36,13 @@ export type DecryptedAccountSecret = {
   masterSeed: string;
 };
 
+type AccountUpdate = {
+  name: string;
+  address: string;
+  dPath: string;
+  index: number;
+};
+
 export type Account = BaseAccount & Partial<SecureAccount>;
 
 class AccountManager extends EventEmitter {
@@ -104,6 +111,17 @@ class AccountManager extends EventEmitter {
   }
   public async select(index: number) {
     this._selected = index;
+    await this.save();
+    this.onSelected();
+    RNRestart.Restart();
+  }
+  public async update(index: number, config: Partial<AccountUpdate>) {
+    const account = this._accounts[index];
+    account.name = config.name || account.name;
+    account.dPath = config.dPath || account.dPath;
+    account.index = config.index || account.index;
+    account.address = config.address || account.address;
+    this._accounts[index] = account;
     await this.save();
     this.onSelected();
     RNRestart.Restart();
