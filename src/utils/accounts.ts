@@ -4,6 +4,10 @@ import RNRestart from 'react-native-restart';
 import { mnemonicToSeedSync } from 'bip39';
 import { getItem, storeItem } from './storage';
 import { addHexPrefix } from 'ethereumjs-util';
+import { RSK_DERIVATION_PATH } from './constants';
+import { Encryptor } from './encryptor';
+import { Wallet } from 'ethers';
+import { makeWalletPrivateKey } from './wallet';
 
 export enum AccountType {
   MNEMONIC,
@@ -13,19 +17,40 @@ export enum AccountType {
 
 export type BaseAccount = {
   name: string;
+  address: string;
   type: AccountType;
 };
 
-export type Account = BaseAccount & { secret: string };
+export type SecureAccount = {
+  // privateKey: string;
+  // mnemonic: string;
+  // masterSeed: string;
+  secret: string; // encoded
+  dPath: string;
+  index: number;
+};
+
+export type DecryptedAccountSecret = {
+  privateKey: string;
+  mnemonic: string;
+  masterSeed: string;
+};
+
+export type Account = BaseAccount & Partial<SecureAccount>;
 
 class AccountManager extends EventEmitter {
   private _accounts: Account[] = [];
   private _selected: number = -1;
+  private _encryptor = new Encryptor();
   constructor() {
     super();
   }
   public get list(): BaseAccount[] {
-    return this._accounts.map(({ name, type }) => ({ name, type }));
+    return this._accounts.map(({ name, address, type }) => ({
+      name,
+      address,
+      type,
+    }));
   }
   public get current(): Account {
     return this._accounts[this.selected];
@@ -33,15 +58,45 @@ class AccountManager extends EventEmitter {
   public get selected(): number {
     return this._selected;
   }
-  public async create(name: string, type: AccountType, secret: string) {
-    if (type === AccountType.MNEMONIC) {
-      secret = addHexPrefix(mnemonicToSeedSync(secret).toString('hex'));
+  public async create(
+    name: string,
+    type: AccountType,
+    password: string,
+    { secret, dPath, index }: Partial<SecureAccount>,
+  ) {
+    const secrets: Partial<DecryptedAccountSecret> = {};
+
+    let pk: string = secret!;
+
+    switch (type) {
+      case AccountType.MNEMONIC:
+        secrets.mnemonic = secret;
+        secrets.masterSeed = addHexPrefix(
+          mnemonicToSeedSync(secret!).toString('hex'),
+        );
+        pk = secrets.masterSeed;
+        break;
+      case AccountType.PRIVATE_KEY:
+        secrets.privateKey = secret;
+        pk = secrets.privateKey!;
+        break;
     }
-    this._accounts.push({
+
+    const address = new Wallet(makeWalletPrivateKey(type, pk, dPath, index))
+      .address;
+
+    const encryptedSecret = await this._encryptor.encrypt(password, secrets);
+
+    const account: Account = {
       name,
+      address,
       type,
-      secret,
-    });
+      index,
+      dPath,
+      secret: encryptedSecret,
+    };
+
+    this._accounts.push(account);
     this._selected = this._accounts.length - 1;
     await this.save();
     this.onLoaded();

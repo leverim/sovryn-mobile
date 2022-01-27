@@ -1,92 +1,125 @@
-import { Wallet as EthersWallet, utils } from 'ethers';
+import { Wallet } from 'ethers';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import { Buffer } from 'buffer';
 import hdkey from 'hdkey';
-import { Account, accounts, AccountType } from './accounts';
-import { RSK_DERIVATION_PATH } from './constants';
-import { Setting, settings } from './settings';
+import {
+  Account,
+  accounts,
+  AccountType,
+  DecryptedAccountSecret,
+} from './accounts';
+import { DEFAULT_DERIVATION_PATH } from './constants';
+import { Encryptor } from './encryptor';
 
 interface UserWallet {
   address: string;
 }
 
-export class Wallet {
+export const makeWalletPrivateKey = (
+  type: AccountType,
+  secret: string,
+  dPath: string = DEFAULT_DERIVATION_PATH,
+  index: number = 0,
+): string => {
+  switch (type) {
+    default:
+    case AccountType.PRIVATE_KEY:
+      return addHexPrefix(secret);
+    case AccountType.MNEMONIC:
+      return addHexPrefix(
+        hdkey
+          .fromMasterSeed(Buffer.from(stripHexPrefix(secret), 'hex'))
+          .derive(`${dPath}/${index}`)
+          .privateKey.toString('hex'),
+      );
+  }
+};
+
+export class UnlockedWallet {
   protected account: Account;
   constructor(
     _account: number,
     private _index: number = 0,
-    private _dPath: string = RSK_DERIVATION_PATH,
+    private _dPath: string = DEFAULT_DERIVATION_PATH,
   ) {
     this.account = accounts.get(_account);
   }
-  public derive(): UserWallet | EthersWallet | undefined {
-    if (!this.account) {
-      return undefined;
-    }
-    try {
-      switch (this.account.type) {
-        case AccountType.MNEMONIC:
-          const node = hdkey.fromMasterSeed(
-            Buffer.from(stripHexPrefix(this.account.secret), 'hex'),
-          );
-          const dkey = node.derive(`${this._dPath}/${this._index}`);
-          return new EthersWallet(dkey.privateKey);
-        case AccountType.PRIVATE_KEY:
-          return new EthersWallet(addHexPrefix(this.account.secret));
-        case AccountType.PUBLIC_ADDRESS:
-          return { address: this.account.secret } as UserWallet;
-        default:
-          return undefined;
-      }
-    } catch (e) {
-      console.error('unable to generate wallet', e);
-      return undefined;
-    }
+
+  public get address() {
+    return this.account.address;
   }
 }
 
+export const unlockWalletSecrets = async (
+  accountIndex: number,
+  password: string,
+) => {
+  const account = accounts.get(accountIndex);
+  const encryptor = new Encryptor();
+  return encryptor.decrypt(
+    password,
+    account.secret,
+  ) as Promise<DecryptedAccountSecret>;
+};
+
 class WalletManager {
   private _cache: Record<string, UserWallet> = {};
+  private _encryptor = new Encryptor();
 
   constructor() {}
 
   public get address() {
-    return this.derive()?.address.toLowerCase();
+    return accounts.current.address.toLowerCase();
   }
 
   public get readOnly() {
     return [AccountType.PUBLIC_ADDRESS].includes(accounts.current.type);
   }
 
-  public signTransaction(transaction: TransactionRequest): Promise<string> {
+  public async signTransaction(
+    transaction: TransactionRequest,
+    password: string,
+  ): Promise<string> {
     delete transaction.customData;
-    return (this.derive() as EthersWallet).signTransaction(transaction);
+    return (
+      await this.unlockedWallet(accounts.selected, password)
+    ).signTransaction(transaction);
   }
 
-  public signMessage(message: string): Promise<string> {
-    return (this.derive() as EthersWallet).signMessage(message);
-  }
-
-  protected derive() {
-    const key = utils.hashMessage(
-      `${accounts.current?.type}/${accounts.current?.secret}`,
+  public async signMessage(message: string, password: string): Promise<string> {
+    return (await this.unlockedWallet(accounts.selected, password)).signMessage(
+      message,
     );
-
-    if (this._cache.hasOwnProperty(key)) {
-      return this._cache[key];
-    }
-    const wallet = new Wallet(
-      accounts.selected,
-      Number(settings.get(Setting.SELECTED_ACCOUNT, '0')),
-      settings.get(Setting.SELECTED_DPATH),
-    ).derive();
-    if (wallet) {
-      this._cache[key] = wallet;
-      return wallet;
-    }
-    return undefined;
   }
+
+  public unlockWalletSecrets = async (password: string, secrets: string) => {
+    return this._encryptor.decrypt(
+      password,
+      secrets,
+    ) as Promise<DecryptedAccountSecret>;
+  };
+
+  protected unlockedWallet = async (accountIndex: number, password: string) => {
+    const account = accounts.get(accountIndex);
+    const secrets = await this.unlockWalletSecrets(password, account.secret!);
+    switch (account.type) {
+      default:
+      case AccountType.PRIVATE_KEY:
+        return new Wallet(
+          makeWalletPrivateKey(AccountType.PRIVATE_KEY, secrets.privateKey),
+        );
+      case AccountType.MNEMONIC:
+        return new Wallet(
+          makeWalletPrivateKey(
+            AccountType.MNEMONIC,
+            secrets.masterSeed,
+            account.dPath,
+            account.index,
+          ),
+        );
+    }
+  };
 }
 
 export const wallet = new WalletManager();

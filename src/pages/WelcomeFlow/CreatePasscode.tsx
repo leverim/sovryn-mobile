@@ -13,15 +13,18 @@ type Props = NativeStackScreenProps<
 export const CreatePasscode: React.FC<Props> = ({ route: { params } }) => {
   const { createWallet } = useContext(AppContext);
 
-  const handleConfirm = useCallback(async () => {
-    createWallet('Wallet #1', AccountType.MNEMONIC, params.secret)
-      .then(() => {
-        console.log('create wallet.');
-      })
-      .catch(err => {
-        console.error(err);
-      });
-  }, [params.secret, createWallet]);
+  const handleConfirm = useCallback(
+    async (password: string) => {
+      createWallet('Wallet #1', AccountType.MNEMONIC, params.secret, password)
+        .then(() => {
+          console.log('create wallet.');
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    [params.secret, createWallet],
+  );
 
   return <PassCodeSetup onPasscodeConfirmed={handleConfirm} />;
 };

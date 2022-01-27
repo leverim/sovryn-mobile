@@ -3,7 +3,7 @@ import { Button, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { accounts, AccountType } from 'utils/accounts';
 import { AppContext } from 'context/AppContext';
-import { Wallet } from 'utils/wallet';
+import { UnlockedWallet } from 'utils/wallet';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { Setting, settings } from 'utils/settings';
@@ -49,7 +49,7 @@ export const AccountSettings: React.FC = () => {
             )}
           </View>
           <View>
-            <Text>{new Wallet(index, 0, dPath).derive()?.address || '0x'}</Text>
+            <Text>{new UnlockedWallet(index, 0, dPath).address || '0x'}</Text>
           </View>
           <View>
             {accountSelected === index ? (
