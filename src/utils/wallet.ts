@@ -69,8 +69,8 @@ class WalletManager {
 
   constructor() {}
 
-  public get address() {
-    return accounts.current.address.toLowerCase();
+  public get address(): string {
+    return (accounts.current?.address?.toLowerCase() || null) as string;
   }
 
   public get readOnly() {
