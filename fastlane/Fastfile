@@ -1,0 +1,47 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+platform :ios do
+  # desc "Push a new release build to the App Store"
+  # lane :release do
+  #   increment_build_number(xcodeproj: "./ios/SovrynMobile.xcodeproj")
+  #   build_app(workspace: "./ios/SovrynMobile.xcworkspace", scheme: "SovrynMobile")
+  #   upload_to_app_store
+  # end
+
+  desc "Build beta ios app"
+  lane :beta do
+    build_app(
+      workspace: "./ios/SovrynMobile.xcworkspace",
+      scheme: "SovrynMobile",
+      output_directory: "./build/ios",
+      output_name: "SovrynMobile.ipa",
+      clean: true,
+      include_bitcode: true,
+    )
+  end
+
+end
+
+platform :android do
+  desc "Build beta android app"
+  lane :beta do
+    gradle(
+      task: 'assemble',
+      build_type: 'Release',
+      project_dir: './android',
+    )
+  end
+end
