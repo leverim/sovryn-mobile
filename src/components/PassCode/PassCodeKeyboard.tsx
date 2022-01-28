@@ -81,7 +81,7 @@ export const PassCodeKeyboard: React.FC<PassCodeKeyboardProps> = ({
       <View style={styles.iconWrapper}>
         <LockIcon fill="white" width={48} height={48} />
       </View>
-      <Text style={styles.titleText}>Enter Defray Passcode</Text>
+      <Text style={styles.titleText}>Enter Sovryn Wallet Passcode</Text>
       <View style={styles.bulletWrapper}>
         {[...Array(PASSCODE_LENGTH)].map((_, item) => (
           <View
