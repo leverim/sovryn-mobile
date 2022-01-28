@@ -16,14 +16,14 @@ List of planned and available features:
 - [ ] Leverage trading
 - [ ] Staking
 - [ ] Voting in bitocracy
-- [ ] Multiple wallet accounts
-- [ ] Read-only accounts
+- [x] Multiple wallet accounts
+- [x] Read-only accounts
 - [ ] Ledger using bluetooth
 - [ ] Transaction history
 - [ ] Two-Way Fast-BTC
 - [ ] ETH & BSC bridge
 - [ ] In-app browser
-- [ ] PIN code and/or biometrics middleware
+- [x] PIN code and/or biometrics middleware
 - [ ] Add & track custom assets
 - [ ] Update blockchain state each block
 - [ ] Balances in USD
