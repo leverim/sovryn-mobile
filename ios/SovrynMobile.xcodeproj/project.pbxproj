@@ -13,6 +13,7 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2C449E9DCDBD35EC26DDCFCF /* libPods-SovrynMobile-SovrynMobileTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 83AE68AF1DC2E36D14734277 /* libPods-SovrynMobile-SovrynMobileTests.a */; };
 		703E64463F8A208117990931 /* libPods-SovrynMobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 93B7F5149A70EA15D292E813 /* libPods-SovrynMobile.a */; };
+		7BDF883927A4900200607A80 /* AppCenter-Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7BDF883827A4900200607A80 /* AppCenter-Config.plist */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +38,7 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = SovrynMobile/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = SovrynMobile/main.m; sourceTree = "<group>"; };
 		66D878082DE71ACA2F013F0D /* Pods-SovrynMobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SovrynMobile.release.xcconfig"; path = "Target Support Files/Pods-SovrynMobile/Pods-SovrynMobile.release.xcconfig"; sourceTree = "<group>"; };
+		7BDF883827A4900200607A80 /* AppCenter-Config.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "AppCenter-Config.plist"; path = "SovrynMobile/AppCenter-Config.plist"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = SovrynMobile/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		83AE68AF1DC2E36D14734277 /* libPods-SovrynMobile-SovrynMobileTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SovrynMobile-SovrynMobileTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		93B7F5149A70EA15D292E813 /* libPods-SovrynMobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SovrynMobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -86,6 +88,7 @@
 		13B07FAE1A68108700A75B9A /* SovrynMobile */ = {
 			isa = PBXGroup;
 			children = (
+				7BDF883827A4900200607A80 /* AppCenter-Config.plist */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -244,6 +247,7 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				7BDF883927A4900200607A80 /* AppCenter-Config.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
