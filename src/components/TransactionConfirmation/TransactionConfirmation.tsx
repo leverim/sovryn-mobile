@@ -60,8 +60,9 @@ export const TransactionConfirmation: React.FC<
   const onConfirmPressed = useCallback(async () => {
     setError(undefined);
     setLoading(true);
+    let password;
     try {
-      await passcode.request('Authenticate to sign transaction');
+      password = await passcode.request('Authenticate to sign transaction');
     } catch (err: any) {
       setError(err?.message);
       setLoading(false);
@@ -70,7 +71,13 @@ export const TransactionConfirmation: React.FC<
     }
 
     try {
-      const signedTransaction = await wallet.signTransaction(request!);
+      const signedTransaction = await wallet.signTransaction(
+        request!,
+        password,
+      );
+
+      console.log('tx signed', signedTransaction);
+
       const tx = await getProvider(
         (request?.chainId || currentChainId()) as ChainId,
       ).sendTransaction(signedTransaction);
@@ -79,6 +86,7 @@ export const TransactionConfirmation: React.FC<
       ref.current?.resolve(tx);
       ref.current = undefined;
     } catch (err: any) {
+      console.log('signature error', err);
       if (err?.body) {
         try {
           const _err = JSON.parse(err?.body || '{}');

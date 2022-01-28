@@ -1,11 +1,5 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import { useNavigation } from '@react-navigation/native';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { accounts, AccountType } from 'utils/accounts';
 import { AppContext } from 'context/AppContext';
 import { validateMnemonic, validatePrivateKey } from 'utils/wallet-utils';
@@ -14,17 +8,14 @@ import { isAddress } from 'utils/rsk';
 import { InputField } from 'components/InputField';
 import { PressableButton } from 'components/PressableButton';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
-import { Text } from 'components/Text';
 import { ItemType, Picker } from 'components/Picker';
+import { passcode } from 'controllers/PassCodeController';
+import { SettingsStackProps } from 'pages/MainScreen/SettingsPage';
 
-export const AccountCreate: React.FC = () => {
+type Props = NativeStackScreenProps<SettingsStackProps, 'settings.index'>;
+
+export const AccountCreate: React.FC<Props> = ({ navigation }) => {
   const { createWallet } = useContext(AppContext);
-  const navigation = useNavigation();
-  useEffect(() => {
-    navigation.setOptions({
-      title: 'Create New Account',
-    });
-  }, [navigation]);
 
   const [name, setName] = useState<string>(
     `Account #${accounts.list.length + 1}`,
@@ -34,16 +25,21 @@ export const AccountCreate: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const onSave = useCallback(() => {
+  const onSave = useCallback(async () => {
     setLoading(false);
-    createWallet(name, type, secret)
-      .then(() => {
-        navigation.navigate('settings.account');
-      })
-      .catch(error => {
-        setLoading(false);
-        console.error('creating failed', error);
-      });
+    try {
+      const password = await passcode.request('Lock Wallet');
+      createWallet(name, type, secret, password)
+        .then(() => {
+          navigation.navigate('settings.wallets');
+        })
+        .catch(error => {
+          setLoading(false);
+          console.error('creating failed', error);
+        });
+    } catch (e) {
+      console.log(e);
+    }
   }, [name, type, secret, navigation, createWallet]);
 
   const valid = useMemo(() => {
@@ -60,7 +56,7 @@ export const AccountCreate: React.FC = () => {
     }
 
     if (type === AccountType.PUBLIC_ADDRESS) {
-      return isAddress(secret, currentChainId());
+      return isAddress(secret.toLowerCase(), currentChainId());
     }
 
     return false;

@@ -34,8 +34,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 }) => {
   const dark = useIsDarkTheme();
 
-  console.log(response);
-
   const handleOpenInExplorer = useCallback(
     () =>
       Linking.openURL(`https://explorer.testnet.rsk.co/tx/${response?.hash}`),

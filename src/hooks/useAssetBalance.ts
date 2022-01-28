@@ -8,15 +8,19 @@ import { erc20 } from 'utils/interactions';
 import { tokenUtils } from 'utils/token-utils';
 import { useNavigation } from '@react-navigation/native';
 import { ChainId } from 'types/network';
+import { useDebouncedEffect } from './useDebounceEffect';
 
 export function useAssetBalance(
   asset: Token,
-  owner: string,
+  _owner: string,
   chainId: ChainId = currentChainId(),
 ) {
   const navigation = useNavigation();
-  const address = tokenUtils.getTokenAddressForChainId(asset, chainId);
-  const key = `asset_balance_${address}_${owner}`;
+  const owner = _owner?.toLowerCase();
+  const address = tokenUtils
+    .getTokenAddressForChainId(asset, chainId)
+    ?.toLowerCase();
+  const key = `asset_balance_${address}_${owner}_${chainId}`;
 
   const [balance, setBalance] = useState<string>(cache.get(key, '0'));
   const [loading, setLoading] = useState<boolean>(true);
@@ -50,6 +54,14 @@ export function useAssetBalance(
     const unsubscribe = navigation.addListener('focus', getBalance);
     return unsubscribe;
   }, [navigation, getBalance]);
+
+  useDebouncedEffect(
+    () => {
+      getBalance();
+    },
+    300,
+    [getBalance],
+  );
 
   return {
     value: utils.formatUnits(balance, asset.decimals),

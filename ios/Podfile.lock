@@ -272,6 +272,8 @@ PODS:
   - React-jsinspector (0.66.3)
   - React-logger (0.66.3):
     - glog
+  - react-native-aes (2.0.0):
+    - React-Core
   - react-native-blur (0.8.0):
     - React
   - react-native-encrypted-storage (4.0.2):
@@ -415,6 +417,7 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
+  - react-native-aes (from `../node_modules/react-native-aes-crypto`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-encrypted-storage (from `../node_modules/react-native-encrypted-storage`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
@@ -496,6 +499,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/jsinspector"
   React-logger:
     :path: "../node_modules/react-native/ReactCommon/logger"
+  react-native-aes:
+    :path: "../node_modules/react-native-aes-crypto"
   react-native-blur:
     :path: "../node_modules/@react-native-community/blur"
   react-native-encrypted-storage:
@@ -582,6 +587,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 433a691aee158533a6a6ee9c86cb4a1684fa2853
   React-jsinspector: d9c8eb0b53f0da206fed56612b289fec84991157
   React-logger: e522e76fa3e9ec3e7d7115b49485cc065cf4ae06
+  react-native-aes: c75c46aa744bef7c2415fdf7f5b2dcb75ca4364d
   react-native-blur: cad4d93b364f91e7b7931b3fa935455487e5c33c
   react-native-encrypted-storage: e78d848ce0fb663c2ce306e37921d026809322e6
   react-native-get-random-values: 2c4ff6b44cb71291dabe9a8ae87d3877dcf387da

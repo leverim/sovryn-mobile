@@ -104,7 +104,7 @@ export default class Logger {
     // Check if user passed accepted opt-in to metrics
     const metricsOptIn = await DefaultPreference.get(METRICS_OPT_IN);
     if (__DEV__) {
-      args.unshift('[MetaMask DEBUG]:');
+      args.unshift('[Sovryn DEBUG]:');
       // console.log.apply(null, args); // eslint-disable-line no-console
     } else if (metricsOptIn === 'agreed') {
       // captureMessage(JSON.stringify(args));

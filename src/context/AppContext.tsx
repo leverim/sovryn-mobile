@@ -2,6 +2,7 @@ import { passcode } from 'controllers/PassCodeController';
 import React, { useEffect, useMemo } from 'react';
 import { accounts, AccountType, BaseAccount } from 'utils/accounts';
 import { cache } from 'utils/cache';
+import { DEFAULT_DERIVATION_PATH } from 'utils/constants';
 import { settings } from 'utils/settings';
 import { clearStorage } from 'utils/storage';
 import { wallet } from 'utils/wallet';
@@ -20,6 +21,7 @@ type AppContextActions = {
     name: string,
     type: AccountType,
     secret: string,
+    password: string,
   ) => Promise<void>;
   setAccountList: (accounts: BaseAccount[]) => void;
   setActiveAccount: (index: number) => void;
@@ -88,8 +90,17 @@ export const AppProvider: React.FC = ({ children }) => {
       signIn: async () => {
         dispatch({ type: APP_ACTION.SIGN_IN, value: wallet.address || null });
       },
-      createWallet: async (name: string, type: AccountType, secret: string) => {
-        await accounts.create(name, type, secret);
+      createWallet: async (
+        name: string,
+        type: AccountType,
+        secret: string,
+        password: string,
+      ) => {
+        await accounts.create(name, type, password, {
+          secret,
+          dPath: DEFAULT_DERIVATION_PATH,
+          index: 0,
+        });
         dispatch({ type: APP_ACTION.SIGN_IN, value: wallet.address || null });
       },
       setAccountList: (items: BaseAccount[]) => {

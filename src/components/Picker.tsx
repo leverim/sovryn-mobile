@@ -11,6 +11,8 @@ import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { Text } from './Text';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { PressableButton } from './PressableButton';
+import { NavGroup } from './NavGroup/NavGroup';
+import { NavItem } from './NavGroup/NavItem';
 
 export type ValueType = string | number | boolean;
 
@@ -68,15 +70,15 @@ export const Picker: React.FC<Props> = ({ label, value, items, onChange }) => {
           <View style={styles.modalBody}>
             <Text style={styles.modalTitle}>Choose one:</Text>
             <ScrollView>
-              {items.map(item => (
-                <Pressable
-                  onPress={() => onSelectItem(item.value)}
-                  style={styles.modalItem}>
-                  <View>
-                    <Text>{item.label}</Text>
-                  </View>
-                </Pressable>
-              ))}
+              <NavGroup>
+                {items.map(item => (
+                  <NavItem
+                    key={item.value.toString()}
+                    onPress={() => onSelectItem(item.value)}
+                    title={item.label}
+                  />
+                ))}
+              </NavGroup>
             </ScrollView>
             <PressableButton onPress={() => setOpen(false)} title="Close" />
           </View>

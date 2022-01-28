@@ -13,6 +13,8 @@ export const Text: React.FC<TextProps> = ({ children, style, ...props }) => {
   );
 };
 
+Text.displayName = 'Text';
+
 const styles = StyleSheet.create({
   text: {
     color: 'black',

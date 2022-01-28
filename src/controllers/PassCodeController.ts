@@ -40,7 +40,6 @@ class PassCodeController {
   protected _unlocked: boolean = false;
 
   public async request(title?: string): Promise<string> {
-    console.log('request password', title);
     return new Promise((resolve, reject) => {
       this.hub.emit('request', { resolve, reject, title });
     });

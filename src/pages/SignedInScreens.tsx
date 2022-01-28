@@ -9,7 +9,6 @@ import { SettingsPage } from './MainScreen/SettingsPage';
 import WalletIcon from 'assets/wallet-icon.svg';
 import ExchangeIcon from 'assets/exchange-icon.svg';
 import SettingsIcon from 'assets/settings-icon.svg';
-import { PrivacyOverlay } from 'components/PassCode/PrivacyOverlay';
 import { PassCodeModal } from 'components/PassCode/PassCodeModal';
 import { passcode } from 'controllers/PassCodeController';
 import { TransactionConfirmation } from 'components/TransactionConfirmation/TransactionConfirmation';
@@ -25,23 +24,15 @@ const Tab = createBottomTabNavigator<SignedInScreensTabProps>();
 
 export const SignedInScreens = () => {
   const appState = useRef(AppState.currentState);
-  const isUnlocking = useRef(false);
-  const [currentState, setCurrentState] = useState(AppState.currentState);
   const [askToUnlock, setAskToUnlock] = useState(!passcode.unlocked);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
-      if (
-        appState.current === 'background' &&
-        nextAppState === 'active' &&
-        !isUnlocking.current
-      ) {
+      if (appState.current === 'background' && nextAppState === 'active') {
         passcode.setUnlocked(false);
         setAskToUnlock(true);
-        isUnlocking.current = true;
       }
       appState.current = nextAppState;
-      setCurrentState(nextAppState);
     });
 
     return () => {
@@ -49,12 +40,8 @@ export const SignedInScreens = () => {
     };
   }, []);
 
-  const showPrivacyOverlay =
-    ['background', 'inactive'].includes(currentState) && !askToUnlock;
-
   const handleUnlock = useCallback(() => {
     setAskToUnlock(false);
-    isUnlocking.current = false;
     passcode.setUnlocked(true);
   }, []);
 
@@ -86,11 +73,7 @@ export const SignedInScreens = () => {
           }}
         />
       </Tab.Navigator>
-      <PassCodeModal
-        visible={askToUnlock && !showPrivacyOverlay}
-        onUnlocked={handleUnlock}
-      />
-      <PrivacyOverlay visible={showPrivacyOverlay} />
+      <PassCodeModal visible={askToUnlock} onUnlocked={handleUnlock} />
       <TransactionConfirmation />
       <PasscodeConfirmation />
     </>

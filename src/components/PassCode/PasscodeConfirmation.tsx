@@ -1,5 +1,4 @@
 import { DarkTheme } from '@react-navigation/native';
-import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
@@ -21,15 +20,11 @@ export const PasscodeConfirmation: React.FC<PasscodeConfirmation> = () => {
   const biometryType = useBiometryType();
   const [showKeypad, setShowKeypad] = useState(false);
 
-  const loading = useRef<boolean>(false);
   const ref = useRef<{ title?: string; resolve: any; reject: any }>();
 
   const keypadPromiseRef = useRef<{ resolve: any; reject: any }>();
 
-  const dark = useIsDarkTheme();
-
   const tryUnlockingWithKeypad = useCallback(() => {
-    console.log('try unlocking with keypad now');
     setShowKeypad(true);
     return new Promise<string>((resolve, reject) => {
       keypadPromiseRef.current = { resolve, reject };
@@ -49,7 +44,7 @@ export const PasscodeConfirmation: React.FC<PasscodeConfirmation> = () => {
   }, [biometryType, tryUnlockingWithKeypad]);
 
   const tryUnlocking = useCallback(async () => {
-    const result = await tryUnlockingWallet()
+    await tryUnlockingWallet()
       .then(async password => {
         if (password) {
           const verify = await passcode.verify(password);
@@ -61,7 +56,6 @@ export const PasscodeConfirmation: React.FC<PasscodeConfirmation> = () => {
         }
       })
       .catch(error => console.log('try unlocking failed?', error));
-    console.log('try unlocking finished?', result);
     // ref.current && ref.current.resolve && ref.current.resolve(['0x111']);
     // setRequest(undefined);
   }, [tryUnlockingWallet]);

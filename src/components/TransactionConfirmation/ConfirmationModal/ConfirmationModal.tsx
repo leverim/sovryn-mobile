@@ -210,7 +210,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     () => {
       console.log('handle data');
       handleData();
-      // console.log('req', request);
     },
     300,
     [handleData],
