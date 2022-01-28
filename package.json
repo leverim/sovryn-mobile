@@ -10,6 +10,9 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "postinstall": "npx rn-nodeify --install buffer,stream,crypto --hack --yarn"
   },
+  "engines": {
+    "node": ">=16.13"
+  },
   "dependencies": {
     "@ethersproject/shims": "^5.5.0",
     "@react-native-clipboard/clipboard": "^1.8.5",
