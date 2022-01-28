@@ -1,12 +1,17 @@
 import { DarkTheme } from '@react-navigation/native';
+import { Text } from 'components/Text';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Pressable, PressableProps, StyleSheet, Text } from 'react-native';
+import { Pressable, PressableProps, StyleSheet, ViewStyle } from 'react-native';
+
+type BaseButtonProps = {
+  loading?: boolean;
+  intent?: ButtonIntent;
+  pressableStyle?: ViewStyle;
+};
 
 type ButtonProps = {
   title: string;
-  loading?: boolean;
-  intent?: ButtonIntent;
-};
+} & BaseButtonProps;
 
 export enum ButtonIntent {
   PRIMARY,
@@ -16,10 +21,22 @@ export enum ButtonIntent {
 export const Button: React.FC<ButtonProps & PressableProps> = ({
   title,
   loading,
+  ...props
+}) => {
+  return (
+    <ButtonBase loading={loading} {...props}>
+      <Text>{loading ? 'Loading ...' : title}</Text>
+    </ButtonBase>
+  );
+};
+
+export const ButtonBase: React.FC<BaseButtonProps & PressableProps> = ({
   disabled,
   onPressIn,
   onPressOut,
   intent = ButtonIntent.SECONDARY,
+  children,
+  pressableStyle,
   ...pressableProps
 }) => {
   const [pressedIn, setPressedIn] = useState(false);
@@ -49,6 +66,22 @@ export const Button: React.FC<ButtonProps & PressableProps> = ({
     [intent],
   );
 
+  const mapped = useMemo(
+    () =>
+      React.Children.map(children, child => {
+        if (React.isValidElement(child)) {
+          // @ts-ignore
+          const isTextComponent = child.type?.displayName === 'Text';
+          return React.cloneElement(child, {
+            ...child.props,
+            ...(isTextComponent && { style: [styles.text, child.props.style] }),
+          });
+        }
+        return null;
+      }),
+    [children, styles.text],
+  );
+
   return (
     <Pressable
       onPressIn={handleOnPressIn}
@@ -57,10 +90,11 @@ export const Button: React.FC<ButtonProps & PressableProps> = ({
         styles.pressable,
         pressedIn && styles.pressablePressed,
         disabled && styles.pressableDisabled,
+        pressableStyle,
       ]}
       disabled={disabled}
       {...pressableProps}>
-      <Text style={[styles.text]}>{loading ? 'Loading ...' : title}</Text>
+      {mapped}
     </Pressable>
   );
 };

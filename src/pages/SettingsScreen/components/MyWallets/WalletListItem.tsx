@@ -9,6 +9,8 @@ import { Text } from 'components/Text';
 import { DarkTheme } from '@react-navigation/native';
 import ChevronRight from 'assets/chevron-right.svg';
 import { AccountType, BaseAccount } from 'utils/accounts';
+import { toChecksumAddress } from 'utils/rsk';
+import { currentChainId } from 'utils/helpers';
 
 type NavItemProps = {
   account: BaseAccount;
@@ -28,6 +30,8 @@ export const WalletListItem: React.FC<NavItemProps> = ({
   value,
 }) => {
   const [pressedIn, setPressedIn] = useState(false);
+
+  const chainId = currentChainId();
 
   const handlePress = useCallback(
     (status: boolean) => () => setPressedIn(status),
@@ -50,12 +54,14 @@ export const WalletListItem: React.FC<NavItemProps> = ({
         <View style={styles.walletHolder}>
           <Text>{account.name}</Text>
           {account.type === AccountType.PUBLIC_ADDRESS && (
-            <View>
-              <Text>Read only</Text>
+            <View style={styles.readOnlyBadge}>
+              <Text style={styles.readOnlyText}>Read only</Text>
             </View>
           )}
         </View>
-        <Text style={styles.addressText}>{account.address}</Text>
+        <Text style={styles.addressText}>
+          {toChecksumAddress(account.address, chainId)}
+        </Text>
       </View>
       <View style={styles.rightContainer}>
         {value && <Text style={styles.rightContainerText}>{value}</Text>}
@@ -102,9 +108,23 @@ const styles = StyleSheet.create({
     marginRight: 4,
     textAlign: 'right',
   },
-  walletHolder: {},
+  walletHolder: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
   addressText: {
-      opacity: 0.5,
-      fontSize: 12,
+    opacity: 0.5,
+    fontSize: 12,
+  },
+  readOnlyBadge: {
+    marginLeft: 12,
+    paddingVertical: 1,
+    paddingHorizontal: 3,
+    backgroundColor: DarkTheme.colors.notification,
+    borderRadius: 6,
+  },
+  readOnlyText: {
+    fontSize: 12,
   },
 });

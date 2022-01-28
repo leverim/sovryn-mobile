@@ -16,7 +16,7 @@ export function useAssetBalance(
   chainId: ChainId = currentChainId(),
 ) {
   const navigation = useNavigation();
-  const owner = _owner.toLowerCase();
+  const owner = _owner?.toLowerCase();
   const address = tokenUtils
     .getTokenAddressForChainId(asset, chainId)
     ?.toLowerCase();

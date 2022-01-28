@@ -1,14 +1,7 @@
-import React, { useCallback, useContext, useEffect } from 'react';
-import { Button, ScrollView, View } from 'react-native';
-import RNRestart from 'react-native-restart';
+import React, { useCallback, useContext } from 'react';
+import { ScrollView } from 'react-native';
 import { AppContext } from 'context/AppContext';
-import { useNavigation } from '@react-navigation/native';
 import { Setting, settings } from 'utils/settings';
-import {
-  ETH_DERIVATION_PATH,
-  RSK_DERIVATION_PATH,
-  RSK_TESTNET_DERIVATION_PATH,
-} from 'utils/constants';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { NavGroup } from 'components/NavGroup/NavGroup';
@@ -24,11 +17,6 @@ type Props = NativeStackScreenProps<SettingsStackProps, 'settings.index'>;
 
 export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   const { signOut } = useContext(AppContext);
-
-  const setDerivationPath = useCallback((path: string) => {
-    settings.set(Setting.SELECTED_DPATH, path);
-    RNRestart.Restart();
-  }, []);
 
   const navigate = useCallback(
     (screen: keyof SettingsStackProps) => () => navigation.navigate(screen),
@@ -60,31 +48,20 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
         <NavGroup>
           <NavItem
             title="Passcode & Face ID"
-            onPress={navigate('settings.wallets')}
+            onPress={navigate('settings.passcode')}
             value={'On'}
           />
-          <NavItem title="Appearance" onPress={navigate('settings.wallets')} />
+          <NavItem
+            title="Appearance"
+            onPress={navigate('settings.appearance')}
+          />
         </NavGroup>
 
         {__DEV__ && (
           <NavGroup>
-            <NavItem title="Sign out" onPress={signOut} />
+            <NavItem title="Sign out" onPress={signOut} danger />
           </NavGroup>
         )}
-
-        <Text>Derivation path ({settings.get(Setting.SELECTED_DPATH)}):</Text>
-        <Button
-          title={`RSK Mainnet - ${RSK_DERIVATION_PATH}`}
-          onPress={() => setDerivationPath(RSK_DERIVATION_PATH)}
-        />
-        <Button
-          title={`Ethereum - ${ETH_DERIVATION_PATH}`}
-          onPress={() => setDerivationPath(ETH_DERIVATION_PATH)}
-        />
-        <Button
-          title={`RSK Testnet - ${RSK_TESTNET_DERIVATION_PATH}`}
-          onPress={() => setDerivationPath(RSK_TESTNET_DERIVATION_PATH)}
-        />
       </ScrollView>
     </SafeAreaPage>
   );

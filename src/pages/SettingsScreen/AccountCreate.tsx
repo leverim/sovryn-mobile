@@ -16,9 +16,6 @@ type Props = NativeStackScreenProps<SettingsStackProps, 'settings.index'>;
 
 export const AccountCreate: React.FC<Props> = ({ navigation }) => {
   const { createWallet } = useContext(AppContext);
-  navigation.setOptions({
-    title: 'Create New Account',
-  });
 
   const [name, setName] = useState<string>(
     `Account #${accounts.list.length + 1}`,
@@ -59,7 +56,7 @@ export const AccountCreate: React.FC<Props> = ({ navigation }) => {
     }
 
     if (type === AccountType.PUBLIC_ADDRESS) {
-      return isAddress(secret, currentChainId());
+      return isAddress(secret.toLowerCase(), currentChainId());
     }
 
     return false;

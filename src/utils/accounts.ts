@@ -1,12 +1,11 @@
 import { EventEmitter } from 'events';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import RNRestart from 'react-native-restart';
+import { Wallet } from 'ethers';
+import { addHexPrefix } from 'ethereumjs-util';
 import { mnemonicToSeedSync } from 'bip39';
 import { getItem, storeItem } from './storage';
-import { addHexPrefix } from 'ethereumjs-util';
-import { RSK_DERIVATION_PATH } from './constants';
 import { Encryptor } from './encryptor';
-import { Wallet } from 'ethers';
 import { makeWalletPrivateKey } from './wallet';
 
 export enum AccountType {
@@ -89,8 +88,14 @@ class AccountManager extends EventEmitter {
         break;
     }
 
-    const address = new Wallet(makeWalletPrivateKey(type, pk, dPath, index))
-      .address;
+    let address: string;
+
+    if (type === AccountType.PUBLIC_ADDRESS) {
+      address = secret!;
+    } else {
+      address = new Wallet(makeWalletPrivateKey(type, pk, dPath, index))
+        .address;
+    }
 
     const encryptedSecret = await this._encryptor.encrypt(password, secrets);
 
@@ -111,6 +116,9 @@ class AccountManager extends EventEmitter {
   }
   public async select(index: number) {
     this._selected = index;
+    if (this._accounts.length - 1 < index) {
+      this._selected = this._accounts.length - 1;
+    }
     await this.save();
     this.onSelected();
     RNRestart.Restart();
@@ -125,6 +133,14 @@ class AccountManager extends EventEmitter {
     await this.save();
     this.onSelected();
     RNRestart.Restart();
+  }
+  public async remove(index: number) {
+    let nextSelectionIndex = this._selected;
+    if (this._selected > index) {
+      nextSelectionIndex = this._selected - 1;
+    }
+    this._accounts.splice(index, 1);
+    await this.select(nextSelectionIndex);
   }
   public async delete() {
     this._accounts = [];
