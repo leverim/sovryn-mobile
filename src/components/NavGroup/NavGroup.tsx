@@ -1,17 +1,20 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 
 export const NavGroup: React.FC = ({ children }) => {
-  const mapped = React.Children.map(children, (child, index) => {
-    if (React.isValidElement(child)) {
-      return React.cloneElement(child, {
-        ...child.props,
-        isFirst: index === 0,
-        isLast: !Array.isArray(children) || index === children.length - 1,
-      });
-    }
-    return null;
-  });
+  const mapped = useMemo(() => {
+    const items = React.Children.toArray(children);
+    return items.filter(Boolean).map((child, index) => {
+      if (React.isValidElement(child)) {
+        return React.cloneElement(child, {
+          ...child.props,
+          isFirst: index === 0,
+          isLast: !Array.isArray(children) || index === items.length - 1,
+        });
+      }
+      return null;
+    });
+  }, [children]);
 
   return <View style={styles.container}>{mapped}</View>;
 };
