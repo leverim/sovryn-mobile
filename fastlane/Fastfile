@@ -23,6 +23,9 @@ platform :ios do
 
   desc "Build beta ios app"
   lane :beta do
+    get_certificates           # invokes cert
+    get_provisioning_profile   # invokes sigh
+    enable_automatic_code_signing(path: "./ios/SovrynMobile.xcodeproj")
     build_app(
       workspace: "./ios/SovrynMobile.xcworkspace",
       scheme: "SovrynMobile",
