@@ -3,6 +3,7 @@ import { commify } from 'ethers/lib/utils';
 import { ImageSourcePropType } from 'react-native';
 import { ContractName } from 'types/contract';
 import { ChainId } from 'types/network';
+import { AccountType, BaseAccount } from './accounts';
 import { contractUtils } from './contract';
 import { Setting, settings } from './settings';
 
@@ -58,8 +59,6 @@ export const prepareImageSource = (
 // export const floorDecimals = (value: number | string, decimals: number = 8) =>
 //   Number(Math.floor(Number(`${value}e${decimals}`)) + 'e-' + decimals);
 
-
-
 export const formatUnits = (
   value: BigNumberish = '0',
   unitName?: string | BigNumberish,
@@ -86,3 +85,6 @@ export const commifyDecimals = (
   value: string | number = '0',
   decimals: number = 8,
 ): string => commify(floorDecimals(value, decimals));
+
+export const isReadOnlyWallet = (account: BaseAccount) =>
+  account?.type === undefined || account.type === AccountType.PUBLIC_ADDRESS;

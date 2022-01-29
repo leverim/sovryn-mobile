@@ -11,7 +11,7 @@ import { ChainId } from 'types/network';
 export type WalletStackProps = {
   'wallet.list': undefined;
   'wallet.details': { token: Token; chainId: ChainId };
-  'wallet.vestings': undefined;
+  'wallet.vestings': { token: Token; chainId: ChainId };
   'wallet.receive': { token: Token; chainId: ChainId };
   'wallet.send': { token: Token; chainId: ChainId };
 };
@@ -27,7 +27,11 @@ export const WalletPage: React.FC = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen name="wallet.details" component={WalletDetails} />
-      <Stack.Screen name="wallet.vestings" component={WalletVestings} />
+      <Stack.Screen
+        name="wallet.vestings"
+        component={WalletVestings}
+        options={{ title: 'Vestings' }}
+      />
       <Stack.Screen name="wallet.receive" component={ReceiveAsset} />
       <Stack.Screen name="wallet.send" component={SendAsset} />
     </Stack.Navigator>

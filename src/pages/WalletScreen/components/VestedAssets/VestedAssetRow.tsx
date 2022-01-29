@@ -1,21 +1,20 @@
 import React from 'react';
-import { View } from 'react-native';
 import { VestingData } from 'hooks/useVestedAssets';
-import { commifyDecimals, prettifyTx } from 'utils/helpers';
-import { utils } from 'ethers/lib.esm';
-import { Token } from 'types/token';
+import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { NavItem } from 'components/NavGroup/NavItem';
+import { VestingConfig } from 'models/vesting-config';
 
 type VestedAssetRowProps = {
-  vesting: VestingData;
+  vestingConfig: VestingConfig;
+  vestingData: VestingData;
   balance: string;
-  asset: Token;
+  onWithdraw: () => void;
 };
 
 export const VestedAssetRow: React.FC<VestedAssetRowProps> = ({
-  vesting,
+  vestingConfig,
   balance,
-  asset,
+  onWithdraw,
   ...props
 }) => {
   // const { value, loading, loaded } = useCall(
@@ -27,10 +26,11 @@ export const VestedAssetRow: React.FC<VestedAssetRowProps> = ({
   return (
     <NavItem
       {...props}
-      title={prettifyTx(vesting.vestingAddress)}
-      value={`${commifyDecimals(utils.formatUnits(balance, asset.decimals))} ${
-        asset.symbol
-      }`}
+      title={`${commifyDecimals(
+        formatUnits(balance, vestingConfig.token.decimals),
+      )} ${vestingConfig.token.symbol}`}
+      value="Withdraw"
+      onPress={onWithdraw}
     />
   );
 };

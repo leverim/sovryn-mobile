@@ -1,27 +1,33 @@
-import { useEffect, useState } from 'react';
-import { BigNumber } from 'ethers/lib.esm';
-import { callToContract, contractCall } from 'utils/contract-utils';
+import { useState } from 'react';
+import { BigNumber, constants } from 'ethers/lib.esm';
+import { contractCall } from 'utils/contract-utils';
 import { cache } from 'utils/cache';
-import { currentChainId } from 'utils/helpers';
-import { contractUtils } from 'utils/contract';
-import { ContractName } from 'types/contract';
+import {
+  VestingConfig,
+  VestingContractMethod,
+  VestingContractType,
+} from 'models/vesting-config';
+import { useDebouncedEffect } from './useDebounceEffect';
 
 export type VestingData = {
+  // 0 - team vesting, 1 - vesting
   vestingType: number;
+  // vesting registry index?
   vestingCreationType: number;
   vestingAddress: string;
 };
 
-export function useVestedAssets(
-  registryContractName: ContractName,
-  owner: string,
-) {
+const vestingTypes: Record<VestingContractMethod, number> = {
+  getTeamVesting: 0,
+  getVesting: 1,
+};
+
+const methodToVestingType = (method: VestingContractMethod) =>
+  vestingTypes[method] || 0;
+
+export function useVestedAssets(vesting: VestingConfig, owner: string) {
+  const { registryAddress, chainId } = vesting;
   owner = owner.toLowerCase();
-  const chainId = currentChainId();
-  const registryAddress = contractUtils.getContractAddressForChainId(
-    contractUtils.getContractByName(registryContractName),
-    chainId,
-  );
   const [stakingContract, setStakingContract] = useState<string>(
     cache.get(`staking_contract_${chainId}_${registryAddress}`),
   );
@@ -34,69 +40,116 @@ export function useVestedAssets(
 
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLoading(true);
-    Promise.all([
-      // get staking contract
-      callToContract<Array<string>>(
-        registryContractName,
-        'staking()(address)',
-        [],
-      ).then(response => {
-        setStakingContract(response[0]);
-        console.log('staking', response[0]);
-        return cache.set(
-          `staking_contract_${chainId}_${registryAddress}`,
-          response[0],
-        );
-      }),
-      // get list of user vestings.
-      callToContract<Array<Array<[BigNumber, BigNumber, string]>>>(
-        registryContractName,
-        'getVestingsOf(address)((uint256,uint256,address)[])',
-        [owner],
-      )
-        .then(response => response[0])
-        .then(response =>
-          response.map(
-            ([vestingType, vestingCreationType, vestingAddress]) => ({
-              vestingType: vestingType.toNumber(),
-              vestingCreationType: vestingCreationType.toNumber(),
-              vestingAddress,
-            }),
-          ),
-        )
-        .then(response => {
-          console.log('vestings', response);
-          setVestings(response);
+  useDebouncedEffect(
+    () => {
+      setLoading(true);
+      Promise.all([
+        // get staking contract
+        contractCall<Array<string>>(
+          chainId,
+          registryAddress,
+          'staking()(address)',
+          [],
+        ).then(response => {
+          setStakingContract(response[0]);
           return cache.set(
-            `vesting_contracts_${chainId}_${registryAddress}_${owner}`,
-            response,
+            `staking_contract_${chainId}_${registryAddress}`,
+            response[0],
           );
         }),
-    ]).finally(() => setLoading(false));
-  }, [owner, chainId, registryAddress, registryContractName]);
+        // get list of user vestings.
+        vesting.type === VestingContractType.LIST &&
+          contractCall<Array<Array<[BigNumber, BigNumber, string]>>>(
+            chainId,
+            registryAddress,
+            'getVestingsOf(address)((uint256,uint256,address)[])',
+            [owner],
+          )
+            .then(response => response[0])
+            .then(response =>
+              response.map(
+                ([vestingType, vestingCreationType, vestingAddress]) => ({
+                  vestingType: vestingType.toNumber(),
+                  vestingCreationType: vestingCreationType.toNumber(),
+                  vestingAddress,
+                }),
+              ),
+            )
+            .then(response => {
+              setVestings(response);
+              return cache.set(
+                `vesting_contracts_${chainId}_${registryAddress}_${owner}`,
+                response,
+              );
+            }),
+        vesting.type === VestingContractType.SINGLE &&
+          Promise.all<VestingData>(
+            vesting.vestingMethods.map(method =>
+              contractCall(
+                vesting.chainId,
+                registryAddress,
+                `${method}(address)(address)`,
+                [owner],
+              )
+                .then(response => response[0])
+                .then(vestingAddress => ({
+                  vestingType: methodToVestingType(method),
+                  vestingCreationType: 1,
+                  vestingAddress,
+                })),
+            ),
+          )
+            .then(
+              response =>
+                response.filter(
+                  item => item.vestingAddress !== constants.AddressZero,
+                ) as VestingData[],
+            )
+            .then(response => {
+              setVestings(response);
+              return cache.set(
+                `vesting_contracts_${chainId}_${registryAddress}_${owner}`,
+                response,
+              );
+            }),
+      ])
+        .catch(error => {
+          console.log('vestings', error);
+        })
+        .finally(() => setLoading(false));
+    },
+    300,
+    [owner, chainId, registryAddress, vesting],
+  );
 
-  useEffect(() => {
-    if (vestings.length && stakingContract) {
-      Promise.all(
-        vestings.map(vesting =>
-          contractCall(
-            currentChainId(),
-            stakingContract,
-            'balanceOf(address)(uint256)',
-            [vesting.vestingAddress],
-          ).then(response => response[0].toString()),
-        ),
-      ).then(response => {
-        setBalances(response);
-        cache.set(
-          `vesting_balances_${chainId}_${registryAddress}_${owner}`,
-          response,
-        );
-      });
-    }
-  }, [vestings, stakingContract, chainId, owner, registryAddress]);
+  useDebouncedEffect(
+    () => {
+      if (vestings.length && stakingContract) {
+        Promise.all(
+          vestings.map(vest =>
+            contractCall(
+              chainId,
+              stakingContract,
+              'balanceOf(address)(uint256)',
+              [vest.vestingAddress],
+            ).then(response => response[0].toString()),
+          ),
+        )
+          .then(response => {
+            setBalances(response);
+            cache.set(
+              `vesting_balances_${chainId}_${registryAddress}_${owner}`,
+              response,
+            );
+          })
+          .catch(e => {
+            console.log('balance-of', e);
+          });
+      }
+    },
+    300,
+    [vestings, stakingContract, chainId, owner, registryAddress],
+  );
 
   return {
     stakingContract,
