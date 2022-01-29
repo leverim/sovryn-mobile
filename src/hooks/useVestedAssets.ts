@@ -16,6 +16,7 @@ export function useVestedAssets(
   registryContractName: ContractName,
   owner: string,
 ) {
+  owner = owner.toLowerCase();
   const chainId = currentChainId();
   const registryAddress = contractUtils.getContractAddressForChainId(
     contractUtils.getContractByName(registryContractName),
@@ -43,6 +44,7 @@ export function useVestedAssets(
         [],
       ).then(response => {
         setStakingContract(response[0]);
+        console.log('staking', response[0]);
         return cache.set(
           `staking_contract_${chainId}_${registryAddress}`,
           response[0],
@@ -65,6 +67,7 @@ export function useVestedAssets(
           ),
         )
         .then(response => {
+          console.log('vestings', response);
           setVestings(response);
           return cache.set(
             `vesting_contracts_${chainId}_${registryAddress}_${owner}`,

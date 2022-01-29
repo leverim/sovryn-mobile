@@ -5,6 +5,7 @@ import { useVestedAssets } from 'hooks/useVestedAssets';
 import { VestedAssetRow } from './components/VestedAssets/VestedAssetRow';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
+import { NavGroup } from 'components/NavGroup/NavGroup';
 
 export const WalletVestings: React.FC = () => {
   // @ts-ignore
@@ -32,14 +33,16 @@ export const WalletVestings: React.FC = () => {
           </Text>
         </View>
         <ScrollView>
-          {vestings.map((item, index) => (
-            <VestedAssetRow
-              key={item.vestingAddress}
-              vesting={item}
-              balance={balances[index]}
-              asset={params.asset}
-            />
-          ))}
+          <NavGroup>
+            {vestings.map((item, index) => (
+              <VestedAssetRow
+                key={item.vestingAddress}
+                vesting={item}
+                balance={balances[index]}
+                asset={params.asset}
+              />
+            ))}
+          </NavGroup>
         </ScrollView>
       </ScrollView>
     </SafeAreaPage>

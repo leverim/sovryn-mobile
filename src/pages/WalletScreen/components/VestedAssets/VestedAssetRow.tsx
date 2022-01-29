@@ -1,11 +1,10 @@
 import React from 'react';
 import { View } from 'react-native';
 import { VestingData } from 'hooks/useVestedAssets';
-import { commifyDecimals, currentChainId, prettifyTx } from 'utils/helpers';
+import { commifyDecimals, prettifyTx } from 'utils/helpers';
 import { utils } from 'ethers/lib.esm';
-import { useCall } from 'hooks/useCall';
 import { Token } from 'types/token';
-import { Text } from 'components/Text';
+import { NavItem } from 'components/NavGroup/NavItem';
 
 type VestedAssetRowProps = {
   vesting: VestingData;
@@ -17,24 +16,21 @@ export const VestedAssetRow: React.FC<VestedAssetRowProps> = ({
   vesting,
   balance,
   asset,
+  ...props
 }) => {
-  const { value, loading, loaded } = useCall(
-    currentChainId(),
-    vesting.vestingAddress,
-    'SOV()(address)',
-    [],
-  );
-
+  // const { value, loading, loaded } = useCall(
+  //   currentChainId(),
+  //   vesting.vestingAddress,
+  //   'SOV()(address)',
+  //   [],
+  // );
   return (
-    <View>
-      <Text>{prettifyTx(vesting.vestingAddress)}</Text>
-      <Text>
-        Balance: {commifyDecimals(utils.formatUnits(balance, asset.decimals))}{' '}
-        {asset.symbol}
-      </Text>
-      {loading && <Text>Loading</Text>}
-      {loaded && <Text>Loaded</Text>}
-      <Text>{value}</Text>
-    </View>
+    <NavItem
+      {...props}
+      title={prettifyTx(vesting.vestingAddress)}
+      value={`${commifyDecimals(utils.formatUnits(balance, asset.decimals))} ${
+        asset.symbol
+      }`}
+    />
   );
 };
