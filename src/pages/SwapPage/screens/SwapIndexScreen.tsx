@@ -23,6 +23,7 @@ import { ContractName } from 'types/contract';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { Button, ButtonIntent } from 'components/Buttons/Button';
 import { transactionController } from 'controllers/TransactionController';
+import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
@@ -262,18 +263,20 @@ export const SwapIndexScreen: React.FC<Props> = () => {
               debounceDelay={0}
             />
           </View>
-          <TokenApprovalFlow
-            tokenId={sendTokenId}
-            spender={callData.contractAddress}
-            requiredAmount={sendAmount || '0'}>
-            <Button
-              title="Swap"
-              onPress={handleSwapButton}
-              disabled={loading}
-              loading={loading}
-              intent={ButtonIntent.PRIMARY}
-            />
-          </TokenApprovalFlow>
+          <ReadWalletAwareWrapper>
+            <TokenApprovalFlow
+              tokenId={sendTokenId}
+              spender={callData.contractAddress}
+              requiredAmount={sendAmount || '0'}>
+              <Button
+                title="Swap"
+                onPress={handleSwapButton}
+                disabled={loading}
+                loading={loading}
+                intent={ButtonIntent.PRIMARY}
+              />
+            </TokenApprovalFlow>
+          </ReadWalletAwareWrapper>
           <View>
             <View>
               <Text>Sell Price</Text>

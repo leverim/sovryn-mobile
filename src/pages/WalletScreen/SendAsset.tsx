@@ -22,10 +22,11 @@ import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { transactionController } from 'controllers/TransactionController';
 import { Button, ButtonIntent } from 'components/Buttons/Button';
+import { useDebouncedEffect } from 'hooks/useDebounceEffect';
+import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
 
-// TODO: implement debouncing
 export const SendAsset: React.FC<Props> = ({
   route: { params },
   navigation,
@@ -57,51 +58,67 @@ export const SendAsset: React.FC<Props> = ({
 
   const owner = useWalletAddress().toLowerCase();
 
-  useEffect(() => {
-    getProvider(params.chainId)
-      .getTransactionCount(owner)
-      .then(response => setNonce(response.toString()));
-  }, [owner, params.chainId]);
+  useDebouncedEffect(
+    () => {
+      getProvider(params.chainId)
+        .getTransactionCount(owner)
+        .then(response => setNonce(response.toString()));
+    },
+    300,
+    [owner, params.chainId],
+  );
 
   const handleReceiverChange = useCallback(
     (address: string) => setReceiver(address),
     [],
   );
 
-  useEffect(() => {
-    getProvider(params.chainId)
-      .getGasPrice()
-      .then(response => setGasPrice((response.toNumber() / 1e9).toString()));
-  }, [params.chainId]);
+  useDebouncedEffect(
+    () => {
+      getProvider(params.chainId)
+        .getGasPrice()
+        .then(response => setGasPrice((response.toNumber() / 1e9).toString()));
+    },
+    300,
+    [params.chainId],
+  );
 
-  useEffect(() => {
-    if (!params.token.native) {
-      setData(
-        encodeFunctionData('transfer(address,uint256)', [
-          (receiver || constants.AddressZero).toLowerCase(),
-          utils.parseUnits(amount || '0', params.token.decimals).toString(),
-        ]),
-      );
-    }
-  }, [receiver, amount, params.token]);
+  useDebouncedEffect(
+    () => {
+      if (!params.token.native) {
+        setData(
+          encodeFunctionData('transfer(address,uint256)', [
+            (receiver || constants.AddressZero).toLowerCase(),
+            utils.parseUnits(amount || '0', params.token.decimals).toString(),
+          ]),
+        );
+      }
+    },
+    300,
+    [receiver, amount, params.token],
+  );
 
-  useEffect(() => {
-    getProvider(params.chainId)
-      .estimateGas({
-        to,
-        from: owner,
-        value: params.token.native
-          ? utils.parseUnits(amount || '0', params.token.decimals)
-          : 0,
-        nonce,
-        data,
-        gasPrice: (Number(gasPrice) * 1e9).toString(),
-      })
-      .then(response => response.toNumber())
-      .then(response => {
-        setGas(!response ? '21000' : response.toString());
-      });
-  }, [params.chainId, params.token, gasPrice, data, nonce, to, amount, owner]);
+  useDebouncedEffect(
+    () => {
+      getProvider(params.chainId)
+        .estimateGas({
+          to,
+          from: owner,
+          value: params.token.native
+            ? utils.parseUnits(amount || '0', params.token.decimals)
+            : 0,
+          nonce,
+          data,
+          gasPrice: (Number(gasPrice) * 1e9).toString(),
+        })
+        .then(response => response.toNumber())
+        .then(response => {
+          setGas(!response ? '21000' : response.toString());
+        });
+    },
+    300,
+    [params.chainId, params.token, gasPrice, data, nonce, to, amount, owner],
+  );
 
   const submit = useCallback(async () => {
     setLoading(true);
@@ -212,13 +229,15 @@ export const SendAsset: React.FC<Props> = ({
                 fee={params.token.native ? Number(fee) : 0}
               />
               {!!balanceError && <Text>{balanceError}</Text>}
-              <Button
-                title={`Send ${params.token.symbol}`}
-                onPress={submit}
-                disabled={!isTxValid || loading}
-                loading={loading}
-                intent={ButtonIntent.PRIMARY}
-              />
+              <ReadWalletAwareWrapper>
+                <Button
+                  title={`Send ${params.token.symbol}`}
+                  onPress={submit}
+                  disabled={!isTxValid || loading}
+                  loading={loading}
+                  intent={ButtonIntent.PRIMARY}
+                />
+              </ReadWalletAwareWrapper>
             </View>
           </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
