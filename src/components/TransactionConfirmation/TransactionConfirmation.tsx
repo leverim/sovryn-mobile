@@ -11,6 +11,7 @@ import { getProvider } from 'utils/RpcEngine';
 import { ChainId } from 'types/network';
 import { ConfirmationModal } from './ConfirmationModal/ConfirmationModal';
 import { TransactionModal } from './TransactionModal';
+import { notifications, TxNotificationStatus } from 'controllers/notifications';
 
 type TransactionConfirmationProps = {};
 
@@ -77,14 +78,35 @@ export const TransactionConfirmation: React.FC<
       );
 
       console.log('tx signed', signedTransaction);
+      const chainId = (request?.chainId || currentChainId()) as ChainId;
 
-      const tx = await getProvider(
-        (request?.chainId || currentChainId()) as ChainId,
-      ).sendTransaction(signedTransaction);
+      const tx = await getProvider(chainId).sendTransaction(signedTransaction);
       responseRef.current = tx;
+
       setStep(Step.RESPONSE);
       ref.current?.resolve(tx);
       ref.current = undefined;
+
+      await notifications.sendTx(chainId, tx.hash);
+
+      tx.wait(1)
+        .then(receipt => {
+          if (receipt) {
+            notifications.sendTx(
+              chainId,
+              receipt.transactionHash,
+              TxNotificationStatus.CONFIRMED,
+            );
+          }
+        })
+        .catch(_error => {
+          console.warn('tx error', _error);
+          notifications.sendTx(
+            chainId,
+            tx.hash,
+            _error.code || TxNotificationStatus.CALL_EXCEPTION,
+          );
+        });
     } catch (err: any) {
       console.log('signature error', err);
       if (err?.body) {

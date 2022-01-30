@@ -1,7 +1,7 @@
 import React from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { ChainId } from 'types/network';
-import { currentChainId, prettifyTx } from 'utils/helpers';
+import { currentChainId, getTxInExplorer, prettifyTx } from 'utils/helpers';
 import { Text } from './Text';
 
 type TransactionBadgeProps = {
@@ -16,9 +16,7 @@ export const TransactionBadge: React.FC<TransactionBadgeProps> = ({
   return (
     <View style={styles.container}>
       <Pressable
-        onPress={() =>
-          Linking.openURL(`https://explorer.testnet.rsk.co/tx/${txHash}`)
-        }>
+        onPress={() => Linking.openURL(getTxInExplorer(txHash, chainId))}>
         <Text style={styles.text}>{prettifyTx(txHash)}</Text>
       </Pressable>
     </View>

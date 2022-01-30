@@ -75,6 +75,7 @@ export const AssetPickerWithAmount: React.FC<AssetPickerWithAmountProps> = ({
   const onChangeAmount = useCallback(
     (value: string) => {
       value = value.match(/(\d|.)+/g)?.pop() || '';
+      value = value.replace(',', '.');
       setAmount(value);
       if (!isNaN(Number(value))) {
         debouncedOnChangeAmount(value);

@@ -11,6 +11,8 @@ import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { Button, ButtonIntent } from 'components/Buttons/Button';
 import { TransactionBadge } from 'components/TransactionBadge';
 import { Item } from './ConfirmationModal/Item';
+import { getTxInExplorer } from 'utils/helpers';
+import { ChainId } from 'types/network';
 
 export type DataModalProps = {
   loading: boolean;
@@ -36,8 +38,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   const handleOpenInExplorer = useCallback(
     () =>
-      Linking.openURL(`https://explorer.testnet.rsk.co/tx/${response?.hash}`),
-    [response?.hash],
+      Linking.openURL(
+        getTxInExplorer(response?.hash!, response?.chainId as ChainId),
+      ),
+    [response?.hash, response?.chainId],
   );
 
   return (

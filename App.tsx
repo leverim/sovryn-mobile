@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ModalPortal } from 'react-native-modals';
 import { init, wrap } from '@sentry/react-native';
+import notifee, { EventType } from '@notifee/react-native';
 import { AppProvider } from './src/context/AppContext';
 import { MainScreen } from './src/MainScreen';
+import { notifications } from 'controllers/notifications';
 
 init({
   dsn: 'https://3a91eacf25944a5a8cbc58b87a3e05a6@o1102915.ingest.sentry.io/6129518',
@@ -10,6 +12,33 @@ init({
 });
 
 const App = () => {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    notifee
+      .getInitialNotification()
+      .then(initialNotification => {
+        if (initialNotification) {
+          notifications.handleEvents({
+            type:
+              initialNotification.pressAction?.id !== 'default'
+                ? EventType.ACTION_PRESS
+                : EventType.PRESS,
+            detail: initialNotification,
+          });
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    return notifee.onForegroundEvent(notifications.handleEvents);
+  }, []);
+
+  if (loading) {
+    return null;
+  }
+
   return (
     <AppProvider>
       <MainScreen />

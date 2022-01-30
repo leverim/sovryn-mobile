@@ -56,7 +56,7 @@ export const SendAsset: React.FC<Props> = ({
     ).toLowerCase();
   }, [params.token, params.chainId, receiver]);
 
-  const owner = useWalletAddress();
+  const owner = useWalletAddress().toLowerCase();
 
   useDebouncedEffect(
     () => {
@@ -103,6 +103,7 @@ export const SendAsset: React.FC<Props> = ({
       getProvider(params.chainId)
         .estimateGas({
           to,
+          from: owner,
           value: params.token.native
             ? utils.parseUnits(amount || '0', params.token.decimals)
             : 0,
@@ -116,7 +117,7 @@ export const SendAsset: React.FC<Props> = ({
         });
     },
     300,
-    [params.chainId, params.token, gasPrice, data, nonce, to, amount],
+    [params.chainId, params.token, gasPrice, data, nonce, to, amount, owner],
   );
 
   const submit = useCallback(async () => {

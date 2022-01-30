@@ -379,6 +379,11 @@ PODS:
     - React-Core
   - RNKeychain (8.0.0):
     - React-Core
+  - RNNotifee (4.1.0):
+    - React-Core
+    - RNNotifee/NotifeeCore (= 4.1.0)
+  - RNNotifee/NotifeeCore (4.1.0):
+    - React-Core
   - RNScreens (3.10.1):
     - React-Core
     - React-RCTImage
@@ -462,6 +467,7 @@ DEPENDENCIES:
   - RNDefaultPreference (from `../node_modules/react-native-default-preference`)
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
+  - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
@@ -576,6 +582,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-device-info"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
+  RNNotifee:
+    :path: "../node_modules/@notifee/react-native"
   RNScreens:
     :path: "../node_modules/react-native-screens"
   RNSentry:
@@ -645,6 +653,7 @@ SPEC CHECKSUMS:
   RNDefaultPreference: 2f8d6d54230edbd78708ada8d63bb275e5a8415b
   RNDeviceInfo: 0400a6d0c94186d1120c3cbd97b23abc022187a9
   RNKeychain: 4f63aada75ebafd26f4bc2c670199461eab85d94
+  RNNotifee: f1ba270897bd7491f889a1a257d0c038a43376f7
   RNScreens: 522705f2e5c9d27efb17f24aceb2bf8335bc7b8e
   RNSentry: 04bb48bfdd435f5b218cf363f89e6419e9a2460c
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
