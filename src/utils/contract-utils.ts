@@ -106,7 +106,14 @@ export async function contractCall<T = Record<string | number, any>>(
     })
     .then(response => decodeParameters(returnTypes, response) as unknown as T)
     .catch(error => {
-      console.log('contractCallFailed', chainId, to, methodAndTypes, args);
+      console.log(
+        'contractCallFailed',
+        chainId,
+        to,
+        methodAndTypes,
+        args,
+        error,
+      );
       throw error;
     });
 }
@@ -121,7 +128,7 @@ export type CallData = {
 
 export async function aggregateCall<
   T = Record<string, BytesLike | Result | string>,
->(chainId: number, callData: CallData[]) {
+>(chainId: ChainId, callData: CallData[]) {
   const network: Network = getNetworks().find(
     item => item.chainId === chainId,
   )!;
@@ -181,6 +188,10 @@ export async function aggregateCall<
       });
 
       return { blockNumber: blockNumber.toString(), returnData };
+    })
+    .catch(error => {
+      console.log('aggregator failed', error);
+      throw error;
     });
 }
 

@@ -15,7 +15,7 @@ export const contractUtils = {
     return contracts.find(item => item.name === contractName) as Contract;
   },
   getContractAddressForChainId: (contract: Contract, chainId: number) => {
-    return contract.address[chainId]?.toLowerCase();
+    return contract.address[chainId]?.toLowerCase() as string;
   },
   contractHasChainId: (contract: Contract, chainId: ChainId) => {
     return contract.address.hasOwnProperty(chainId);

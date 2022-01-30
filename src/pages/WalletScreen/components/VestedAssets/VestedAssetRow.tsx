@@ -1,40 +1,30 @@
 import React from 'react';
-import { View } from 'react-native';
 import { VestingData } from 'hooks/useVestedAssets';
-import { commifyDecimals, currentChainId, prettifyTx } from 'utils/helpers';
-import { utils } from 'ethers/lib.esm';
-import { useCall } from 'hooks/useCall';
-import { Token } from 'types/token';
-import { Text } from 'components/Text';
+import { commifyDecimals, formatUnits } from 'utils/helpers';
+import { NavItem } from 'components/NavGroup/NavItem';
+import { VestingConfig } from 'models/vesting-config';
 
 type VestedAssetRowProps = {
-  vesting: VestingData;
+  vestingConfig: VestingConfig;
+  vestingData: VestingData;
   balance: string;
-  asset: Token;
+  onWithdraw: () => void;
 };
 
 export const VestedAssetRow: React.FC<VestedAssetRowProps> = ({
-  vesting,
+  vestingConfig,
   balance,
-  asset,
+  onWithdraw,
+  ...props
 }) => {
-  const { value, loading, loaded } = useCall(
-    currentChainId(),
-    vesting.vestingAddress,
-    'SOV()(address)',
-    [],
-  );
-
   return (
-    <View>
-      <Text>{prettifyTx(vesting.vestingAddress)}</Text>
-      <Text>
-        Balance: {commifyDecimals(utils.formatUnits(balance, asset.decimals))}{' '}
-        {asset.symbol}
-      </Text>
-      {loading && <Text>Loading</Text>}
-      {loaded && <Text>Loaded</Text>}
-      <Text>{value}</Text>
-    </View>
+    <NavItem
+      {...props}
+      title={`${commifyDecimals(
+        formatUnits(balance, vestingConfig.token.decimals),
+      )} ${vestingConfig.token.symbol}`}
+      value="Withdraw"
+      onPress={onWithdraw}
+    />
   );
 };

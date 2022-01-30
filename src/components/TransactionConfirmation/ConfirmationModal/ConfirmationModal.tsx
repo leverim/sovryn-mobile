@@ -1,15 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { BottomModal, ModalContent } from 'react-native-modals';
-import {
-  TransactionRequest,
-  TransactionResponse,
-} from '@ethersproject/abstract-provider';
+import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'components/Text';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
-import { functionSignature } from 'utils/contract-utils';
-import { hexlify, TransactionTypes } from 'ethers/lib/utils';
 import { TransactionType } from './transaction-types';
 import { tokenUtils } from 'utils/token-utils';
 import { commifyDecimals, currentChainId, formatUnits } from 'utils/helpers';
@@ -26,6 +21,7 @@ import { Item } from './Item';
 import { BigNumber } from 'ethers';
 import { ErrorHolder } from './ErrorHolder';
 import { isEqual } from 'lodash';
+import { VestingWithdrawTokensData } from './VestingWithdrawTokensData';
 
 export type DataModalProps = {
   loading: boolean;
@@ -102,6 +98,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             request?.chainId as ChainId,
           )?.symbol || 'Token'
         }`;
+      case TransactionType.VESTING_WITHDRAW_TOKENS:
+        return 'Withdraw Tokens';
     }
   }, [type, request]);
 
@@ -115,6 +113,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         return ApproveTokenData;
       case TransactionType.TRANSFER_TOKEN:
         return TransferTokenData;
+      case TransactionType.VESTING_WITHDRAW_TOKENS:
+        return VestingWithdrawTokensData;
     }
   }, [type]);
 
@@ -256,7 +256,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             title="Transaction fee:"
             content={
               <Text>
-                {commifyDecimals(formatUnits(gasFee, coin.decimals), 8)}{' '}
+                {commifyDecimals(formatUnits(gasFee, coin.decimals))}{' '}
                 {coin.symbol}
               </Text>
             }

@@ -4,13 +4,14 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { AssetLogo } from 'components/AssetLogo';
-import { VestedAssets } from './components/VestedAssets';
+import { VestedAssets } from './components/VestedAssets/VestedAssets';
 import { AddressBadge } from 'components/AddressBadge';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { DefaultTheme } from '@react-navigation/native';
 import { commifyDecimals } from 'utils/helpers';
+import { TokenId } from 'types/token';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.details'>;
 
@@ -53,13 +54,10 @@ export const WalletDetails: React.FC<Props> = ({
             />
           </View>
         </View>
-        {params.token.id === 'sov' && (
-          <VestedAssets
-            registryContractName="vestingRegistry"
-            owner={address}
-            asset={params.token}
-          />
-        )}
+        <VestedAssets
+          tokenId={params.token.id as TokenId}
+          chainId={params.chainId}
+        />
       </ScrollView>
     </SafeAreaPage>
   );

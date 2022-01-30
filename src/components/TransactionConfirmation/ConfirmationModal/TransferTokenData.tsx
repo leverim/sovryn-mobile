@@ -55,10 +55,7 @@ export const TransferTokenData: React.FC<DataModalProps> = ({ request }) => {
         title="Amount:"
         content={
           <Text>
-            {commifyDecimals(
-              formatUnits(amount, token.decimals),
-              token.decimals,
-            )}{' '}
+            {commifyDecimals(formatUnits(amount, token.decimals))}{' '}
             {token.symbol}
           </Text>
         }
@@ -69,10 +66,7 @@ export const TransferTokenData: React.FC<DataModalProps> = ({ request }) => {
           title={`Amount ${coin.symbol}`}
           content={
             <Text>
-              {commifyDecimals(
-                formatUnits(amount, coin.decimals),
-                coin.decimals,
-              )}{' '}
+              {commifyDecimals(formatUnits(amount, coin.decimals))}{' '}
               {coin.symbol}
             </Text>
           }
