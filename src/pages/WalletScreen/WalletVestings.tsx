@@ -1,5 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { TransactionResponse } from '@ethersproject/providers';
+import { BigNumber } from 'ethers';
+import { DefaultTheme } from '@react-navigation/native';
 import { useVestedAssets, VestingData } from 'hooks/useVestedAssets';
 import { VestedAssetRow } from './components/VestedAssets/VestedAssetRow';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
@@ -11,7 +14,6 @@ import { useWalletAddress } from 'hooks/useWalletAddress';
 import { VestingConfig } from 'models/vesting-config';
 import { TokenId } from 'types/token';
 import { AssetLogo } from 'components/AssetLogo';
-import { BigNumber } from 'ethers';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { WithdrawVestingModal } from './components/VestedAssets/WithdrawVestingModal';
 
@@ -20,7 +22,10 @@ type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
 export const WalletVestings: React.FC<Props> = ({ route: { params } }) => {
   const owner = useWalletAddress();
   const config = VestingConfig.get(params.token.id as TokenId, params.chainId);
-  const { vestings, balances } = useVestedAssets(config, owner);
+  const { vestings, balances, refreshBalances } = useVestedAssets(
+    config,
+    owner,
+  );
   const total = balances
     .reduce((p, c) => p.add(c), BigNumber.from('0'))
     .toString();
@@ -32,11 +37,37 @@ export const WalletVestings: React.FC<Props> = ({ route: { params } }) => {
     [],
   );
 
+  const handleClose = useCallback(
+    (tx?: TransactionResponse) => {
+      setSelected(undefined);
+      // if withdrawal transaction was sent, update vesting balances
+      //   but only if tx was confirmed.
+      if (tx) {
+        tx.wait(1)
+          .then(receipt => {
+            if (receipt?.status) {
+              refreshBalances();
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      }
+    },
+    [refreshBalances],
+  );
+
   return (
     <SafeAreaPage>
       <ScrollView style={styles.container}>
         <View style={styles.detailsContainer}>
-          <AssetLogo source={config.token.icon} size={64} style={styles.logo} />
+          <View style={styles.logoWrapper}>
+            <AssetLogo
+              source={config.token.icon}
+              size={64}
+              style={styles.logo}
+            />
+          </View>
           <Text style={styles.balance}>
             {commifyDecimals(formatUnits(total, config.token.decimals))}{' '}
             {config.token.symbol}
@@ -60,7 +91,7 @@ export const WalletVestings: React.FC<Props> = ({ route: { params } }) => {
         <WithdrawVestingModal
           config={config}
           data={selected}
-          onClose={() => setSelected(undefined)}
+          onClose={handleClose}
         />
       )}
     </SafeAreaPage>
@@ -82,7 +113,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 64,
     height: 64,
-    marginBottom: 16,
   },
   balance: {
     fontWeight: 'bold',
@@ -96,5 +126,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  logoWrapper: {
+    width: 84,
+    height: 84,
+    backgroundColor: DefaultTheme.colors.card,
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderRadius: 42,
   },
 });

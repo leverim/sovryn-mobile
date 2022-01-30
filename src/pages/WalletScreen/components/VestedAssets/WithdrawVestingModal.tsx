@@ -1,6 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { BottomModal, ModalContent } from 'react-native-modals';
-import { TransactionRequest } from '@ethersproject/abstract-provider';
+import {
+  TransactionRequest,
+  TransactionResponse,
+} from '@ethersproject/abstract-provider';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'components/Text';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
@@ -10,11 +13,9 @@ import { VestingConfig } from 'models/vesting-config';
 import { VestingData } from 'hooks/useVestedAssets';
 import { useUnlockedVestingBalance } from 'pages/WalletScreen/hooks/useUnlockedVestingBalance';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
-import { WarningBadge } from 'components/WarningBadge';
-import { useCurrentAccount } from 'hooks/useCurrentAccount';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 import { transactionController } from 'controllers/TransactionController';
-import { encodeFunctionData, functionSignature } from 'utils/contract-utils';
+import { encodeFunctionData } from 'utils/contract-utils';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 
 export type DataModalProps = {
@@ -28,7 +29,7 @@ export type DataModalProps = {
 type WithdrawVestingModalProps = {
   config: VestingConfig;
   data: VestingData;
-  onClose: () => void;
+  onClose: (tx?: TransactionResponse) => void;
 };
 
 export const WithdrawVestingModal: React.FC<WithdrawVestingModalProps> = ({
@@ -52,27 +53,26 @@ export const WithdrawVestingModal: React.FC<WithdrawVestingModalProps> = ({
       const txData = encodeFunctionData('withdrawTokens(address)()', [
         owner.toLowerCase(),
       ]);
-      await transactionController.request({
+      const tx = await transactionController.request({
         to: data.vestingAddress.toLowerCase(),
         from: owner.toLowerCase(),
         data: txData,
         value: 0,
         customData: {
-          type: 'withdraw_vesting',
           amount: value,
           tokenId: config.tokenId,
         },
       });
-      onClose();
+      setSubmitting(false);
+      onClose(tx);
     } catch (e) {
       console.warn(e);
-    } finally {
       setSubmitting(false);
     }
   }, [owner, data.vestingAddress, value, config.tokenId, onClose]);
 
   return (
-    <BottomModal visible={!!data} onSwipeOut={onClose}>
+    <BottomModal visible={!!data} onSwipeOut={() => onClose()}>
       <ModalContent style={[styles.modal, dark && styles.modalDark]}>
         <View style={styles.title}>
           <Text style={styles.titleText}>Withdraw</Text>
@@ -96,14 +96,14 @@ export const WithdrawVestingModal: React.FC<WithdrawVestingModalProps> = ({
             <ReadWalletAwareWrapper>
               <Button
                 loading={loading || submitting}
-                disabled={loading || submitting || value === '0'}
+                disabled={loading || submitting}
                 title="Withdraw"
                 onPress={handleWithdrawPress}
                 intent={ButtonIntent.PRIMARY}
               />
             </ReadWalletAwareWrapper>
 
-            <Button title="Close" onPress={onClose} />
+            <Button title="Close" onPress={() => onClose()} />
           </View>
         </View>
       </ModalContent>

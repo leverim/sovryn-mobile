@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BigNumber, constants } from 'ethers/lib.esm';
 import { contractCall } from 'utils/contract-utils';
 import { cache } from 'utils/cache';
@@ -8,6 +8,7 @@ import {
   VestingContractType,
 } from 'models/vesting-config';
 import { useDebouncedEffect } from './useDebounceEffect';
+import { useNavigation } from '@react-navigation/native';
 
 export type VestingData = {
   // 0 - team vesting, 1 - vesting
@@ -26,6 +27,7 @@ const methodToVestingType = (method: VestingContractMethod) =>
   vestingTypes[method] || 0;
 
 export function useVestedAssets(vesting: VestingConfig, owner: string) {
+  const navigation = useNavigation();
   const { registryAddress, chainId } = vesting;
   owner = owner.toLowerCase();
   const [stakingContract, setStakingContract] = useState<string>(
@@ -38,11 +40,16 @@ export function useVestedAssets(vesting: VestingConfig, owner: string) {
     cache.get(`vesting_balances_${chainId}_${registryAddress}_${owner}`, []),
   );
 
-  const [loading, setLoading] = useState(true);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [loadingBalances, setLoadingBalances] = useState(false);
+  const loading = useMemo(
+    () => loadingAddresses || loadingBalances,
+    [loadingAddresses, loadingBalances],
+  );
 
   useDebouncedEffect(
     () => {
-      setLoading(true);
+      setLoadingAddresses(true);
       Promise.all([
         // get staking contract
         contractCall<Array<string>>(
@@ -116,45 +123,62 @@ export function useVestedAssets(vesting: VestingConfig, owner: string) {
         .catch(error => {
           console.log('vestings', error);
         })
-        .finally(() => setLoading(false));
+        .finally(() => setLoadingAddresses(false));
     },
     300,
     [owner, chainId, registryAddress, vesting],
   );
 
+  const refreshBalances = useCallback(() => {
+    setBalances(
+      cache.get(`vesting_balances_${chainId}_${registryAddress}_${owner}`, []),
+    );
+    if (vestings.length && stakingContract) {
+      setLoadingBalances(true);
+      Promise.all(
+        vestings.map(vest =>
+          contractCall(
+            chainId,
+            stakingContract,
+            'balanceOf(address)(uint256)',
+            [vest.vestingAddress],
+          ).then(response => response[0].toString()),
+        ),
+      )
+        .then(response => {
+          setBalances(response);
+          cache.set(
+            `vesting_balances_${chainId}_${registryAddress}_${owner}`,
+            response,
+          );
+        })
+        .catch(e => {
+          console.log('balance-of', e);
+        })
+        .finally(() => setLoadingBalances(false));
+    }
+  }, [chainId, owner, registryAddress, stakingContract, vestings]);
+
   useDebouncedEffect(
     () => {
-      if (vestings.length && stakingContract) {
-        Promise.all(
-          vestings.map(vest =>
-            contractCall(
-              chainId,
-              stakingContract,
-              'balanceOf(address)(uint256)',
-              [vest.vestingAddress],
-            ).then(response => response[0].toString()),
-          ),
-        )
-          .then(response => {
-            setBalances(response);
-            cache.set(
-              `vesting_balances_${chainId}_${registryAddress}_${owner}`,
-              response,
-            );
-          })
-          .catch(e => {
-            console.log('balance-of', e);
-          });
-      }
+      refreshBalances();
     },
     300,
-    [vestings, stakingContract, chainId, owner, registryAddress],
+    [refreshBalances],
   );
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', refreshBalances);
+    return unsubscribe;
+  }, [navigation, refreshBalances]);
 
   return {
     stakingContract,
     vestings,
     balances,
     loading,
+    loadingAddresses,
+    loadingBalances,
+    refreshBalances,
   };
 }

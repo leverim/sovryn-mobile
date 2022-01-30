@@ -26,9 +26,7 @@ export const SendCoinData: React.FC<DataModalProps> = ({ request }) => {
         title="Amount:"
         content={
           <Text>
-            {commifyDecimals(
-              formatUnits(request.value, coin.decimals),
-            ).toString()}{' '}
+            {commifyDecimals(formatUnits(request.value, coin.decimals))}{' '}
             {coin.symbol}
           </Text>
         }
