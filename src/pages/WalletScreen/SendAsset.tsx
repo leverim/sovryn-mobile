@@ -55,7 +55,7 @@ export const SendAsset: React.FC<Props> = ({
     ).toLowerCase();
   }, [params.token, params.chainId, receiver]);
 
-  const owner = useWalletAddress();
+  const owner = useWalletAddress().toLowerCase();
 
   useEffect(() => {
     getProvider(params.chainId)

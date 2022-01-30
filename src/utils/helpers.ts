@@ -1,3 +1,4 @@
+import { networks } from 'config/networks';
 import { BigNumberish, ethers } from 'ethers';
 import { commify } from 'ethers/lib/utils';
 import { ImageSourcePropType } from 'react-native';
@@ -88,3 +89,13 @@ export const commifyDecimals = (
 
 export const isReadOnlyWallet = (account: BaseAccount) =>
   account?.type === undefined || account.type === AccountType.PUBLIC_ADDRESS;
+
+export const getTxInExplorer = (hash: string, chainId: ChainId) => {
+  const explorerUrl = networks.find(item => item.chainId === chainId)?.explorer;
+  return `${explorerUrl}/tx/${hash}`;
+};
+
+export const getAddressInExplorer = (address: string, chainId: ChainId) => {
+  const explorerUrl = networks.find(item => item.chainId === chainId)?.explorer;
+  return `${explorerUrl}/address/${address.toLowerCase()}`;
+};
