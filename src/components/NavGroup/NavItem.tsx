@@ -15,7 +15,7 @@ export type NavItemProps = {
   hideArrow?: boolean;
   isFirst?: boolean;
   isLast?: boolean;
-  value?: string | number;
+  value?: React.ReactNode;
   danger?: boolean;
 };
 
@@ -40,6 +40,16 @@ export const NavItem: React.FC<NavItemProps> = ({
     [danger],
   );
 
+  const renderValue = useMemo(() => {
+    if (!value) {
+      return null;
+    }
+    if (typeof value === 'string' || typeof value === 'number') {
+      return <Text style={styles.rightContainerText}>{value}</Text>;
+    }
+    return value;
+  }, [value, styles]);
+
   return (
     <Pressable
       style={[
@@ -56,7 +66,7 @@ export const NavItem: React.FC<NavItemProps> = ({
         <Text>{title}</Text>
       </View>
       <View style={styles.rightContainer}>
-        {value && <Text style={styles.rightContainerText}>{value}</Text>}
+        {renderValue}
         {!hideArrow && (
           <ChevronRight
             fill={pressedIn ? DarkTheme.colors.card : DarkTheme.colors.border}

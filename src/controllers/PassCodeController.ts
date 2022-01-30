@@ -39,9 +39,12 @@ class PassCodeController {
 
   protected _unlocked: boolean = false;
 
-  public async request(title?: string): Promise<string> {
+  public async request(
+    title?: string,
+    skipBiometrics: boolean = false,
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.hub.emit('request', { resolve, reject, title });
+      this.hub.emit('request', { resolve, reject, title, skipBiometrics });
     });
   }
 
@@ -96,7 +99,7 @@ class PassCodeController {
   ): Promise<string | false> {
     const type = await this.getPasscodeType();
 
-    if (!type) {
+    if (!type || type === PassCodeType.PASSCODE) {
       return Promise.resolve(false);
     }
 

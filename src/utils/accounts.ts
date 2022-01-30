@@ -169,6 +169,20 @@ class AccountManager extends EventEmitter {
     this.onLoaded();
     this.onSelected();
   }
+  public async changePassword(currentPassword: string, newPassword: string) {
+    const items: Account[] = [];
+    for (let account of this._accounts) {
+      const decrypted = await this._encryptor.decrypt(
+        currentPassword,
+        account.secret!,
+      );
+      const encrypted = await this._encryptor.encrypt(newPassword, decrypted);
+      items.push({ ...account, secret: encrypted });
+    }
+    this._accounts = items;
+    await this.save();
+    this.onLoaded();
+  }
   protected async save() {
     await EncryptedStorage.setItem(
       'account_list',
