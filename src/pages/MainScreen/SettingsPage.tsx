@@ -11,6 +11,7 @@ import { WalletPrivateKey } from 'pages/SettingsScreen/WalletPrivateKey';
 import { WalletRecoveryPhrase } from 'pages/SettingsScreen/WalletRecoveryPhrase';
 import { SettingsPasscode } from 'pages/SettingsScreen/SettingsPasscode';
 import { SettingsAppearance } from 'pages/SettingsScreen/SettingsAppearance';
+import { SettingsPasscodeChange } from 'pages/SettingsScreen/SettingsPasscodeChange';
 
 type AccountProps = {
   index: number;
@@ -28,7 +29,8 @@ export type SettingsStackProps = {
   'settings.wallet.recovery-phrase': AccountProps;
   'settings.create': undefined;
   'settings.appearance': undefined;
-  'settings.passcode': undefined;
+  'settings.passcode': { password: string };
+  'settings.passcode.change': { password: string };
 };
 
 const Stack = createNativeStackNavigator<SettingsStackProps>();
@@ -50,6 +52,11 @@ export const SettingsPage: React.FC = () => {
         name="settings.passcode"
         component={SettingsPasscode}
         options={{ title: 'Passcode' }}
+      />
+      <Stack.Screen
+        name="settings.passcode.change"
+        component={SettingsPasscodeChange}
+        options={{ title: 'Change Passcode' }}
       />
       <Stack.Screen
         name="settings.appearance"

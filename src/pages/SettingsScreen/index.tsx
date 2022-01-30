@@ -1,5 +1,5 @@
 import React, { useCallback, useContext } from 'react';
-import { ScrollView } from 'react-native';
+import { Alert, ScrollView } from 'react-native';
 import { AppContext } from 'context/AppContext';
 import { Setting, settings } from 'utils/settings';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
@@ -12,16 +12,50 @@ import { accounts } from 'utils/accounts';
 import { globalStyles } from 'global.styles';
 import { networks } from 'config/networks';
 import { ChainId } from 'types/network';
+import { passcode } from 'controllers/PassCodeController';
+import { usePrettyBiometryName } from 'hooks/useBiometryType';
 
 type Props = NativeStackScreenProps<SettingsStackProps, 'settings.index'>;
 
 export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   const { signOut } = useContext(AppContext);
+  const biometryName = usePrettyBiometryName();
 
   const navigate = useCallback(
     (screen: keyof SettingsStackProps) => () => navigation.navigate(screen),
     [navigation],
   );
+
+  const handlePasscodePage = useCallback(async () => {
+    try {
+      const password = await passcode.request('Enter your passcode', true);
+      navigation.navigate('settings.passcode', { password });
+    } catch (error) {
+      console.warn(error);
+    }
+  }, [navigation]);
+
+  const handleDeleteRequest = useCallback(async () => {
+    Alert.alert(
+      'Danger Alert!!!',
+      'This will delete your recovery seeds, private keys, passcode and any other information app had about your wallets! Make sure you have your recovery information stored safelly somewhere else before proceeding! Action is inreversable!!!',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await passcode.request('Unlock Wallet');
+              signOut();
+            } catch (e) {
+              Alert.alert('Data was not removed.');
+            }
+          },
+        },
+      ],
+    );
+  }, [signOut]);
 
   const network = networks.find(
     item =>
@@ -47,21 +81,18 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 
         <NavGroup>
           <NavItem
-            title="Passcode & Face ID"
-            onPress={navigate('settings.passcode')}
-            value={'On'}
+            title={`Passcode ${biometryName && `& ${biometryName}`}`}
+            onPress={handlePasscodePage}
           />
-          <NavItem
+          {/* <NavItem
             title="Appearance"
             onPress={navigate('settings.appearance')}
-          />
+          /> */}
         </NavGroup>
 
-        {__DEV__ && (
-          <NavGroup>
-            <NavItem title="Sign out" onPress={signOut} danger />
-          </NavGroup>
-        )}
+        <NavGroup>
+          <NavItem title="Delete data" onPress={handleDeleteRequest} danger />
+        </NavGroup>
       </ScrollView>
     </SafeAreaPage>
   );

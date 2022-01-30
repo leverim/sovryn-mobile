@@ -1,12 +1,5 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import { Alert, ScrollView, View } from 'react-native';
-import { AppContext } from 'context/AppContext';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { SettingsStackProps } from 'pages/MainScreen/SettingsPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -15,7 +8,6 @@ import { NavItem } from 'components/NavGroup/NavItem';
 import { globalStyles } from 'global.styles';
 import { Text } from 'components/Text';
 import { accounts, AccountType } from 'utils/accounts';
-import { passcode } from 'controllers/PassCodeController';
 import { makeWalletPrivateKey, wallet } from 'utils/wallet';
 import { Wallet } from 'ethers';
 import { currentChainId } from 'utils/helpers';
@@ -64,14 +56,6 @@ export const WalletDerivationPath: React.FC<Props> = ({
         console.log(e);
       });
   }, [password, account.secret]);
-
-  // const account = accounts.get(params.index);
-  // navigation.setOptions({ title: account.name });
-
-  // const activate = useCallback(
-  //   () => accounts.select(params.index),
-  //   [params.index],
-  // );
 
   const wallets = useMemo(() => {
     if (!masterSeed) {

@@ -8,7 +8,7 @@ List of planned and available features:
 - [x] List supported assets and balances
 - [x] Send any asset to other wallets (addresses)
 - [x] Vested assets (list)
-- [ ] Vested assets (withdraw unlocked)
+- [x] Vested assets (withdraw unlocked)
 - [ ] Lending
 - [ ] Liquidity mining
 - [ ] Borrowing

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Modal, ModalContent } from 'react-native-modals';
 
-import { passcode } from 'controllers/PassCodeController';
+import { passcode, PassCodeType } from 'controllers/PassCodeController';
 import { useBiometryType } from 'hooks/useBiometryType';
 import { PassCodeSetupKeyboard } from './PassCodeSetup';
 import { PASSCODE_LENGTH } from 'utils/constants';
@@ -20,7 +20,12 @@ export const PasscodeConfirmation: React.FC<PasscodeConfirmation> = () => {
   const biometryType = useBiometryType();
   const [showKeypad, setShowKeypad] = useState(false);
 
-  const ref = useRef<{ title?: string; resolve: any; reject: any }>();
+  const ref = useRef<{
+    title?: string;
+    skipBiometrics: boolean;
+    resolve: any;
+    reject: any;
+  }>();
 
   const keypadPromiseRef = useRef<{ resolve: any; reject: any }>();
 
@@ -32,7 +37,13 @@ export const PasscodeConfirmation: React.FC<PasscodeConfirmation> = () => {
   }, []);
 
   const tryUnlockingWallet = useCallback(async () => {
-    if (biometryType) {
+    const usesBiometry = await passcode.getPasscodeType();
+    console.log('tru unlocking', ref.current);
+    if (
+      biometryType &&
+      usesBiometry === PassCodeType.BIOMETRY &&
+      !ref.current?.skipBiometrics
+    ) {
       try {
         return await passcode.unlock(ref.current?.title);
       } catch (error) {
@@ -68,8 +79,8 @@ export const PasscodeConfirmation: React.FC<PasscodeConfirmation> = () => {
   useEffect(() => {
     const subscription = passcode.hub.on(
       'request',
-      ({ resolve, reject }, title) => {
-        ref.current = { resolve, reject, title };
+      ({ resolve, reject, title, skipBiometrics }) => {
+        ref.current = { resolve, reject, title, skipBiometrics };
         tryUnlocking();
       },
     );
@@ -105,7 +116,7 @@ export const PasscodeConfirmation: React.FC<PasscodeConfirmation> = () => {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <View style={styles.innerContainer}>
             <PassCodeSetupKeyboard
-              title="Unlock wallet"
+              title={ref.current?.title || 'Unlock wallet'}
               code={code}
               setCode={handleCodeChange}
               onAbort={onRejectPressed}
