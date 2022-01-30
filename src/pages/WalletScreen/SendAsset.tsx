@@ -89,6 +89,7 @@ export const SendAsset: React.FC<Props> = ({
     getProvider(params.chainId)
       .estimateGas({
         to,
+        from: owner,
         value: params.token.native
           ? utils.parseUnits(amount || '0', params.token.decimals)
           : 0,
@@ -100,7 +101,7 @@ export const SendAsset: React.FC<Props> = ({
       .then(response => {
         setGas(!response ? '21000' : response.toString());
       });
-  }, [params.chainId, params.token, gasPrice, data, nonce, to, amount]);
+  }, [params.chainId, params.token, gasPrice, data, nonce, to, amount, owner]);
 
   const submit = useCallback(async () => {
     setLoading(true);
