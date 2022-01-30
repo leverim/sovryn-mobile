@@ -47,7 +47,11 @@ export const InputField: React.FC<Props & TextInputProps> = ({
           <Text style={styles.label}>{label}</Text>
         </View>
       )}
-      <View style={styles.inputContainer}>
+      <View
+        style={[
+          styles.inputContainer,
+          props.multiline && styles.inputContainerMultiline,
+        ]}>
         <TextInput
           placeholderTextColor={'gray'}
           value={_value}
@@ -56,6 +60,7 @@ export const InputField: React.FC<Props & TextInputProps> = ({
             styles.input,
             !editable && styles.inputReadOnly,
             dark && styles.inputDark,
+            props.multiline && styles.inputMultiline,
           ]}
           {...props}
         />
@@ -86,12 +91,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  inputContainerMultiline: {
+    height: 128,
+  },
   input: {
     paddingVertical: 6,
     paddingHorizontal: 12,
     fontSize: 16,
     height: 40,
     width: '100%',
+  },
+  inputMultiline: {
+    height: 120,
   },
   inputReadOnly: {
     opacity: 0.5,

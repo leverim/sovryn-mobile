@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { WelcomeFlowStackProps } from '.';
@@ -18,19 +18,33 @@ export const Welcome: React.FC<Props> = ({ navigation }) => {
           You can create a new wallet or connect any existing one
         </Text>
         <View style={styles.buttonContainer}>
-          <Pressable
-            style={styles.button}
-            onPress={() => navigation.navigate('onboarding.create')}>
-            <Text style={styles.buttonText}>Create</Text>
-          </Pressable>
-          <Pressable
-            style={styles.button}
-            onPress={() => navigation.navigate('onboarding.import')}>
-            <Text style={styles.buttonText}>Import</Text>
-          </Pressable>
+          <Button
+            title="Create"
+            onPress={() => navigation.navigate('onboarding.create')}
+          />
+          <Button
+            title="Import"
+            onPress={() => navigation.navigate('onboarding.import')}
+          />
         </View>
       </View>
     </SafeAreaPage>
+  );
+};
+
+const Button: React.FC<{ title: string; onPress: () => void }> = ({
+  title,
+  onPress,
+}) => {
+  const [pressed, setPressed] = useState(false);
+  return (
+    <Pressable
+      style={[styles.button, pressed && styles.buttonPressed]}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      onPress={onPress}>
+      <Text style={styles.buttonText}>{title}</Text>
+    </Pressable>
   );
 };
 
@@ -57,6 +71,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 48,
     paddingVertical: 18,
     borderRadius: 12,
+  },
+  buttonPressed: {
+    transform: [{ scale: 1.05 }],
   },
   buttonText: {
     fontWeight: '500',

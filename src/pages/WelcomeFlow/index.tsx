@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import { AccountType } from 'utils/accounts';
 import { CreatePasscode } from './CreatePasscode';
 import { CreateWallet } from './CreateWallet';
 import { ImportWallet } from './ImportWallet';
@@ -9,7 +10,7 @@ export type WelcomeFlowStackProps = {
   onboarding: undefined;
   'onboarding.create': undefined;
   'onboarding.import': undefined;
-  'onboarding.passcode': { secret: string };
+  'onboarding.passcode': { name: string; secret: string; type: AccountType };
 };
 
 const Stack = createNativeStackNavigator<WelcomeFlowStackProps>();
@@ -35,7 +36,7 @@ export const WelcomeFlow = () => {
       <Stack.Screen
         name="onboarding.passcode"
         component={CreatePasscode}
-        options={{ title: 'Set Up Sovryn Passcode' }}
+        options={{ title: 'Set Up Passcode' }}
       />
     </Stack.Navigator>
   );

@@ -5,14 +5,17 @@ import { Pressable, PressableProps, StyleSheet, ViewStyle } from 'react-native';
 
 type BaseButtonProps = {
   loading?: boolean;
+  /** @deprecated use deciated props instead */
   intent?: ButtonIntent;
   pressableStyle?: ViewStyle;
+  primary?: boolean;
 };
 
 type ButtonProps = {
   title: string;
 } & BaseButtonProps;
 
+/** @deprecated */
 export enum ButtonIntent {
   PRIMARY,
   SECONDARY,
@@ -34,6 +37,7 @@ export const ButtonBase: React.FC<BaseButtonProps & PressableProps> = ({
   disabled,
   onPressIn,
   onPressOut,
+  primary = false,
   intent = ButtonIntent.SECONDARY,
   children,
   pressableStyle,
@@ -62,8 +66,11 @@ export const ButtonBase: React.FC<BaseButtonProps & PressableProps> = ({
   );
 
   const styles = useMemo(
-    () => (intent === ButtonIntent.PRIMARY ? primaryStyles : defaultStyles),
-    [intent],
+    () =>
+      intent === ButtonIntent.PRIMARY || primary
+        ? primaryStyles
+        : defaultStyles,
+    [intent, primary],
   );
 
   const mapped = useMemo(

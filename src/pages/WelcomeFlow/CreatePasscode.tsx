@@ -2,7 +2,6 @@ import React, { useCallback, useContext } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { WelcomeFlowStackProps } from '.';
 import { AppContext } from 'context/AppContext';
-import { AccountType } from 'utils/accounts';
 import { PassCodeSetup } from 'components/PassCode/PassCodeSetup';
 
 type Props = NativeStackScreenProps<
@@ -15,7 +14,7 @@ export const CreatePasscode: React.FC<Props> = ({ route: { params } }) => {
 
   const handleConfirm = useCallback(
     async (password: string) => {
-      createWallet('Wallet #1', AccountType.MNEMONIC, params.secret, password)
+      createWallet(params.name, params.type, params.secret, password)
         .then(() => {
           console.log('create wallet.');
         })
@@ -23,7 +22,7 @@ export const CreatePasscode: React.FC<Props> = ({ route: { params } }) => {
           console.error(err);
         });
     },
-    [params.secret, createWallet],
+    [createWallet, params.name, params.type, params.secret],
   );
 
   return <PassCodeSetup onPasscodeConfirmed={handleConfirm} />;
