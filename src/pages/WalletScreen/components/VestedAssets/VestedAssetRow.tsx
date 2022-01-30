@@ -17,12 +17,6 @@ export const VestedAssetRow: React.FC<VestedAssetRowProps> = ({
   onWithdraw,
   ...props
 }) => {
-  // const { value, loading, loaded } = useCall(
-  //   currentChainId(),
-  //   vesting.vestingAddress,
-  //   'SOV()(address)',
-  //   [],
-  // );
   return (
     <NavItem
       {...props}
