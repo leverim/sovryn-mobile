@@ -1,39 +1,56 @@
 import React, { useCallback, useMemo } from 'react';
-import { View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { generateMnemonic } from 'utils/wallet-utils';
-import { PressableButton } from 'components/PressableButton';
-import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { WelcomeFlowStackProps } from '.';
+import { MnemonicPhrasePrinter } from 'components/MnemonicPhrasePrinter';
+import { globalStyles } from 'global.styles';
+import { WarningBadge } from 'components/WarningBadge';
+import { Button } from 'components/Buttons/Button';
 
 type Props = NativeStackScreenProps<WelcomeFlowStackProps, 'onboarding.create'>;
 
 export const CreateWallet: React.FC<Props> = ({ navigation }) => {
-  const mnemonic = useMemo(() => generateMnemonic().split(' '), []);
+  const mnemonic = useMemo(() => generateMnemonic(), []);
 
-  const handleConfirm = useCallback(
+  const handleContinue = useCallback(
     () =>
-      navigation.navigate('onboarding.passcode', {
-        secret: mnemonic.join(' '),
+      navigation.navigate('onboarding.create.verify', {
+        seed: mnemonic,
       }),
     [navigation, mnemonic],
   );
 
   return (
-    <SafeAreaPage>
-      <Text>Create Wallet</Text>
-      <View>
-        {mnemonic.map((word, index) => (
-          <View style={{ padding: 3 }} key={word}>
-            <Text>
-              #{index + 1}. {word}
-            </Text>
-          </View>
-        ))}
-      </View>
+    <SafeAreaPage keyboardAvoiding scrollView>
+      <PageContainer>
+        <Text style={[globalStyles.title, styles.title]}>
+          Your Recovery Phrase
+        </Text>
 
-      <PressableButton title="Confirm" onPress={handleConfirm} />
+        <Text style={styles.description}>
+          Write down or copy these words in the right order and save them
+          somewhere safe.
+        </Text>
+
+        <WarningBadge text="Never share recovery phrase with anyone, store it securely!" />
+
+        <MnemonicPhrasePrinter text={mnemonic} />
+
+        <Button title="Continue" onPress={handleContinue} primary />
+      </PageContainer>
     </SafeAreaPage>
   );
 };
+
+const styles = StyleSheet.create({
+  title: {
+    textAlign: 'center',
+  },
+  description: {
+    textAlign: 'center',
+    marginBottom: 18,
+  },
+});

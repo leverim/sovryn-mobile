@@ -1,7 +1,7 @@
 import { networks } from 'config/networks';
 import { BigNumberish, ethers } from 'ethers';
 import { commify } from 'ethers/lib/utils';
-import { ImageSourcePropType } from 'react-native';
+import { Dimensions, ImageSourcePropType, PixelRatio } from 'react-native';
 import { ContractName } from 'types/contract';
 import { ChainId } from 'types/network';
 import { AccountType, BaseAccount } from './accounts';
@@ -99,3 +99,9 @@ export const getAddressInExplorer = (address: string, chainId: ChainId) => {
   const explorerUrl = networks.find(item => item.chainId === chainId)?.explorer;
   return `${explorerUrl}/address/${address.toLowerCase()}`;
 };
+
+// Scale sizes to other screens, scale it relativelly to iphone 11 (width 441 dp)
+const { width } = Dimensions.get('window');
+const scale = 414 / width;
+
+export const px = (dp: number) => dp / scale;

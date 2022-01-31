@@ -1,24 +1,32 @@
 import { DarkTheme } from '@react-navigation/native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from 'react-native';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { StyleSheet, View, Alert, Dimensions } from 'react-native';
 import { Modal, ModalContent } from 'react-native-modals';
 
 import { passcode, PassCodeType } from 'controllers/PassCodeController';
 import { useBiometryType } from 'hooks/useBiometryType';
 import { PassCodeSetupKeyboard } from './PassCodeSetup';
 import { PASSCODE_LENGTH } from 'utils/constants';
+import { useKeyboardHeight } from 'hooks/useKeyboardHeight';
 
 type PasscodeConfirmation = {};
 
 export const PasscodeConfirmation: React.FC<PasscodeConfirmation> = () => {
   const biometryType = useBiometryType();
   const [showKeypad, setShowKeypad] = useState(false);
+
+  const height = useKeyboardHeight();
+
+  const containerHeight = useMemo(
+    () => Dimensions.get('window').height - (height || 216),
+    [height],
+  );
 
   const ref = useRef<{
     title?: string;
@@ -109,11 +117,11 @@ export const PasscodeConfirmation: React.FC<PasscodeConfirmation> = () => {
   }, []);
 
   return (
-    <Modal visible={showKeypad} style={styles.modal}>
-      <ModalContent style={styles.modalContent}>
-        <KeyboardAvoidingView
-          style={styles.keyboardView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <Modal
+      visible={showKeypad}
+      style={[styles.modal, { height: containerHeight }]}>
+      <ModalContent style={[styles.modalContent, { height: containerHeight }]}>
+        <View style={[styles.keyboardView, { height: containerHeight }]}>
           <View style={styles.innerContainer}>
             <PassCodeSetupKeyboard
               title={ref.current?.title || 'Unlock wallet'}
@@ -122,7 +130,7 @@ export const PasscodeConfirmation: React.FC<PasscodeConfirmation> = () => {
               onAbort={onRejectPressed}
             />
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </ModalContent>
     </Modal>
   );
@@ -132,26 +140,26 @@ const styles = StyleSheet.create({
   modal: {
     backgroundColor: DarkTheme.colors.background,
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    flex: 1,
     margin: 0,
-    padding: 0,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    flex: 1,
   },
   modalContent: {
+    width: '100%',
     backgroundColor: DarkTheme.colors.background,
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    flex: 1,
-    padding: 0,
-    margin: 0,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
   },
   keyboardView: {
     padding: 20,
-    flex: 1,
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
   },
   innerContainer: {

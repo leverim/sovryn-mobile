@@ -1,48 +1,20 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { validateMnemonic } from 'utils/wallet-utils';
-import { InputField } from 'components/InputField';
-import { PressableButton } from 'components/PressableButton';
-import { SafeAreaPage } from 'templates/SafeAreaPage';
-import { Text } from 'components/Text';
+import React, { useCallback } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { WelcomeFlowStackProps } from '.';
-import { DEBUG_SEED } from 'utils/constants';
+import { AccountType } from 'utils/accounts';
+import { ImportWalletView } from 'components/WalletCreation/ImportWalletView';
 
 type Props = NativeStackScreenProps<WelcomeFlowStackProps, 'onboarding.import'>;
 
 export const ImportWallet: React.FC<Props> = ({ navigation }) => {
-  const [seed, setSeed] = useState(__DEV__ ? DEBUG_SEED : '');
-
-  const valid = useMemo(() => {
-    const words = seed.split(' ');
-    if (words.length < 12) {
-      return false;
-    }
-    return validateMnemonic(seed);
-  }, [seed]);
-
-  const handleConfirm = useCallback(
-    () => navigation.navigate('onboarding.passcode', { secret: seed }),
-    [navigation, seed],
+  const handleImport = useCallback(
+    (name: string, secret: string, type: AccountType) =>
+      navigation.navigate('onboarding.passcode', {
+        name,
+        secret,
+        type: type!,
+      }),
+    [navigation],
   );
-
-  return (
-    <SafeAreaPage>
-      <Text>Enter your seed phrase:</Text>
-      <InputField
-        value={seed}
-        onChangeText={setSeed}
-        multiline
-        numberOfLines={6}
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoComplete="off"
-      />
-      <PressableButton
-        title="Confirm"
-        onPress={handleConfirm}
-        disabled={!valid}
-      />
-    </SafeAreaPage>
-  );
+  return <ImportWalletView onHandleImport={handleImport} />;
 };
