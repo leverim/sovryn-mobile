@@ -1,22 +1,23 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
-  Animated,
   Button,
-  KeyboardAvoidingView,
-  Platform,
+  Dimensions,
   Pressable,
   StyleSheet,
   TextInput,
   View,
 } from 'react-native';
-import { BIOMETRY_TYPE } from 'react-native-keychain';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { Text } from 'components/Text';
 
 import LockIcon from 'assets/lock-icon.svg';
 import { passcode, PassCodeType } from 'controllers/PassCodeController';
 import { PASSCODE_LENGTH } from 'utils/constants';
 import { DefaultTheme } from '@react-navigation/native';
+import { usePrettyBiometryName } from 'hooks/useBiometryType';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { useKeyboardHeight } from 'hooks/useKeyboardHeight';
 
 type PassCodeSetupProps = {
   onPasscodeConfirmed?: (code: string) => void;
@@ -34,18 +35,18 @@ export const PassCodeSetup: React.FC<PassCodeSetupProps> = ({
   const [loading, setLoading] = useState(false);
 
   const [step, setStep] = useState<Step>(Step.NEW_PASSCODE);
+  const supportedBiometrics = usePrettyBiometryName();
 
   const [code, setCode] = useState('');
   const [inputValue, setInputValue] = useState(code);
-  const [supportedBiometrics, setSupportedBiometrics] =
-    useState<BIOMETRY_TYPE | null>(null);
 
-  useEffect(() => {
-    passcode
-      .supportedBiometrics()
-      .then(supported => setSupportedBiometrics(supported))
-      .catch(() => setSupportedBiometrics(null));
-  }, []);
+  const offset = useHeaderHeight();
+  const height = useKeyboardHeight();
+
+  const containerHeight = useMemo(
+    () => Dimensions.get('window').height - offset - (height || 216),
+    [offset, height],
+  );
 
   const handlePasscodeSaving = useCallback(
     async (useBiometrics: boolean) => {
@@ -96,33 +97,32 @@ export const PassCodeSetup: React.FC<PassCodeSetupProps> = ({
   );
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <Animated.View style={styles.innerContainer}>
-        {step === Step.NEW_PASSCODE && (
+    <SafeAreaPage>
+      {step === Step.NEW_PASSCODE && (
+        <View style={[styles.container, { height: containerHeight }]}>
           <PassCodeSetupKeyboard
             code={inputValue}
             setCode={handleCodeChange}
             title="Enter your new passcode"
           />
-        )}
-        {step === Step.VERIFY_PASSCODE && (
+        </View>
+      )}
+      {step === Step.VERIFY_PASSCODE && (
+        <View style={[styles.container, { height: containerHeight }]}>
           <PassCodeSetupKeyboard
             code={inputValue}
             setCode={handleCodeChange}
             title="Verify your new passcode"
           />
-        )}
-        {step === Step.BIOMETRICS && supportedBiometrics && (
-          <PassCodeSetupBiometrics
-            disableButtons={loading}
-            biometryType={supportedBiometrics}
-            onSubmit={handlePasscodeSaving}
-          />
-        )}
-      </Animated.View>
-    </KeyboardAvoidingView>
+        </View>
+      )}
+      {step === Step.BIOMETRICS && supportedBiometrics && (
+        <PassCodeSetupBiometrics
+          disableButtons={loading}
+          onSubmit={handlePasscodeSaving}
+        />
+      )}
+    </SafeAreaPage>
   );
 };
 
@@ -174,36 +174,37 @@ export const PassCodeSetupKeyboard: React.FC<PassCodeSetupKeyboardProps> = ({
 };
 
 type PassCodeSetupBiometricsProps = {
-  biometryType: BIOMETRY_TYPE;
   disableButtons: boolean;
   onSubmit: (useBiometry: boolean) => void;
 };
 
 const PassCodeSetupBiometrics: React.FC<PassCodeSetupBiometricsProps> = ({
-  biometryType,
   disableButtons,
   onSubmit,
 }) => {
+  const biometryType = usePrettyBiometryName();
   return (
-    <View style={styles.innerContainer}>
-      <View style={styles.iconWrapper}>
-        <LockIcon fill="white" width={48} height={48} />
+    <View style={styles.biometricsContainer}>
+      <View style={styles.innerContainer}>
+        <View style={styles.iconWrapper}>
+          <LockIcon fill="white" width={48} height={48} />
+        </View>
+        <Text>Login with {biometryType}</Text>
+        <Pressable
+          onPress={() => onSubmit(true)}
+          disabled={disableButtons}
+          style={[
+            styles.biometryButton,
+            disableButtons && styles.biometryButtonDisabled,
+          ]}>
+          <Text style={styles.biometryButtonText}>Enable {biometryType}</Text>
+        </Pressable>
+        <Button
+          onPress={() => onSubmit(false)}
+          disabled={disableButtons}
+          title="Skip"
+        />
       </View>
-      <Text>Login with {biometryType}</Text>
-      <Pressable
-        onPress={() => onSubmit(true)}
-        disabled={disableButtons}
-        style={[
-          styles.biometryButton,
-          disableButtons && styles.biometryButtonDisabled,
-        ]}>
-        <Text style={styles.biometryButtonText}>Enable {biometryType}</Text>
-      </Pressable>
-      <Button
-        onPress={() => onSubmit(false)}
-        disabled={disableButtons}
-        title="Skip"
-      />
     </View>
   );
 };
@@ -211,8 +212,16 @@ const PassCodeSetupBiometrics: React.FC<PassCodeSetupBiometricsProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  biometricsContainer: {
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    borderColor: 'red',
+    paddingVertical: 24,
     flex: 1,
   },
   innerContainer: {

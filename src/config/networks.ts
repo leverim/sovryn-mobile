@@ -1,5 +1,5 @@
 import type { Network } from 'types/network';
-import { INFURA_API_KEY } from 'env';
+// import { INFURA_API_KEY } from 'env';
 
 function checkNetworks<S extends string, R extends number>(
   arr: (Network & { id: S } & { chainId: R })[],

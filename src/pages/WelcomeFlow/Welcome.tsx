@@ -6,6 +6,7 @@ import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { globalStyles } from 'global.styles';
 import { Text } from 'components/Text';
 import { DarkTheme } from '@react-navigation/native';
+import { px } from 'utils/helpers';
 
 type Props = NativeStackScreenProps<WelcomeFlowStackProps, 'onboarding'>;
 
@@ -56,8 +57,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   subtitle: {
-    marginBottom: 36,
-    fontSize: 18,
+    marginBottom: px(36),
+    fontSize: px(18),
     textAlign: 'center',
   },
   buttonContainer: {
@@ -68,16 +69,16 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: DarkTheme.colors.primary,
-    paddingHorizontal: 48,
-    paddingVertical: 18,
-    borderRadius: 12,
+    paddingHorizontal: px(48),
+    paddingVertical: px(18),
+    borderRadius: px(12),
   },
   buttonPressed: {
     transform: [{ scale: 1.05 }],
   },
   buttonText: {
     fontWeight: '500',
-    fontSize: 18,
+    fontSize: px(18),
     textAlign: 'center',
   },
 });

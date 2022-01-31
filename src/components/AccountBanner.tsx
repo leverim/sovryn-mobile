@@ -7,7 +7,7 @@ import {
 } from '@react-navigation/native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { AccountType, BaseAccount } from 'utils/accounts';
-import { commifyDecimals, currentChainId, prettifyTx } from 'utils/helpers';
+import { commifyDecimals, currentChainId, prettifyTx, px } from 'utils/helpers';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { tokenUtils } from 'utils/token-utils';
 import { Text } from './Text';
@@ -135,14 +135,14 @@ const styles = StyleSheet.create({
   },
   addressText: {
     fontWeight: '300',
-    fontSize: 18,
+    fontSize: px(16),
   },
   copyIconHolder: {
     opacity: 0.5,
     marginLeft: 12,
   },
   balanceText: {
-    fontSize: 36,
+    fontSize: px(30),
   },
   actions: {
     marginTop: 24,

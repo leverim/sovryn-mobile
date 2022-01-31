@@ -4,9 +4,10 @@ export function useDebouncedEffect(
   effect: EffectCallback,
   delay: number,
   deps: DependencyList,
+  _firstTime: boolean = false,
 ) {
   const data = useRef<{ firstTime: boolean; clearFunc?: void | unknown }>({
-    firstTime: false,
+    firstTime: _firstTime,
   });
   useEffect(() => {
     const { firstTime, clearFunc } = data.current;
