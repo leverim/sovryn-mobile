@@ -73,7 +73,7 @@ export const WalletPage: React.FC<Props> = ({
         },
       },
     ]);
-  }, [params.index]);
+  }, [navigation, params.index]);
 
   return (
     <SafeAreaPage>
