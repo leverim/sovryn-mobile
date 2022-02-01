@@ -4,6 +4,7 @@ import { TokenId } from 'types/token';
 export const swapables: Partial<Record<ChainId, TokenId[]>> = {
   30: [
     'rbtc',
+    'wrbtc',
     'sov',
     'eths',
     'fish',
@@ -11,11 +12,11 @@ export const swapables: Partial<Record<ChainId, TokenId[]>> = {
     'doc',
     'rusdt',
     'xusd',
-    'wrbtc',
     'bnbs',
   ],
   31: [
     'rbtc',
+    'wrbtc',
     'sov',
     'eths',
     'fish',
@@ -23,7 +24,6 @@ export const swapables: Partial<Record<ChainId, TokenId[]>> = {
     'doc',
     'rusdt',
     'xusd',
-    'wrbtc',
     'bnbs',
   ],
 };
@@ -42,6 +42,19 @@ export const getSwappableToken = (
     wrapSwapables[chainId]?.[0] === tokenId
   ) {
     return wrapSwapables[chainId]![1];
+  }
+  return tokenId;
+};
+
+export const unwrapSwappableToken = (
+  tokenId: TokenId,
+  chainId: ChainId,
+): TokenId => {
+  if (
+    wrapSwapables.hasOwnProperty(chainId) &&
+    wrapSwapables[chainId]?.[1] === tokenId
+  ) {
+    return wrapSwapables[chainId]![0];
   }
   return tokenId;
 };

@@ -1,29 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Modal, StyleSheet, View } from 'react-native';
-import { DarkTheme } from '@react-navigation/native';
+import { StyleSheet, View } from 'react-native';
+import { DarkTheme, DefaultTheme } from '@react-navigation/native';
+import { BottomModal, ModalContent } from 'react-native-modals';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
-import { Token, TokenId } from 'types/token';
 import { AmountField } from 'components/AmountField';
 import { PressableButton } from 'components/PressableButton';
 import { Text } from 'components/Text';
 import { RadioButton, RadioGroup } from 'components/RadioGroup';
-import { getProvider } from 'utils/RpcEngine';
-import { currentChainId } from 'utils/helpers';
-import { formatUnits } from 'ethers/lib/utils';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type SwapSettingsModalProps = {
   open: boolean;
   slippage?: string;
-  gasPrice?: string;
   onClose: () => void;
   onSlippageChange: (slippage: string) => void;
-  onGasPriceChange: (gasPrice: string) => void;
-};
-
-type AssetPickerExtraProps = {
-  open: boolean;
-  onClose?: () => void;
 };
 
 const slippageAmounts = [0.1, 0.5, 1, 3];
@@ -31,17 +21,12 @@ const slippageAmounts = [0.1, 0.5, 1, 3];
 export const SwapSettingsModal: React.FC<SwapSettingsModalProps> = ({
   open,
   slippage,
-  gasPrice,
   onClose,
   onSlippageChange,
-  onGasPriceChange,
 }) => {
   const dark = useIsDarkTheme();
 
   const [_slippage, setSlippage] = useState<string | undefined>(slippage);
-  const [_gasPrice, setGasPrice] = useState<string | undefined>(gasPrice);
-
-  const [networkGasPrice, setNetworkGasPrice] = useState<string | undefined>();
 
   const triggerClose = useCallback(() => {
     if (onClose) {
@@ -67,23 +52,9 @@ export const SwapSettingsModal: React.FC<SwapSettingsModalProps> = ({
     [onSlippageChange],
   );
 
-  const onChangeGasPrice = useCallback(
-    (value: string) => {
-      setGasPrice(value);
-      if (onGasPriceChange) {
-        onGasPriceChange(value);
-      }
-    },
-    [onGasPriceChange],
-  );
-
   useEffect(() => {
     setSlippage(slippage);
   }, [slippage]);
-
-  useEffect(() => {
-    setGasPrice(gasPrice);
-  }, [gasPrice]);
 
   const [slippageType, setSlippageType] = useState(
     slippageAmounts.includes(Number(slippage)) ? slippage : 'custom',
@@ -99,24 +70,15 @@ export const SwapSettingsModal: React.FC<SwapSettingsModalProps> = ({
     [onChangeSlippage],
   );
 
-  useEffect(() => {
-    getProvider(currentChainId())
-      .getGasPrice()
-      .then(response => formatUnits(response, 9).toString())
-      .then(response => {
-        onChangeGasPrice(response);
-        setNetworkGasPrice(response);
-      });
-  }, [onChangeGasPrice]);
-
   const { bottom } = useSafeAreaInsets();
 
   return (
-    <Modal animationType="slide" visible={open} transparent={true}>
-      <View style={styles.centeredView}>
-        <View style={[styles.modalView, dark && styles.modalViewDark]}>
+    <BottomModal visible={open} onSwipeOut={triggerClose}>
+      <ModalContent style={[styles.modal, dark && styles.modalDark]}>
+        <View>
           <Text style={styles.modalTitle}>Swap Settings</Text>
 
+          <Text style={styles.label}>Slippage tolerance:</Text>
           <RadioGroup
             defaultValue={slippageType}
             onChange={handleSlippageChange}>
@@ -142,29 +104,25 @@ export const SwapSettingsModal: React.FC<SwapSettingsModalProps> = ({
             Slippage tolerance is a setting for the limit of price slippage you
             are willing to accept.
           </Text>
-          <AmountField
-            label="Gas Price"
-            value={_gasPrice}
-            onChangeText={onChangeGasPrice}
-          />
           <PressableButton
             onPress={triggerClose}
             title="Close"
             style={{ marginBottom: bottom }}
           />
         </View>
-      </View>
-    </Modal>
+      </ModalContent>
+    </BottomModal>
   );
 };
 
-type ItemProps = {
-  token: Token;
-  active: boolean;
-  onSelect: (tokenId: TokenId) => void;
-};
-
 const styles = StyleSheet.create({
+  modal: {
+    backgroundColor: DefaultTheme.colors.card,
+  },
+  modalDark: {
+    backgroundColor: DarkTheme.colors.card,
+  },
+
   centeredView: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -202,5 +160,8 @@ const styles = StyleSheet.create({
   slippageDescription: {
     marginTop: 12,
     width: '100%',
+  },
+  label: {
+    marginBottom: 8,
   },
 });

@@ -9,7 +9,7 @@ import { encodeFunctionData } from 'utils/contract-utils';
 import { currentChainId, parseUnits } from 'utils/helpers';
 import { erc20 } from 'utils/interactions';
 import { tokenUtils } from 'utils/token-utils';
-import { Button, ButtonIntent } from './Buttons/Button';
+import { Button } from './Buttons/Button';
 
 type TokenApprovalFlowProps = {
   tokenId: TokenId;
@@ -17,6 +17,8 @@ type TokenApprovalFlowProps = {
   requiredAmount: string;
   chainId?: ChainId;
   description?: string;
+  loading?: boolean;
+  disabled?: boolean;
 };
 
 export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
@@ -26,8 +28,10 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
   requiredAmount,
   chainId = currentChainId(),
   description,
+  loading: parentLoading,
+  disabled,
 }) => {
-  const owner = useWalletAddress();
+  const owner = useWalletAddress().toLowerCase();
   const token = useMemo(() => tokenUtils.getTokenById(tokenId), [tokenId]);
   const native = useMemo(() => tokenUtils.getNativeToken(chainId), [chainId]);
   const tokenAddress = useMemo(
@@ -36,26 +40,34 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
   );
 
   const [loading, setLoading] = useState(true);
+  const [approving, setApproving] = useState(false);
   const [allowance, setAllowance] = useState('0');
 
-  useDebouncedEffect(
-    () => {
+  const getAllowance = useCallback(
+    (afterApprove?: boolean) => {
       if (token.id !== native.id) {
-        setLoading(true);
+        afterApprove ? setApproving(true) : setLoading(true);
         erc20
           .getAllowance(chainId, tokenAddress, owner, spender)
           .then(response => {
             setAllowance(response.toString());
-            setLoading(false);
+            afterApprove ? setApproving(false) : setLoading(false);
           })
           .catch(e => console.warn(e));
       } else {
-        setLoading(false);
         setAllowance('0');
+        afterApprove ? setApproving(false) : setLoading(false);
       }
     },
+    [chainId, native.id, owner, spender, token.id, tokenAddress],
+  );
+
+  useDebouncedEffect(
+    () => {
+      getAllowance();
+    },
     300,
-    [chainId, tokenAddress, owner, spender, native],
+    [getAllowance],
   );
 
   const hasAllowance = useMemo(() => {
@@ -67,28 +79,32 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
   }, [allowance, token, requiredAmount, native]);
 
   const handleApprove = useCallback(async () => {
-    setLoading(true);
+    setApproving(true);
     try {
-      await transactionController.request({
+      const tx = await transactionController.request({
         to: tokenAddress,
         value: 0,
-        // nonce: hexlify(Number(nonce || 0)),
         data: encodeFunctionData('approve(address,uint256)', [
           spender,
           parseUnits(requiredAmount, token.decimals),
         ]),
-        // gasPrice: hexlify(Number(gasPrice || 0) * 1e9),
-        // gasLimit: hexlify(Number(gas || 0) * 3),
         customData: {
           tokenId: token.id,
           approvalReason: description,
           approvalAmount: requiredAmount,
         },
       });
+      await tx
+        .wait()
+        .then(() => getAllowance(true))
+        .catch(e => {
+          console.warn(e);
+          getAllowance(true);
+        });
     } catch (_) {
       //
     } finally {
-      setLoading(false);
+      setApproving(false);
     }
   }, [
     tokenAddress,
@@ -97,6 +113,7 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
     token.decimals,
     token.id,
     description,
+    getAllowance,
   ]);
 
   return (
@@ -104,15 +121,13 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
       {hasAllowance ? (
         <>{children}</>
       ) : (
-        <>
-          <Button
-            title="Approve"
-            onPress={handleApprove}
-            intent={ButtonIntent.PRIMARY}
-            loading={loading}
-            disabled={loading}
-          />
-        </>
+        <Button
+          title={approving ? 'Approving...' : 'Approve'}
+          onPress={handleApprove}
+          primary
+          loading={loading || parentLoading}
+          disabled={loading || disabled || parentLoading || approving}
+        />
       )}
     </View>
   );
