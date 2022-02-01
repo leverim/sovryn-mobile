@@ -28,3 +28,31 @@ List of planned and available features:
 - [ ] Update blockchain state each block
 - [ ] Balances in USD
 - [ ] Better design / UI / UX
+
+## Compile yourself
+You can easily compile binaries from source code using these instructions yourself
+
+### iOS
+To compile source code for ios usage you will need apple computer with xcode installed.
+```
+git clone git@github.com:defray-labs/sovryn-mobile.git
+cd sovryn-mobile
+yarn install
+npx react-native run-ios --configuration Release --device
+// or if you want to run on simulator
+npx react-native run-ios --configuration Release
+```
+
+### Android
+We havent tested app on android yet, most likely building would crash because of some unsupported features on react-native for android.
+Will update instructions once we will apply some android polyfills.
+
+```
+git clone git@github.com:defray-labs/sovryn-mobile.git
+cd sovryn-mobile
+yarn install
+// list available devices
+adb devices
+// pass deviceId you got in "adb devices"
+npx react-native run-android --deviceId abcd
+```
