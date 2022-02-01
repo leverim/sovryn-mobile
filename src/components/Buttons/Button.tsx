@@ -9,6 +9,7 @@ type BaseButtonProps = {
   intent?: ButtonIntent;
   pressableStyle?: ViewStyle;
   primary?: boolean;
+  warning?: boolean;
 };
 
 type ButtonProps = {
@@ -38,6 +39,7 @@ export const ButtonBase: React.FC<BaseButtonProps & PressableProps> = ({
   onPressIn,
   onPressOut,
   primary = false,
+  warning = false,
   intent = ButtonIntent.SECONDARY,
   children,
   pressableStyle,
@@ -65,13 +67,15 @@ export const ButtonBase: React.FC<BaseButtonProps & PressableProps> = ({
     [onPressOut],
   );
 
-  const styles = useMemo(
-    () =>
-      intent === ButtonIntent.PRIMARY || primary
-        ? primaryStyles
-        : defaultStyles,
-    [intent, primary],
-  );
+  const styles = useMemo(() => {
+    if (intent === ButtonIntent.PRIMARY || primary) {
+      return primaryStyles;
+    }
+    if (warning) {
+      return warningStyles;
+    }
+    return defaultStyles;
+  }, [intent, primary, warning]);
 
   const mapped = useMemo(
     () =>
@@ -146,5 +150,13 @@ const primaryStyles = StyleSheet.create({
   text: {
     ...defaultStyles.text,
     color: DarkTheme.colors.text,
+  },
+});
+
+const warningStyles = StyleSheet.create({
+  ...primaryStyles,
+  pressable: {
+    ...primaryStyles.pressable,
+    backgroundColor: 'orange',
   },
 });

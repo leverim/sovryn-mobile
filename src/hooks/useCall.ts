@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { cache } from 'utils/cache';
 import { contractCall } from 'utils/contract-utils';
+import { useDebouncedEffect } from './useDebounceEffect';
 import { useWalletAddress } from './useWalletAddress';
 
 export function useCall<T = string>(
@@ -30,17 +31,20 @@ export function useCall<T = string>(
     [key],
   );
 
-  useEffect(() => {
-    setLoading(true);
-    contractCall<T>(chainId, to, methodAndTypes, args)
-      .then(updateValue)
-      .catch(console.error)
-      .finally(() => {
-        setLoading(false);
-        setLoaded(true);
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chainId, to, methodAndTypes, JSON.stringify(args), updateValue]);
+  useDebouncedEffect(
+    () => {
+      setLoading(true);
+      contractCall<T>(chainId, to, methodAndTypes, args)
+        .then(updateValue)
+        .catch(console.error)
+        .finally(() => {
+          setLoading(false);
+          setLoaded(true);
+        });
+    },
+    300,
+    [chainId, to, methodAndTypes, JSON.stringify(args), updateValue],
+  );
 
   return {
     value,

@@ -8,11 +8,8 @@ import {
 } from 'react-native';
 import debounce from 'lodash/debounce';
 import { TokenId } from 'types/token';
-import { AmountField } from 'components/AmountField';
-import { AssetPicker } from '.';
 import { tokenUtils } from 'utils/token-utils';
 import { currentChainId } from 'utils/helpers';
-import { InputField } from 'components/InputField';
 import { commify } from 'ethers/lib/utils';
 import { Text } from 'components/Text';
 import { AssetPickerModal } from 'components/AssetPickerModal';
@@ -113,7 +110,7 @@ export const AssetPickerWithAmount: React.FC<AssetPickerWithAmountProps> = ({
     <>
       <View style={[styles.container, !editable && styles.container_disabled]}>
         <View style={styles.inputWrapper}>
-          {/* <Text style={styles.inputBalanceText}>≈ $US{commify('0.00')}</Text> */}
+          <Text style={styles.inputBalanceText}>≈ $US{commify('0.00')}</Text>
           <TextInput
             value={_amount}
             onChangeText={onChangeAmount}

@@ -1,119 +1,87 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { currentChainId } from 'utils/helpers';
+import {
+  calculateChange,
+  commifyDecimals,
+  currentChainId,
+  formatUnits,
+  getContractAddress,
+  noop,
+  numberIsEmpty,
+  parseUnits,
+} from 'utils/helpers';
 import { tokenUtils } from 'utils/token-utils';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SwapStackProps } from '..';
-import { getSwappableToken, swapables } from 'config/swapables';
+import { getSwappableToken, swapables, wrapSwapables } from 'config/swapables';
 import { TokenId } from 'types/token';
-import { AssetPickerWithAmount } from 'components/AssetPicker/AssetPickerWithAmount';
-import { commify, hexlify, parseUnits } from 'ethers/lib/utils';
-import { useDebouncedEffect } from 'hooks/useDebounceEffect';
-import { callToContract, encodeFunctionData } from 'utils/contract-utils';
-import { useSlippage } from 'hooks/useSlippage';
-import { PressableButton } from 'components/PressableButton';
-import { getSwapExpectedReturn } from 'utils/interactions';
-import { contractUtils } from 'utils/contract';
-import { TokenApprovalFlow } from 'components/TokenApprovalFlow';
-import { AFFILIATE_ACCOUNT, AFFILIATE_FEE } from 'utils/constants';
 import { ContractName } from 'types/contract';
-import { useAssetBalance } from 'hooks/useAssetBalance';
-import { Button, ButtonIntent } from 'components/Buttons/Button';
-import { transactionController } from 'controllers/TransactionController';
+import { Button } from 'components/Buttons/Button';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
+import { DarkTheme } from '@react-navigation/native';
+
+import ArrowDownIcon from 'assets/arrow-down-icon.svg';
+import { SwapAmountField } from '../components/SwapAmountField';
+import { useGetUsdBalance } from 'hooks/useGetUsdBalance';
+import { useGetSwapExpectedReturn } from 'hooks/useGetSwapExpectedReturn';
+import { TokenApprovalFlow } from 'components/TokenApprovalFlow';
+import { useAssetBalance } from 'hooks/useAssetBalance';
+import { callToContract, encodeFunctionData } from 'utils/contract-utils';
+import { transactionController } from 'controllers/TransactionController';
+import { AFFILIATE_ACCOUNT, AFFILIATE_FEE } from 'utils/constants';
+import { useSlippage } from 'hooks/useSlippage';
+import { SwapSettingsModal } from '../components/SwapSettingsModal';
+import SettingsIcon from 'assets/settings-icon.svg';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
-type CallData = {
-  contractName: ContractName;
-  contractAddress: string;
-  method: string;
-  args: any[];
-  value: string;
-};
-
-export const SwapIndexScreen: React.FC<Props> = () => {
+export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   const chainId = currentChainId();
 
-  const owner = useWalletAddress();
+  const owner = useWalletAddress().toLowerCase();
+  const [submitting, setSubmitting] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const tokens: TokenId[] = useMemo(() => {
     return tokenUtils
       .listTokensForChainId(chainId)
       .filter(item => swapables[chainId]?.includes(item.id as TokenId))
+      .filter(item => wrapSwapables[chainId]![1] !== item.id) // exclude wrapped native token
       .map(item => item.id as TokenId);
   }, [chainId]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={() => setShowSettings(true)}>
+          <SettingsIcon fill={DarkTheme.colors.primary} />
+        </Pressable>
+      ),
+    });
+  }, [navigation]);
+
+  const usdToken = tokenUtils.getTokenById('xusd');
+  const nativeToken = tokenUtils.getNativeToken(chainId);
 
   const [sendTokenId, setSendTokenId] = useState(tokens[0]);
   const [receiveTokenId, setReceiveTokenId] = useState(tokens[1]);
 
   const [sendAmount, setSendAmount] = useState('');
-  const [receiveAmount, setReceiveAmount] = useState('');
 
-  const sendToken = tokenUtils.getTokenById(sendTokenId);
-  const receiveToken = tokenUtils.getTokenById(receiveTokenId);
-
-  const [slippage, setSlippage] = useState('0.1');
-
-  const [sellPrice, setSellPrice] = useState<string>();
-  const [buyPrice, setBuyPrice] = useState<string>();
-
-  const { minReturn } = useSlippage(
-    receiveAmount,
-    receiveToken.decimals,
-    slippage,
+  const sendToken = useMemo(
+    () => tokenUtils.getTokenById(sendTokenId),
+    [sendTokenId],
   );
 
-  const [conversionPath, setConversionPath] = useState<string[]>([]);
+  const receiveToken = useMemo(
+    () => tokenUtils.getTokenById(receiveTokenId),
+    [receiveTokenId],
+  );
 
-  const nativeToken = tokenUtils.getNativeToken(currentChainId());
-
-  const callData = useMemo(() => {
-    const useBtcProxy = [sendTokenId, receiveTokenId].includes(
-      nativeToken.id as TokenId,
-    );
-    const amount = parseUnits(sendAmount || '0', sendToken.decimals).toString();
-
-    return {
-      contractName: useBtcProxy ? 'rbtcWrapper' : 'swapNetwork',
-      contractAddress: contractUtils.getContractAddress(
-        useBtcProxy ? 'rbtcWrapper' : 'swapNetwork',
-        currentChainId(),
-      ),
-      method: useBtcProxy
-        ? 'convertByPath(address[],uint256,uint256)'
-        : 'convertByPath(address[],uint256,uint256,address,address,uint256)',
-      args: useBtcProxy
-        ? [conversionPath, amount, minReturn]
-        : [
-            conversionPath,
-            amount,
-            minReturn,
-            owner,
-            AFFILIATE_ACCOUNT,
-            AFFILIATE_FEE,
-          ],
-      value: useBtcProxy
-        ? sendTokenId === (nativeToken.id as TokenId)
-          ? amount
-          : '0'
-        : '0',
-    } as CallData;
-  }, [
-    conversionPath,
-    minReturn,
-    nativeToken.id,
-    owner,
-    receiveTokenId,
-    sendAmount,
-    sendToken.decimals,
-    sendTokenId,
-  ]);
-
-  const sourceTokenAddress = useMemo(
+  const sendTokenAddress = useMemo(
     () =>
       tokenUtils.getTokenAddressForId(
         getSwappableToken(sendTokenId, currentChainId()),
@@ -128,51 +96,6 @@ export const SwapIndexScreen: React.FC<Props> = () => {
       ),
     [receiveTokenId],
   );
-
-  useDebouncedEffect(
-    () => {
-      const run = async () => {
-        const path = await callToContract(
-          'swapNetwork',
-          'conversionPath(address,address)(address[])',
-          [sourceTokenAddress, receiveTokenAddress],
-        ).then(response => response[0]);
-        setConversionPath(path);
-      };
-      run().catch(console.error);
-    },
-    300,
-    [sendAmount, sourceTokenAddress, receiveTokenAddress],
-  );
-
-  useDebouncedEffect(
-    () => {
-      const run = async () => {
-        const amount = await getSwapExpectedReturn(
-          sendTokenId,
-          receiveTokenId,
-          sendAmount,
-        );
-        setReceiveAmount(Number(amount) !== 0 ? amount : '');
-      };
-      run().catch(console.error);
-    },
-    300,
-    [sendAmount, sendTokenId, receiveTokenId, owner],
-  );
-
-  useDebouncedEffect(
-    () => {
-      getSwapExpectedReturn(sendTokenId, receiveTokenId, '1').then(
-        setSellPrice,
-      );
-      getSwapExpectedReturn(receiveTokenId, sendTokenId, '1').then(setBuyPrice);
-    },
-    300,
-    [sourceTokenAddress, receiveTokenAddress],
-  );
-
-  const [showSettings, setShowSettings] = useState(false);
 
   const handleSetSendTokenId = useCallback(
     (tokenId: TokenId) => {
@@ -194,111 +117,251 @@ export const SwapIndexScreen: React.FC<Props> = () => {
     [sendTokenId, tokens],
   );
 
-  const { value } = useAssetBalance(sendToken, owner, currentChainId());
+  const { value: sendOneUSD, loading: sendUsdLoading } = useGetUsdBalance(
+    chainId,
+    sendTokenId,
+    '1',
+    true,
+  );
 
-  const [loading, setLoading] = useState(false);
+  const { value: receiveOneUSD, loading: receiveUsdLoading } = useGetUsdBalance(
+    chainId,
+    receiveTokenId,
+    '1',
+    true,
+  );
 
-  const handleSwapButton = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = encodeFunctionData(callData.method, callData.args);
-      await transactionController.request({
-        to: callData.contractAddress,
-        value: hexlify(parseUnits(callData.value, 0)),
-        data: data,
-        // gasPrice: hexlify(Number(gasPrice || 0) * 1e9),
-        // gasLimit: hexlify(Number(gas || 0) * 30),
-      });
-      setLoading(false);
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
+  const { value: sellPrice, loading: sellPriceLoading } =
+    useGetSwapExpectedReturn(chainId, sendTokenId, receiveTokenId, '1');
+
+  const { value: receiveAmount, loading } = useGetSwapExpectedReturn(
+    chainId,
+    sendTokenId,
+    receiveTokenId,
+    sendAmount,
+    false,
+  );
+
+  const handleSwapAssets = useCallback(() => {
+    setSendTokenId(receiveTokenId);
+    setReceiveTokenId(sendTokenId);
+    setSendAmount(receiveAmount);
+  }, [receiveAmount, receiveTokenId, sendTokenId]);
+
+  const sendUSD = useMemo(() => {
+    if (
+      sendUsdLoading ||
+      numberIsEmpty(sendOneUSD) ||
+      numberIsEmpty(sendAmount)
+    ) {
+      return undefined;
     }
+    return formatUnits(
+      parseUnits(sendAmount, sendToken.decimals)
+        .mul(parseUnits(sendOneUSD, usdToken.decimals))
+        .div(parseUnits('1', usdToken.decimals)),
+      usdToken.decimals,
+    );
   }, [
-    callData.args,
-    callData.contractAddress,
-    callData.method,
-    callData.value,
+    sendUsdLoading,
+    sendOneUSD,
+    sendAmount,
+    sendToken.decimals,
+    usdToken.decimals,
   ]);
 
-  return (
-    <SafeAreaPage>
-      <ScrollView>
-        <View style={styles.container}>
-          <View>
-            <Text style={styles.title}>Swap</Text>
-            <PressableButton
-              title="Settings"
-              onPress={() => setShowSettings(true)}
-            />
-          </View>
-          <View>
-            <View style={styles.labelWithBalance}>
-              <Text>You Pay</Text>
-              <Pressable onPress={() => setSendAmount(value)}>
-                <Text>Balance: {commify(value)}</Text>
-              </Pressable>
-            </View>
-            <AssetPickerWithAmount
-              amount={sendAmount}
-              onAmountChanged={setSendAmount}
-              tokenIdList={tokens}
-              tokenId={sendTokenId}
-              onTokenChanged={handleSetSendTokenId}
-              pickerTitle="Send asset"
-              debounceDelay={0}
-            />
-          </View>
+  const receiveUSD = useMemo(() => {
+    if (
+      receiveUsdLoading ||
+      numberIsEmpty(receiveOneUSD) ||
+      numberIsEmpty(receiveAmount)
+    ) {
+      return undefined;
+    }
+    return formatUnits(
+      parseUnits(receiveAmount, receiveToken.decimals)
+        .mul(parseUnits(receiveOneUSD, usdToken.decimals))
+        .div(parseUnits('1', usdToken.decimals)),
+      usdToken.decimals,
+    );
+  }, [
+    receiveUsdLoading,
+    receiveOneUSD,
+    receiveAmount,
+    receiveToken.decimals,
+    usdToken.decimals,
+  ]);
 
-          <View>
-            <Text style={styles.label}>You Receive</Text>
-            <AssetPickerWithAmount
+  const difference = useMemo(() => {
+    if (!sendUSD || !receiveUSD || loading) {
+      return undefined;
+    }
+    return calculateChange(Number(sendUSD), Number(receiveUSD));
+  }, [sendUSD, receiveUSD, loading]);
+
+  const sendBalance = useAssetBalance(sendToken, owner, chainId);
+  const receiveBalance = useAssetBalance(receiveToken, owner, chainId);
+
+  const [slippage, setSlippage] = useState('0.1');
+  const { minReturn, minReturnFormatted } = useSlippage(
+    receiveAmount,
+    receiveToken.decimals,
+    slippage,
+  );
+
+  const useBtcProxy = [sendTokenId, receiveTokenId].includes(
+    nativeToken.id as TokenId,
+  );
+  const contractAddress = getContractAddress(
+    useBtcProxy ? 'rbtcWrapper' : 'swapNetwork',
+    chainId,
+  );
+
+  const handleSubmitButton = useCallback(async () => {
+    setSubmitting(true);
+
+    const path = await callToContract(
+      'swapNetwork',
+      'conversionPath(address,address)(address[])',
+      [sendTokenAddress, receiveTokenAddress],
+    ).then(response => response[0]);
+
+    const amount = parseUnits(sendAmount || '0', sendToken.decimals).toString();
+
+    const data = encodeFunctionData(
+      `convertByPath${
+        useBtcProxy
+          ? '(address[],uint256,uint256)'
+          : '(address[],uint256,uint256,address,address,uint256)'
+      }`,
+      useBtcProxy
+        ? [path, amount, minReturn]
+        : [path, amount, minReturn, owner, AFFILIATE_ACCOUNT, AFFILIATE_FEE],
+    );
+
+    await transactionController
+      .request({
+        to: contractAddress,
+        from: owner,
+        value: sendTokenId === nativeToken.id ? amount : 0,
+        data,
+      })
+      .then(() => {
+        setSubmitting(false);
+      })
+      .catch(e => {
+        console.warn(e);
+        setSubmitting(false);
+      });
+  }, [
+    contractAddress,
+    minReturn,
+    nativeToken.id,
+    owner,
+    receiveTokenAddress,
+    sendAmount,
+    sendToken.decimals,
+    sendTokenAddress,
+    sendTokenId,
+    useBtcProxy,
+  ]);
+
+  const validationError = useMemo(() => {
+    if (sendBalance.loading) {
+      return 'Loading ...';
+    }
+    if (numberIsEmpty(sendAmount) || Number(sendAmount) < 0) {
+      return 'Enter an amount';
+    }
+    if (sendBalance.value < sendAmount) {
+      return `Insuficient ${sendToken.symbol} balance`;
+    }
+    return null;
+  }, [sendAmount, sendBalance.loading, sendBalance.value, sendToken.symbol]);
+
+  return (
+    <SafeAreaPage scrollView keyboardAvoiding>
+      <View style={styles.container}>
+        <View>
+          <SwapAmountField
+            amount={sendAmount}
+            onAmountChanged={setSendAmount}
+            token={sendToken}
+            onTokenChanged={handleSetSendTokenId}
+            price={sendUSD}
+            balance={sendBalance.value}
+            tokens={tokens}
+          />
+
+          <View style={styles.receiverContainerView}>
+            <SwapAmountField
               amount={receiveAmount}
-              onAmountChanged={setReceiveAmount}
-              tokenIdList={tokens}
-              tokenId={receiveTokenId}
+              onAmountChanged={noop}
+              token={receiveToken}
               onTokenChanged={handleSetReceiveTokenId}
-              pickerTitle="Receive asset"
-              readOnlyAmount
+              inputProps={{ editable: false }}
               debounceDelay={0}
+              containerStyle={styles.fullWidth}
+              price={receiveUSD}
+              difference={difference}
+              balance={receiveBalance.value}
+              tokens={tokens}
             />
+            <Pressable
+              style={styles.receiverIconButton}
+              onPress={handleSwapAssets}>
+              <ArrowDownIcon fill="white" />
+            </Pressable>
           </View>
+        </View>
+
+        {validationError ? (
+          <Button title={validationError} primary disabled />
+        ) : (
           <ReadWalletAwareWrapper>
             <TokenApprovalFlow
               tokenId={sendTokenId}
-              spender={callData.contractAddress}
+              spender={contractAddress}
+              loading={loading || submitting}
+              disabled={loading || submitting}
               requiredAmount={sendAmount || '0'}>
               <Button
                 title="Swap"
-                onPress={handleSwapButton}
-                disabled={loading}
-                loading={loading}
-                intent={ButtonIntent.PRIMARY}
+                onPress={handleSubmitButton}
+                disabled={loading || submitting}
+                loading={loading || submitting}
+                primary
               />
             </TokenApprovalFlow>
           </ReadWalletAwareWrapper>
-          <View>
-            <View>
-              <Text>Sell Price</Text>
-              <Text>
-                1 {sendToken.symbol} = {sellPrice} {receiveToken.symbol}
+        )}
+
+        <View style={styles.estimateView}>
+          <Text style={styles.estimateText}>
+            Slippage: {commifyDecimals(slippage, 3)}%
+          </Text>
+          {!sellPriceLoading && !numberIsEmpty(sendOneUSD) && (
+            <>
+              <Text style={styles.estimateText}>
+                Buy price: 1 {sendToken.symbol} ={' '}
+                {commifyDecimals(sellPrice, 4)} {receiveToken.symbol}
               </Text>
-            </View>
-            <View>
-              <Text>Buy Price</Text>
-              <Text>
-                1 {receiveToken.symbol} = {buyPrice} {sendToken.symbol}
-              </Text>
-            </View>
-            <View>
-              <Text>Transaction Fee</Text>
-              <Text>
-                x {tokenUtils.getNativeToken(currentChainId()).symbol}
-              </Text>
-            </View>
-          </View>
+            </>
+          )}
+          {minReturn !== '0' && (
+            <Text style={styles.estimateText}>
+              Min received: {commifyDecimals(minReturnFormatted)}{' '}
+              {receiveToken.symbol}
+            </Text>
+          )}
         </View>
-      </ScrollView>
+      </View>
+      <SwapSettingsModal
+        open={showSettings}
+        slippage={slippage}
+        onClose={() => setShowSettings(false)}
+        onSlippageChange={setSlippage}
+      />
     </SafeAreaPage>
   );
 };
@@ -337,5 +400,33 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     marginBottom: 25,
     flex: 1,
+  },
+  // wrapper
+  receiverContainerView: {
+    position: 'relative',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  receiverIconButton: {
+    position: 'absolute',
+    backgroundColor: DarkTheme.colors.border,
+    borderWidth: 4,
+    borderBottomColor: DarkTheme.colors.background,
+    borderRadius: 12,
+    padding: 2,
+    width: 36,
+    height: 36,
+    top: -36 / 2,
+  },
+  fullWidth: {
+    width: '100%',
+  },
+  // estimate
+  estimateView: {
+    paddingVertical: 8,
+  },
+  estimateText: {
+    marginBottom: 4,
   },
 });

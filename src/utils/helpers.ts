@@ -1,7 +1,7 @@
 import { networks } from 'config/networks';
 import { BigNumberish, ethers } from 'ethers';
 import { commify } from 'ethers/lib/utils';
-import { Dimensions, ImageSourcePropType, PixelRatio } from 'react-native';
+import { Dimensions, ImageSourcePropType } from 'react-native';
 import { ContractName } from 'types/contract';
 import { ChainId } from 'types/network';
 import { AccountType, BaseAccount } from './accounts';
@@ -57,25 +57,25 @@ export const prepareImageSource = (
   return null;
 };
 
-// export const floorDecimals = (value: number | string, decimals: number = 8) =>
-//   Number(Math.floor(Number(`${value}e${decimals}`)) + 'e-' + decimals);
-
 export const formatUnits = (
   value: BigNumberish = '0',
   unitName?: string | BigNumberish,
-) => ethers.utils.formatUnits(value, unitName);
+) => ethers.utils.formatUnits(value || '0', unitName);
 
 export const parseUnits = (
   value: string = '0',
   unitName?: string | BigNumberish,
-) => ethers.utils.parseUnits(value, unitName);
+) => ethers.utils.parseUnits(value || '0', unitName);
 
 export const floorDecimals = (value: number | string, decimals: number) => {
+  if (Number(value) === Infinity) {
+    return '0';
+  }
   try {
-    const [integer, floater] = value.toString().split('.');
+    const [integer = '0', floater = '0'] = (value || 0).toString().split('.');
     return `${integer}.${floater.substring(0, decimals)}`;
   } catch (e) {
-    console.error(
+    console.warn(
       `failed to floorDecimals value ${value} with ${decimals} decimals.`,
     );
     return '0';
@@ -85,7 +85,7 @@ export const floorDecimals = (value: number | string, decimals: number) => {
 export const commifyDecimals = (
   value: string | number = '0',
   decimals: number = 8,
-): string => commify(floorDecimals(value, decimals));
+): string => commify(floorDecimals(value || '0', decimals));
 
 export const isReadOnlyWallet = (account: BaseAccount) =>
   account?.type === undefined || account.type === AccountType.PUBLIC_ADDRESS;
@@ -105,3 +105,9 @@ const { width } = Dimensions.get('window');
 const scale = 414 / width;
 
 export const px = (dp: number) => dp / scale;
+
+export const calculateChange = (a: number, b: number) =>
+  ((b - a) / Math.abs(a)) * 100;
+
+export const numberIsEmpty = (value: string | number | undefined) =>
+  !value || Number(value) === 0;

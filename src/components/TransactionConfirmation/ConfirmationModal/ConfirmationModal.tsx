@@ -13,7 +13,7 @@ import { SendCoinData } from './SendCoinData';
 import { ContractInteractionData } from './ContractInteractionData';
 import { TransferTokenData } from './TransferTokenData';
 import { ApproveTokenData } from './ApproveTokenData';
-import { Button, ButtonIntent } from 'components/Buttons/Button';
+import { Button } from 'components/Buttons/Button';
 import { getProvider } from 'utils/RpcEngine';
 import { wallet } from 'utils/wallet';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
@@ -22,6 +22,7 @@ import { BigNumber } from 'ethers';
 import { ErrorHolder } from './ErrorHolder';
 import { isEqual } from 'lodash';
 import { VestingWithdrawTokensData } from './VestingWithdrawTokensData';
+import { SwapData } from './SwapData';
 
 export type DataModalProps = {
   loading: boolean;
@@ -100,6 +101,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         }`;
       case TransactionType.VESTING_WITHDRAW_TOKENS:
         return 'Withdraw Tokens';
+      case TransactionType.SWAP_NETWORK_SWAP:
+      case TransactionType.WRBTC_PROXY_SWAP:
+        return 'Swap Tokens';
     }
   }, [type, request]);
 
@@ -115,6 +119,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         return TransferTokenData;
       case TransactionType.VESTING_WITHDRAW_TOKENS:
         return VestingWithdrawTokensData;
+      case TransactionType.SWAP_NETWORK_SWAP:
+      case TransactionType.WRBTC_PROXY_SWAP:
+        return SwapData;
     }
   }, [type]);
 
@@ -170,7 +177,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             setSimulatorError('Transaction is likely to fail.');
           }
         } else {
-          setSimulatorError('Transaction is likely to fail.');
+          setSimulatorError(err?.message || 'Transaction is likely to fail.');
         }
       });
 
@@ -208,7 +215,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   useDebouncedEffect(
     () => {
-      console.log('handle data');
       handleData();
     },
     300,
@@ -239,7 +245,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   }, [error, simulatorError]);
 
   return (
-    <BottomModal visible={visible} onSwipeOut={onReject}>
+    <BottomModal visible={visible}>
       <ModalContent style={[styles.modal, dark && styles.modalDark]}>
         <View style={styles.title}>
           <Text style={styles.titleText}>{renderTitle}</Text>
@@ -269,7 +275,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <Button
               title={renderButtonTitle}
               onPress={onConfirm}
-              intent={ButtonIntent.PRIMARY}
+              primary
               loading={loading}
               disabled={loading}
             />
