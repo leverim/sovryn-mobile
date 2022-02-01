@@ -3,6 +3,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { WelcomeFlowStackProps } from '.';
 import { AppContext } from 'context/AppContext';
 import { PassCodeSetup } from 'components/PassCode/PassCodeSetup';
+import { SplashScreen } from 'pages/SplashScreen';
 
 type Props = NativeStackScreenProps<
   WelcomeFlowStackProps,
@@ -25,5 +26,9 @@ export const CreatePasscode: React.FC<Props> = ({ route: { params } }) => {
     [createWallet, params.name, params.type, params.secret],
   );
 
-  return <PassCodeSetup onPasscodeConfirmed={handleConfirm} />;
+  return (
+    <SplashScreen>
+      <PassCodeSetup onPasscodeConfirmed={handleConfirm} />
+    </SplashScreen>
+  );
 };

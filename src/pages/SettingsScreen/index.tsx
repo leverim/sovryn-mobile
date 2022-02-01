@@ -81,7 +81,7 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 
         <NavGroup>
           <NavItem
-            title={`Passcode ${biometryName && `& ${biometryName}`}`}
+            title={`Passcode ${biometryName ? `& ${biometryName}` : ''}`}
             onPress={handlePasscodePage}
           />
           {/* <NavItem
