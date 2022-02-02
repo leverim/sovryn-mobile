@@ -77,11 +77,19 @@ class WalletManager {
     return [AccountType.PUBLIC_ADDRESS].includes(accounts.current.type);
   }
 
+  public async populateTransaction(
+    transaction: TransactionRequest,
+    password: string,
+  ) {
+    return (
+      await this.unlockedWallet(accounts.selected, password)
+    ).populateTransaction(transaction);
+  }
+
   public async signTransaction(
     transaction: TransactionRequest,
     password: string,
   ): Promise<string> {
-    delete transaction.customData;
     return (
       await this.unlockedWallet(accounts.selected, password)
     ).signTransaction(transaction);

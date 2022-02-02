@@ -144,11 +144,7 @@ export const PassCodeSetupKeyboard: React.FC<PassCodeSetupKeyboardProps> = ({
       <TextInput
         value={code}
         onChangeText={setCode}
-        ref={ref => {
-          if (ref !== undefined && ref && !ref.isFocused()) {
-            ref.focus();
-          }
-        }}
+        autoFocus
         keyboardType="number-pad"
         maxLength={PASSCODE_LENGTH}
         style={styles.input}

@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Button, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useLayoutEffect } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { useAssetBalance } from 'hooks/useAssetBalance';
@@ -12,6 +12,8 @@ import { Text } from 'components/Text';
 import { DefaultTheme } from '@react-navigation/native';
 import { commifyDecimals } from 'utils/helpers';
 import { TokenId } from 'types/token';
+import { useBalanceToUsd } from 'hooks/useBalanceToUsd';
+import { Button } from 'components/Buttons/Button';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.details'>;
 
@@ -19,14 +21,19 @@ export const WalletDetails: React.FC<Props> = ({
   route: { params },
   navigation,
 }) => {
-  useEffect(() => {
+  useLayoutEffect(() => {
     navigation.setOptions({
       title: params.token.name,
     });
   }, [params, navigation]);
 
   const address = useWalletAddress();
-  const { value } = useAssetBalance(params.token, address, params.chainId);
+  const { value, weiValue } = useAssetBalance(
+    params.token,
+    address,
+    params.chainId,
+  );
+  const usdBalance = useBalanceToUsd(params.chainId, params.token, weiValue);
 
   return (
     <SafeAreaPage>
@@ -42,15 +49,26 @@ export const WalletDetails: React.FC<Props> = ({
           <Text style={styles.balance}>
             {commifyDecimals(value)} {params.token.symbol}
           </Text>
-          <AddressBadge address={address} />
+          {usdBalance !== null && (
+            <Text style={styles.usdBalance}>
+              ${commifyDecimals(usdBalance, 2)}
+            </Text>
+          )}
+          <View style={styles.address}>
+            <AddressBadge address={address} />
+          </View>
           <View style={styles.buttons}>
             <Button
               title="Send"
               onPress={() => navigation.navigate('wallet.send', params)}
+              primary
+              pressableStyle={styles.button}
             />
             <Button
               title="Receive"
               onPress={() => navigation.navigate('wallet.receive', params)}
+              primary
+              pressableStyle={styles.button}
             />
           </View>
         </View>
@@ -84,13 +102,27 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginBottom: 8,
   },
+  usdBalance: {
+    fontWeight: '300',
+    fontSize: 16,
+    marginBottom: 24,
+  },
   address: {
     marginBottom: 12,
+    textAlign: 'center',
   },
   buttons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
+    flex: 1,
+  },
+  button: {
+    width: 'auto',
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    margin: 12,
   },
   logoWrapper: {
     width: 84,

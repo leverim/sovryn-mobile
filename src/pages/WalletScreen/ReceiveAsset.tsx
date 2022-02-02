@@ -25,7 +25,7 @@ export const ReceiveAsset: React.FC<Props> = ({
   const address = useWalletAddress();
 
   const onCopyToClipboard = useCallback(
-    () => Clipboard.setString(address),
+    () => Clipboard.setString(address.toLowerCase()),
     [address],
   );
 

@@ -41,6 +41,7 @@ export const TokenAmountField: React.FC<Props & TextInputProps> = ({
       <AmountField
         {...props}
         fee={fee}
+        decimals={_token.decimals}
         max={Number(value)}
         placeholder={`Enter amount of ${_token.symbol}`}
       />
