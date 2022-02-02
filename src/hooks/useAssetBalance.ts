@@ -65,6 +65,7 @@ export function useAssetBalance(
 
   return {
     value: utils.formatUnits(balance, asset.decimals),
+    weiValue: balance,
     loading,
   };
 }

@@ -1,3 +1,5 @@
+import type { TokenId } from 'types/token';
+
 export const ETH_DERIVATION_PATH = "m/44'/60'/0'/0";
 export const RSK_DERIVATION_PATH = "m/44'/137'/0'/0";
 export const RSK_TESTNET_DERIVATION_PATH = "m/44'/37310'/0'/0";
@@ -25,3 +27,5 @@ export const STORAGE_BIOMETRY_CHOICE = `${prefix}biometricsChoice`;
 export const STORAGE_PASSCODE_CHOICE = `${prefix}passcodeChoice`;
 export const STORAGE_PASSCODE_TYPE = `${prefix}passcodeType`;
 export const STORAGE_PASSCODE = `${prefix}passcode`;
+
+export const USD_TOKEN: TokenId = 'xusd';

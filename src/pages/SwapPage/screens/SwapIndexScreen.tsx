@@ -18,23 +18,24 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SwapStackProps } from '..';
 import { getSwappableToken, swapables, wrapSwapables } from 'config/swapables';
 import { TokenId } from 'types/token';
-import { ContractName } from 'types/contract';
 import { Button } from 'components/Buttons/Button';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 import { DarkTheme } from '@react-navigation/native';
 
 import ArrowDownIcon from 'assets/arrow-down-icon.svg';
 import { SwapAmountField } from '../components/SwapAmountField';
-import { useGetUsdBalance } from 'hooks/useGetUsdBalance';
 import { useGetSwapExpectedReturn } from 'hooks/useGetSwapExpectedReturn';
 import { TokenApprovalFlow } from 'components/TokenApprovalFlow';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { callToContract, encodeFunctionData } from 'utils/contract-utils';
 import { transactionController } from 'controllers/TransactionController';
-import { AFFILIATE_ACCOUNT, AFFILIATE_FEE } from 'utils/constants';
+import { AFFILIATE_ACCOUNT, AFFILIATE_FEE, USD_TOKEN } from 'utils/constants';
 import { useSlippage } from 'hooks/useSlippage';
 import { SwapSettingsModal } from '../components/SwapSettingsModal';
 import SettingsIcon from 'assets/settings-icon.svg';
+import { hexlify } from 'ethers/lib/utils';
+import { BigNumber } from 'ethers';
+import { useBalanceToUsd } from 'hooks/useBalanceToUsd';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
@@ -63,7 +64,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     });
   }, [navigation]);
 
-  const usdToken = tokenUtils.getTokenById('xusd');
+  const usdToken = tokenUtils.getTokenById(USD_TOKEN);
   const nativeToken = tokenUtils.getNativeToken(chainId);
 
   const [sendTokenId, setSendTokenId] = useState(tokens[0]);
@@ -117,18 +118,15 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     [sendTokenId, tokens],
   );
 
-  const { value: sendOneUSD, loading: sendUsdLoading } = useGetUsdBalance(
+  const sendOneUSD = useBalanceToUsd(
     chainId,
-    sendTokenId,
-    '1',
-    true,
+    sendToken,
+    parseUnits('1', sendToken.decimals).toString(),
   );
-
-  const { value: receiveOneUSD, loading: receiveUsdLoading } = useGetUsdBalance(
+  const receiveOneUSD = useBalanceToUsd(
     chainId,
-    receiveTokenId,
-    '1',
-    true,
+    receiveToken,
+    parseUnits('1', sendToken.decimals).toString(),
   );
 
   const { value: sellPrice, loading: sellPriceLoading } =
@@ -149,11 +147,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   }, [receiveAmount, receiveTokenId, sendTokenId]);
 
   const sendUSD = useMemo(() => {
-    if (
-      sendUsdLoading ||
-      numberIsEmpty(sendOneUSD) ||
-      numberIsEmpty(sendAmount)
-    ) {
+    if (sendOneUSD === null || numberIsEmpty(sendAmount)) {
       return undefined;
     }
     return formatUnits(
@@ -162,20 +156,10 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
         .div(parseUnits('1', usdToken.decimals)),
       usdToken.decimals,
     );
-  }, [
-    sendUsdLoading,
-    sendOneUSD,
-    sendAmount,
-    sendToken.decimals,
-    usdToken.decimals,
-  ]);
+  }, [sendOneUSD, sendAmount, sendToken.decimals, usdToken.decimals]);
 
   const receiveUSD = useMemo(() => {
-    if (
-      receiveUsdLoading ||
-      numberIsEmpty(receiveOneUSD) ||
-      numberIsEmpty(receiveAmount)
-    ) {
+    if (receiveOneUSD === null || numberIsEmpty(receiveAmount)) {
       return undefined;
     }
     return formatUnits(
@@ -184,13 +168,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
         .div(parseUnits('1', usdToken.decimals)),
       usdToken.decimals,
     );
-  }, [
-    receiveUsdLoading,
-    receiveOneUSD,
-    receiveAmount,
-    receiveToken.decimals,
-    usdToken.decimals,
-  ]);
+  }, [receiveOneUSD, receiveAmount, receiveToken.decimals, usdToken.decimals]);
 
   const difference = useMemo(() => {
     if (!sendUSD || !receiveUSD || loading) {
@@ -243,7 +221,9 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
       .request({
         to: contractAddress,
         from: owner,
-        value: sendTokenId === nativeToken.id ? amount : 0,
+        value: hexlify(
+          BigNumber.from(sendTokenId === nativeToken.id ? amount : '0'),
+        ),
         data,
       })
       .then(() => {

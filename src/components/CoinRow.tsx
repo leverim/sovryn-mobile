@@ -8,6 +8,7 @@ import { Token } from 'types/token';
 import { ChainId } from 'types/network';
 import { Text } from './Text';
 import { commifyDecimals } from 'utils/helpers';
+import { useBalanceToUsd } from 'hooks/useBalanceToUsd';
 
 type Props = {
   token: Token;
@@ -18,7 +19,9 @@ export const CoinRow: React.FC<Props> = ({ token, chainId }) => {
   const navigation = useNavigation();
 
   const address = useWalletAddress();
-  const { value } = useAssetBalance(token, address, chainId);
+  const { value, weiValue } = useAssetBalance(token, address, chainId);
+
+  const usdBalance = useBalanceToUsd(chainId, token, weiValue);
 
   return (
     <TouchableWithoutFeedback
@@ -34,7 +37,11 @@ export const CoinRow: React.FC<Props> = ({ token, chainId }) => {
           </View>
           <View style={styles.textWrapperRow}>
             <Text style={styles.textRow2}>{token.symbol}</Text>
-            {/*<Text style={styles.textRow2}>{Number(value).toFixed(4)}</Text>*/}
+            {usdBalance !== null && (
+              <Text style={styles.textRow2}>
+                ${commifyDecimals(usdBalance, 4)}
+              </Text>
+            )}
           </View>
         </View>
       </View>

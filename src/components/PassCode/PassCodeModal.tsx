@@ -1,4 +1,3 @@
-import { BlurView } from '@react-native-community/blur';
 import React from 'react';
 import { Modal, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,7 +18,6 @@ export const PassCodeModal: React.FC<PassCodeModalProps> = ({
       visible={visible}
       animationType="fade"
       presentationStyle="overFullScreen">
-      <BlurView style={styles.blurView} />
       <SafeAreaView style={styles.container}>
         <PassCodeKeyboard onPasscodeVerified={onUnlocked} />
       </SafeAreaView>
@@ -36,7 +34,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   container: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
     flex: 1,
   },
 });

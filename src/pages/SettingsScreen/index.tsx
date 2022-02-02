@@ -1,5 +1,5 @@
 import React, { useCallback, useContext } from 'react';
-import { Alert, ScrollView } from 'react-native';
+import { Alert, Linking, ScrollView } from 'react-native';
 import { AppContext } from 'context/AppContext';
 import { Setting, settings } from 'utils/settings';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
@@ -88,6 +88,21 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
             title="Appearance"
             onPress={navigate('settings.appearance')}
           /> */}
+        </NavGroup>
+
+        <NavGroup>
+          <NavItem
+            title="Learn about Sovryn"
+            onPress={() => Linking.openURL('https://wiki.sovryn.app')}
+          />
+          <NavItem
+            title="Report issue"
+            onPress={() =>
+              Linking.openURL(
+                'https://github.com/defray-labs/sovryn-mobile/issues',
+              )
+            }
+          />
         </NavGroup>
 
         <NavGroup>

@@ -88,7 +88,7 @@ export const tokens = checkTokens([
   {
     id: 'rif',
     symbol: 'RIF',
-    name: 'RSK Infrastructure Framework',
+    name: 'RIF',
     address: {
       30: '0x2acc95758f8b5f583470ba265eb685a8f45fc9d5',
       31: '0x19f64674d8a5b4e652319f5e239efd3bc969a1fe',

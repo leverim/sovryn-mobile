@@ -1,6 +1,8 @@
-import { utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
+import { formatUnits } from 'ethers/lib/utils';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button, StyleSheet, TextInputProps, View } from 'react-native';
+import { parseUnits } from 'utils/helpers';
 import { InputField } from './InputField';
 import { Text } from './Text';
 
@@ -8,6 +10,7 @@ type Props = {
   label?: string;
   max?: number;
   fee?: number;
+  decimals?: number;
 };
 
 export const AmountField: React.FC<Props & TextInputProps> = ({
@@ -15,6 +18,7 @@ export const AmountField: React.FC<Props & TextInputProps> = ({
   fee = 0,
   onChangeText,
   value,
+  decimals = 18,
   ...props
 }) => {
   const [_value, setValue] = useState(value);
@@ -33,23 +37,23 @@ export const AmountField: React.FC<Props & TextInputProps> = ({
     [onChangeText],
   );
 
+  // todo: fix decimals
   const onSelectPartial = useCallback(
     (amount: number) => {
       if (max !== undefined) {
-        let _amount = max * amount;
+        const _max = parseUnits(max.toString(), decimals);
+        const _fee = parseUnits(fee.toString(), decimals);
 
-        if (_amount + fee > max) {
-          if (fee > max) {
-            _amount = 0;
-          } else {
-            _amount = _amount - fee;
-          }
+        let _amount = _max.mul(amount * 1000).div(1000);
+
+        if (_amount.add(_fee).gt(_max)) {
+          _amount = _fee.gt(_max) ? BigNumber.from('0') : _amount.sub(_fee);
         }
 
-        onChange(_amount.toString());
+        onChange(formatUnits(_amount, decimals).toString());
       }
     },
-    [onChange, max, fee],
+    [onChange, max, fee, decimals],
   );
 
   return (

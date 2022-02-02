@@ -9,7 +9,7 @@ import { NavItem } from 'components/NavGroup/NavItem';
 import { globalStyles } from 'global.styles';
 import { accounts, AccountType } from 'utils/accounts';
 import { passcode } from 'controllers/PassCodeController';
-import { AccountBanner } from 'components/AccountBanner';
+import { AccountBannerMini } from 'components/AccountBannerMini';
 
 type Props = NativeStackScreenProps<SettingsStackProps, 'settings.wallet'>;
 
@@ -78,7 +78,7 @@ export const WalletPage: React.FC<Props> = ({
   return (
     <SafeAreaPage>
       <ScrollView style={globalStyles.page}>
-        <AccountBanner account={account} />
+        <AccountBannerMini account={account} />
 
         <NavGroup>
           {accountSelected !== params.index && (

@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 import {
   DarkTheme,
@@ -7,13 +7,7 @@ import {
 } from '@react-navigation/native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { AccountType, BaseAccount } from 'utils/accounts';
-import {
-  commifyDecimals,
-  currentChainId,
-  formatUnits,
-  prettifyTx,
-  px,
-} from 'utils/helpers';
+import { currentChainId, prettifyTx, px } from 'utils/helpers';
 import { tokenUtils } from 'utils/token-utils';
 import { Text } from './Text';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
@@ -22,19 +16,13 @@ import CopyIcon from 'assets/copy-icon.svg';
 import SendIcon from 'assets/send-icon.svg';
 import ReceiveIcon from 'assets/receive-icon.svg';
 import { toChecksumAddress } from 'utils/rsk';
-import { BigNumber } from 'ethers';
-import { TokenId } from 'types/token';
-import { parseUnits } from 'ethers/lib/utils';
-import { getSwappableToken } from 'config/swapables';
-import { USD_TOKEN } from 'utils/constants';
-import { AppContext } from 'context/AppContext';
 
 type AccountBannerProps = {
   account: BaseAccount;
   showActions?: boolean;
 };
 
-export const AccountBanner: React.FC<AccountBannerProps> = ({
+export const AccountBannerMini: React.FC<AccountBannerProps> = ({
   account,
   showActions,
 }) => {
@@ -42,8 +30,6 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
     useNavigation<NavigationProp<WalletStackProps, 'wallet.details'>>();
   const chainId = currentChainId();
   const coin = tokenUtils.getNativeToken(chainId);
-  const usd = tokenUtils.getTokenById(USD_TOKEN);
-  const { prices, balances } = useContext(AppContext);
 
   const [pressed, setPressed] = useState(false);
 
@@ -56,35 +42,6 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
     () => Clipboard.setString(account.address),
     [account.address],
   );
-
-  const oneUsd = parseUnits('1', usd.decimals);
-
-  const balance = useMemo(() => {
-    const _balances = Object.entries(
-      balances[chainId]?.[account.address.toLowerCase()] || {},
-    ).map(([tokenId, amount]) => ({ tokenId, amount }));
-
-    const getUsdPrice = (tokenId: TokenId) => {
-      const token = getSwappableToken(tokenId, chainId);
-      if (token === USD_TOKEN) {
-        return parseUnits('1', usd.decimals);
-      }
-      return prices[chainId]?.[token] || '0';
-    };
-
-    return formatUnits(
-      _balances.reduce(
-        (p, c) =>
-          p.add(
-            BigNumber.from(c.amount)
-              .mul(getUsdPrice(c.tokenId as TokenId))
-              .div(oneUsd),
-          ),
-        BigNumber.from('0'),
-      ),
-      usd.decimals,
-    );
-  }, [balances, chainId, account.address, oneUsd, prices, usd.decimals]);
 
   return (
     <View style={styles.container}>
@@ -106,9 +63,6 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
             <CopyIcon fill="white" width={22} height={22} />
           </View>
         </Pressable>
-      </View>
-      <View>
-        <Text style={styles.balanceText}>${commifyDecimals(balance, 4)}</Text>
       </View>
       <View>
         {showActions && (

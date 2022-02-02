@@ -51,8 +51,6 @@ Will update instructions once we will apply some android polyfills.
 git clone git@github.com:defray-labs/sovryn-mobile.git
 cd sovryn-mobile
 yarn install
-// list available devices
-adb devices
-// pass deviceId you got in "adb devices"
-npx react-native run-android --deviceId abcd
+cd android
+./gradlew :app:assembleRelease
 ```
