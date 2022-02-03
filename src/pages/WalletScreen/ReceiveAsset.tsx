@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useLayoutEffect } from 'react';
 import { Button, ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -16,7 +16,7 @@ export const ReceiveAsset: React.FC<Props> = ({
   route: { params },
   navigation,
 }) => {
-  useEffect(() => {
+  useLayoutEffect(() => {
     navigation.setOptions({
       title: `Receive ${params.token.symbol}`,
     });
@@ -38,7 +38,7 @@ export const ReceiveAsset: React.FC<Props> = ({
           <Text style={styles.title}>Receive {params.token.symbol}</Text>
           <View style={[styles.qrWrapper, dark && styles.qrWrapperDark]}>
             <QRCode
-              value={address}
+              value={address.toLowerCase()}
               backgroundColor={dark ? 'black' : 'white'}
               color={dark ? 'white' : 'black'}
               size={280}

@@ -39,7 +39,7 @@ export const AccountBannerMini: React.FC<AccountBannerProps> = ({
   );
 
   const handleAddressCopy = useCallback(
-    () => Clipboard.setString(account.address),
+    () => Clipboard.setString(account.address.toLowerCase()),
     [account.address],
   );
 

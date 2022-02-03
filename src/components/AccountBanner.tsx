@@ -53,7 +53,7 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
   );
 
   const handleAddressCopy = useCallback(
-    () => Clipboard.setString(account.address),
+    () => Clipboard.setString(account.address.toLowerCase()),
     [account.address],
   );
 
