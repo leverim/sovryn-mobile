@@ -1,5 +1,5 @@
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import {
   calculateChange,
@@ -57,7 +57,11 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <Pressable onPress={() => setShowSettings(true)}>
+        <Pressable
+          onPress={() => {
+            Keyboard.dismiss();
+            setShowSettings(true);
+          }}>
           <SettingsIcon fill={DarkTheme.colors.primary} />
         </Pressable>
       ),
