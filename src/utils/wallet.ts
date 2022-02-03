@@ -90,6 +90,7 @@ class WalletManager {
     transaction: TransactionRequest,
     password: string,
   ): Promise<string> {
+    delete transaction.customData;
     return (
       await this.unlockedWallet(accounts.selected, password)
     ).signTransaction(transaction);
