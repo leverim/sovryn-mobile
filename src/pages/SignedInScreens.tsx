@@ -13,11 +13,13 @@ import { PassCodeModal } from 'components/PassCode/PassCodeModal';
 import { passcode } from 'controllers/PassCodeController';
 import { TransactionConfirmation } from 'components/TransactionConfirmation/TransactionConfirmation';
 import { PasscodeConfirmation } from 'components/PassCode/PasscodeConfirmation';
+import { LendingRoutes } from 'routers/lending.routes';
 
 export type SignedInScreensTabProps = {
   wallet: undefined;
   swap: undefined;
   settings: undefined;
+  lending: undefined;
 };
 
 const Tab = createBottomTabNavigator<SignedInScreensTabProps>();
@@ -61,6 +63,14 @@ export const SignedInScreens = () => {
           component={SwapPage}
           options={{
             title: 'Swap',
+            tabBarIcon: ({ color }) => <ExchangeIcon fill={color} />,
+          }}
+        />
+        <Tab.Screen
+          name="lending"
+          component={LendingRoutes}
+          options={{
+            title: 'Lending',
             tabBarIcon: ({ color }) => <ExchangeIcon fill={color} />,
           }}
         />
