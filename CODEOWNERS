@@ -1,5 +1,5 @@
-/ios/ harmaus
-/android/ harmaus
-/src/ harmaus
-/package.json harmaus
-/yarn.lock harmaus
+/ios/ @harmaus
+/android/ @harmaus
+/src/ @harmaus
+/package.json @harmaus
+/yarn.lock @harmaus
