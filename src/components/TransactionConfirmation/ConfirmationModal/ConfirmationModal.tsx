@@ -77,7 +77,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const renderTitle = useMemo(() => {
     switch (type) {
       default:
-        return 'Contract Interaction';
+        return 'Contract Execution';
       case TransactionType.SEND_COIN:
         return `Send ${
           tokenUtils.getNativeToken(

@@ -1,7 +1,12 @@
 import React, { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { LendingToken, LendingTokenFlags } from 'models/lending-token';
-import { commifyDecimals, formatUnits, parseUnits } from 'utils/helpers';
+import {
+  commifyDecimals,
+  formatUnits,
+  parseAndCommify,
+  parseUnits,
+} from 'utils/helpers';
 import { tokenUtils } from 'utils/token-utils';
 import { Text } from 'components/Text';
 import { Button } from 'components/Buttons/Button';
@@ -19,30 +24,33 @@ export const LendingPool: React.FC<LendingPoolProps> = ({ lendingToken }) => {
 
   const { value: state, loading } = useLendingPool(lendingToken);
 
-  const token = tokenUtils.getTokenById(lendingToken.loanTokenId);
+  const token = lendingToken.token;
   const rewardsEnabled = lendingToken.hasFlag(
     LendingTokenFlags.REWARDS_ENABLED,
+  );
+
+  const iTokenBalance = useMemo(
+    () =>
+      BigNumber.from(state.balanceOf || '0').add(
+        state.getUserPoolTokenBalance || '0',
+      ),
+    [state.balanceOf, state.getUserPoolTokenBalance],
   );
 
   const profit = useMemo(() => {
     if (rewardsEnabled) {
       return BigNumber.from(state.tokenPrice || '0')
         .sub(state.checkpointPrice || '0')
-        .mul(
-          BigNumber.from(state.balanceOf || '0').add(
-            state.getUserPoolTokenBalance || '0',
-          ),
-        )
+        .mul(iTokenBalance)
         .div(parseUnits('1', token.decimals))
         .add(state.profitOf || '0')
         .toString();
     }
     return state.profitOf;
   }, [
+    iTokenBalance,
     rewardsEnabled,
-    state.balanceOf,
     state.checkpointPrice,
-    state.getUserPoolTokenBalance,
     state.profitOf,
     state.tokenPrice,
     token.decimals,
@@ -54,35 +62,35 @@ export const LendingPool: React.FC<LendingPoolProps> = ({ lendingToken }) => {
       {lendingToken.hasFlag(LendingTokenFlags.REWARDS_ENABLED) && (
         <Text>SOV Rewards available</Text>
       )}
+      <Text>Interest: {parseAndCommify(state.supplyInterestRate, 18)} %</Text>
       <Text>
-        Interest: {commifyDecimals(formatUnits(state.supplyInterestRate, 18))} %
+        i{lendingToken.token.symbol} price:{' '}
+        {parseAndCommify(state.tokenPrice, lendingToken.decimals)}{' '}
+        {lendingToken.token.symbol}
+        {}
       </Text>
       <Text>
-        Token price: {commifyDecimals(formatUnits(state.tokenPrice, 18))}
+        i{lendingToken.token.symbol} checkpoint price:{' '}
+        {parseAndCommify(state.checkpointPrice, lendingToken.decimals)}
+        {lendingToken.token.symbol}
       </Text>
       <Text>
-        Checkpoint price:{' '}
-        {commifyDecimals(formatUnits(state.checkpointPrice, 18))}
-      </Text>
-      <Text>
-        Liquidity:{' '}
-        {commifyDecimals(formatUnits(state.marketLiquidity, token.decimals))}{' '}
+        Liquidity: {parseAndCommify(state.marketLiquidity, token.decimals)}{' '}
         {token.symbol}
       </Text>
       <Text>
-        Balance:{' '}
-        {commifyDecimals(formatUnits(state.assetBalanceOf, token.decimals))}{' '}
-        {token.symbol}
+        Your Balance: {parseAndCommify(state.assetBalanceOf, token.decimals)}{' '}
+        {token.symbol} ({parseAndCommify(iTokenBalance, lendingToken.decimals)}{' '}
+        i{token.symbol})
       </Text>
       <Text>
-        Profit: {commifyDecimals(formatUnits(profit, token.decimals))}{' '}
-        {token.symbol}
+        Your Profit: {parseAndCommify(profit, token.decimals)} {token.symbol}
       </Text>
       {loading && <ActivityIndicator size={24} />}
       <View>
         {!lendingToken.hasFlag(LendingTokenFlags.DEPRECATED) && (
           <Button
-            title="Lend"
+            title="Deposit"
             primary
             onPress={() =>
               navigation.navigate('lending.deposit', {
@@ -92,7 +100,15 @@ export const LendingPool: React.FC<LendingPoolProps> = ({ lendingToken }) => {
           />
         )}
 
-        <Button title="Unlend" warning />
+        <Button
+          title="Withdraw"
+          primary
+          onPress={() =>
+            navigation.navigate('lending.withdraw', {
+              tokenId: lendingToken.loanTokenId,
+            })
+          }
+        />
       </View>
     </View>
   );

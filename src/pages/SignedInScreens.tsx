@@ -9,6 +9,7 @@ import { SettingsPage } from './MainScreen/SettingsPage';
 import WalletIcon from 'assets/wallet-icon.svg';
 import ExchangeIcon from 'assets/exchange-icon.svg';
 import SettingsIcon from 'assets/settings-icon.svg';
+import ScienceIcon from 'assets/science-icon.svg';
 import { PassCodeModal } from 'components/PassCode/PassCodeModal';
 import { passcode } from 'controllers/PassCodeController';
 import { TransactionConfirmation } from 'components/TransactionConfirmation/TransactionConfirmation';
@@ -71,7 +72,7 @@ export const SignedInScreens = () => {
           component={LendingRoutes}
           options={{
             title: 'Lending',
-            tabBarIcon: ({ color }) => <ExchangeIcon fill={color} />,
+            tabBarIcon: ({ color }) => <ScienceIcon fill={color} />,
           }}
         />
         <Tab.Screen
