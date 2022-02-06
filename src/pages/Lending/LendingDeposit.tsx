@@ -48,20 +48,20 @@ export const LendingDeposit: React.FC<Props> = ({
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: `${lendingToken.token.symbol} Lending`,
+      title: `${lendingToken.supplyToken.symbol} Lending`,
     });
-  }, [navigation, lendingToken.token.symbol]);
+  }, [navigation, lendingToken.supplyToken.symbol]);
 
   const { value: pool, loading, execute } = useLendingPool(lendingToken);
   const { value: balance } = useAssetBalance(
-    lendingToken.token,
+    lendingToken.supplyToken,
     owner,
     chainId,
   );
   const sendOneUSD = useBalanceToUsd(
     chainId,
-    lendingToken.token,
-    parseUnits('1', lendingToken.decimals).toString(),
+    lendingToken.supplyToken,
+    parseUnits('1', lendingToken.supplyToken.decimals).toString(),
   );
   const usdToken = tokenUtils.getTokenById(USD_TOKEN);
   const rewardsEnabled = lendingToken.hasFlag(
@@ -75,19 +75,24 @@ export const LendingDeposit: React.FC<Props> = ({
       return undefined;
     }
     return formatUnits(
-      parseUnits(amount, lendingToken.token.decimals)
+      parseUnits(amount, lendingToken.supplyToken.decimals)
         .mul(parseUnits(sendOneUSD, usdToken.decimals))
         .div(parseUnits('1', usdToken.decimals)),
       usdToken.decimals,
     );
-  }, [sendOneUSD, amount, lendingToken.token.decimals, usdToken.decimals]);
+  }, [
+    sendOneUSD,
+    amount,
+    lendingToken.supplyToken.decimals,
+    usdToken.decimals,
+  ]);
 
   const receiveLoanToken = useMemo(() => {
     return parseUnits(amount)
-      .mul(parseUnits('1', lendingToken.decimals))
+      .mul(parseUnits('1', lendingToken.loanToken.decimals))
       .div(pool.tokenPrice)
       .toString();
-  }, [amount, pool.tokenPrice, lendingToken.decimals]);
+  }, [amount, pool.tokenPrice, lendingToken.loanToken.decimals]);
 
   const [submitting, setSubmitting] = useState(false);
   const handleDeposit = useCallback(async () => {
@@ -95,7 +100,7 @@ export const LendingDeposit: React.FC<Props> = ({
     try {
       const native = tokenUtils.getNativeToken(chainId);
       const isNative = lendingToken.loanTokenId === native.id;
-      const weiAmount = parseUnits(amount, lendingToken.token.decimals);
+      const weiAmount = parseUnits(amount, lendingToken.supplyToken.decimals);
       const data = isNative
         ? encodeFunctionData('mintWithBTC(address,bool)(uint256)', [
             owner,
@@ -111,7 +116,7 @@ export const LendingDeposit: React.FC<Props> = ({
         value: hexlify(isNative ? weiAmount : 0),
         data,
         customData: {
-          token: lendingToken.token.id,
+          token: lendingToken.supplyToken.id,
           receiveAmount: receiveLoanToken,
         },
       });
@@ -125,8 +130,8 @@ export const LendingDeposit: React.FC<Props> = ({
     chainId,
     lendingToken.loanTokenAddress,
     lendingToken.loanTokenId,
-    lendingToken.token.decimals,
-    lendingToken.token.id,
+    lendingToken.supplyToken.decimals,
+    lendingToken.supplyToken.id,
     owner,
     receiveLoanToken,
     rewardsEnabled,
@@ -142,18 +147,18 @@ export const LendingDeposit: React.FC<Props> = ({
         ),
       }}>
       <Text>
-        Interest: {commifyDecimals(formatUnits(pool.supplyInterestRate, 18), 4)}{' '}
-        %
+        Interest: {formatAndCommify(pool.supplyInterestRate, 18, 4)} %
       </Text>
       <Text>
         Already Deposited:{' '}
-        {commifyDecimals(
-          formatUnits(pool.assetBalanceOf, lendingToken.token.decimals),
+        {formatAndCommify(
+          pool.assetBalanceOf,
+          lendingToken.supplyToken.decimals,
         )}{' '}
-        {lendingToken.token.symbol}
+        {lendingToken.supplyToken.symbol}
       </Text>
       <LendingAmountField
-        token={lendingToken.token}
+        token={lendingToken.supplyToken}
         amount={amount}
         onAmountChanged={setAmount}
         balance={balance}
@@ -161,12 +166,12 @@ export const LendingDeposit: React.FC<Props> = ({
       />
       <Text>
         Receive:{' '}
-        {formatAndCommify(receiveLoanToken, lendingToken.token.decimals)} i
-        {lendingToken.token.symbol}
+        {formatAndCommify(receiveLoanToken, lendingToken.loanToken.decimals)}{' '}
+        {lendingToken.loanToken.symbol}
       </Text>
       <ReadWalletAwareWrapper>
         <TokenApprovalFlow
-          tokenId={lendingToken.token.id as TokenId}
+          tokenId={lendingToken.supplyToken.id as TokenId}
           spender={lendingToken.loanTokenAddress}
           requiredAmount={amount}>
           <Button

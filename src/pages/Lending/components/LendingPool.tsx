@@ -18,7 +18,6 @@ export const LendingPool: React.FC<LendingPoolProps> = ({ lendingToken }) => {
 
   const { value: state, loading } = useLendingPool(lendingToken);
 
-  const token = lendingToken.token;
   const rewardsEnabled = lendingToken.hasFlag(
     LendingTokenFlags.REWARDS_ENABLED,
   );
@@ -36,49 +35,62 @@ export const LendingPool: React.FC<LendingPoolProps> = ({ lendingToken }) => {
       return BigNumber.from(state.tokenPrice || '0')
         .sub(state.checkpointPrice || '0')
         .mul(iTokenBalance)
-        .div(parseUnits('1', token.decimals))
+        .div(parseUnits('1', lendingToken.supplyToken.decimals))
         .add(state.profitOf || '0')
         .toString();
     }
     return state.profitOf;
   }, [
     iTokenBalance,
+    lendingToken.supplyToken.decimals,
     rewardsEnabled,
     state.checkpointPrice,
     state.profitOf,
     state.tokenPrice,
-    token.decimals,
   ]);
 
   return (
     <View style={styles.container}>
-      <Text>{token.symbol}</Text>
+      <Text>{lendingToken.supplyToken.symbol}</Text>
       {lendingToken.hasFlag(LendingTokenFlags.REWARDS_ENABLED) && (
         <Text>SOV Rewards available</Text>
       )}
       <Text>Interest: {formatAndCommify(state.supplyInterestRate, 18)} %</Text>
       <Text>
-        i{lendingToken.token.symbol} price:{' '}
-        {formatAndCommify(state.tokenPrice, lendingToken.decimals)}{' '}
-        {lendingToken.token.symbol}
-        {}
+        {lendingToken.loanToken.symbol} price:{' '}
+        {formatAndCommify(state.tokenPrice, lendingToken.supplyToken.decimals)}{' '}
+        {lendingToken.supplyToken.symbol}
       </Text>
       <Text>
-        i{lendingToken.token.symbol} checkpoint price:{' '}
-        {formatAndCommify(state.checkpointPrice, lendingToken.decimals)}
-        {lendingToken.token.symbol}
+        {lendingToken.loanToken.symbol} checkpoint price:{' '}
+        {formatAndCommify(
+          state.checkpointPrice,
+          lendingToken.supplyToken.decimals,
+        )}{' '}
+        {lendingToken.supplyToken.symbol}
       </Text>
       <Text>
-        Liquidity: {formatAndCommify(state.marketLiquidity, token.decimals)}{' '}
-        {token.symbol}
+        Liquidity:{' '}
+        {formatAndCommify(
+          state.marketLiquidity,
+          lendingToken.supplyToken.decimals,
+        )}{' '}
+        {lendingToken.supplyToken.symbol}
       </Text>
       <Text>
-        Your Balance: {formatAndCommify(state.assetBalanceOf, token.decimals)}{' '}
-        {token.symbol} ({formatAndCommify(iTokenBalance, lendingToken.decimals)}{' '}
-        i{token.symbol})
+        Your Balance:{' '}
+        {formatAndCommify(
+          state.assetBalanceOf,
+          lendingToken.supplyToken.decimals,
+        )}{' '}
+        {lendingToken.supplyToken.symbol} (
+        {formatAndCommify(iTokenBalance, lendingToken.loanToken.decimals)}{' '}
+        {lendingToken.loanToken.symbol})
       </Text>
       <Text>
-        Your Profit: {formatAndCommify(profit, token.decimals)} {token.symbol}
+        Your Profit:{' '}
+        {formatAndCommify(profit, lendingToken.supplyToken.decimals)}{' '}
+        {lendingToken.supplyToken.symbol}
       </Text>
       {loading && <ActivityIndicator size={24} />}
       <View>

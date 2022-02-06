@@ -44,15 +44,15 @@ export const LendingWithdraw: React.FC<Props> = ({
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: `${lendingToken.token.symbol} Unlend`,
+      title: `${lendingToken.supplyToken.symbol} Unlend`,
     });
-  }, [navigation, lendingToken.token.symbol]);
+  }, [navigation, lendingToken.supplyToken.symbol]);
 
   const { value: pool, loading, execute } = useLendingPool(lendingToken);
   const sendOneUSD = useBalanceToUsd(
     chainId,
-    lendingToken.token,
-    parseUnits('1', lendingToken.decimals).toString(),
+    lendingToken.supplyToken,
+    parseUnits('1', lendingToken.supplyToken.decimals).toString(),
   );
   const usdToken = tokenUtils.getTokenById(USD_TOKEN);
   const rewardsToken = tokenUtils.getTokenById('sov');
@@ -67,26 +67,31 @@ export const LendingWithdraw: React.FC<Props> = ({
       return undefined;
     }
     return formatUnits(
-      parseUnits(amount, lendingToken.token.decimals)
+      parseUnits(amount, lendingToken.supplyToken.decimals)
         .mul(parseUnits(sendOneUSD, usdToken.decimals))
         .div(parseUnits('1', usdToken.decimals)),
       usdToken.decimals,
     );
-  }, [sendOneUSD, amount, lendingToken.token.decimals, usdToken.decimals]);
+  }, [
+    sendOneUSD,
+    amount,
+    lendingToken.supplyToken.decimals,
+    usdToken.decimals,
+  ]);
 
   const loanTokenAmount = useMemo(() => {
     const totalBalance = BigNumber.from(pool.balanceOf || '0').add(
       pool.getUserPoolTokenBalance || '0',
     );
-    const weiAmount = parseUnits(amount, lendingToken.token.decimals);
+    const weiAmount = parseUnits(amount, lendingToken.supplyToken.decimals);
     let tokenAmount = weiAmount
-      .mul(parseUnits('1', lendingToken.token.decimals))
+      .mul(parseUnits('1', lendingToken.supplyToken.decimals))
       .div(pool.tokenPrice || '0');
 
     // make sure there is no dust amount left when withdrawing
     if (
       tokenAmount
-        .add(parseUnits('0.00001', lendingToken.token.decimals))
+        .add(parseUnits('0.00001', lendingToken.supplyToken.decimals))
         .gte(totalBalance)
     ) {
       return totalBalance.toString();
@@ -95,22 +100,22 @@ export const LendingWithdraw: React.FC<Props> = ({
     return tokenAmount.toString();
   }, [
     amount,
-    lendingToken.token.decimals,
+    lendingToken.supplyToken.decimals,
     pool.balanceOf,
     pool.getUserPoolTokenBalance,
     pool.tokenPrice,
   ]);
 
   const error = useMemo(() => {
-    const weiAmount = parseUnits(amount, lendingToken.token.decimals);
+    const weiAmount = parseUnits(amount, lendingToken.supplyToken.decimals);
     if (weiAmount.gt(pool.assetBalanceOf || '0')) {
-      return `Insufficient ${lendingToken.token.symbol} lending balance`;
+      return `Insufficient ${lendingToken.supplyToken.symbol} lending balance`;
     }
     return null;
   }, [
     amount,
-    lendingToken.token.decimals,
-    lendingToken.token.symbol,
+    lendingToken.supplyToken.decimals,
+    lendingToken.supplyToken.symbol,
     pool.assetBalanceOf,
   ]);
 
@@ -128,7 +133,7 @@ export const LendingWithdraw: React.FC<Props> = ({
           [owner, loanTokenAmount, rewardsEnabled],
         ),
         customData: {
-          receiveAmount: parseUnits(amount, lendingToken.token.decimals),
+          receiveAmount: parseUnits(amount, lendingToken.supplyToken.decimals),
         },
       });
       setSubmitting(false);
@@ -140,7 +145,7 @@ export const LendingWithdraw: React.FC<Props> = ({
     chainId,
     lendingToken.loanTokenId,
     lendingToken.loanTokenAddress,
-    lendingToken.token.decimals,
+    lendingToken.supplyToken.decimals,
     owner,
     loanTokenAmount,
     rewardsEnabled,
@@ -158,10 +163,13 @@ export const LendingWithdraw: React.FC<Props> = ({
         ),
       }}>
       <LendingAmountField
-        token={lendingToken.token}
+        token={lendingToken.supplyToken}
         amount={amount}
         onAmountChanged={setAmount}
-        balance={formatUnits(pool.assetBalanceOf, lendingToken.token.decimals)}
+        balance={formatUnits(
+          pool.assetBalanceOf,
+          lendingToken.supplyToken.decimals,
+        )}
         price={sendUSD}
       />
       {rewardsEnabled && (
@@ -176,15 +184,15 @@ export const LendingWithdraw: React.FC<Props> = ({
       )}
       {!!loanTokenAmount && (
         <Text>
-          i{lendingToken.token.symbol} amount:{' '}
-          {formatAndCommify(loanTokenAmount, lendingToken.decimals)}{' '}
-          {lendingToken.token.symbol}
+          {lendingToken.loanToken.symbol} amount:{' '}
+          {formatAndCommify(loanTokenAmount, lendingToken.supplyToken.decimals)}{' '}
+          {lendingToken.supplyToken.symbol}
         </Text>
       )}
       <Text>
-        i{lendingToken.token.symbol} ={' '}
-        {formatAndCommify(pool.tokenPrice!, lendingToken.token.decimals)}{' '}
-        {lendingToken.token.symbol}
+        {lendingToken.loanToken.symbol} ={' '}
+        {formatAndCommify(pool.tokenPrice!, lendingToken.supplyToken.decimals)}{' '}
+        {lendingToken.supplyToken.symbol}
       </Text>
       <ReadWalletAwareWrapper>
         <Button
