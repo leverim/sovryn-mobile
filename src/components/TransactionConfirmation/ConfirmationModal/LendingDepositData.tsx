@@ -12,33 +12,34 @@ import { lendingTokens } from 'config/lending-tokens';
 import { AddressBadge } from 'components/AddressBadge';
 
 export const LendingDepositData: React.FC<DataModalProps> = ({ request }) => {
-  const { receiver, amount, rewardsEnabled, token, loanToken } = useMemo(() => {
-    const signature = request?.data?.toString().substring(0, 10) || '0x';
+  const { receiver, amount, rewardsEnabled, supplyToken, loanToken } =
+    useMemo(() => {
+      const signature = request?.data?.toString().substring(0, 10) || '0x';
 
-    const isNative = signature === TransactionType.LENDING_DEPOSIT_NATIVE;
+      const isNative = signature === TransactionType.LENDING_DEPOSIT_NATIVE;
 
-    const decoded = decodeParameters(
-      isNative ? ['address', 'bool'] : ['address', 'uint256', 'bool'],
-      `0x${request.data!.toString().substring(10)}`,
-    );
+      const decoded = decodeParameters(
+        isNative ? ['address', 'bool'] : ['address', 'uint256', 'bool'],
+        `0x${request.data!.toString().substring(10)}`,
+      );
 
-    const _loanToken = tokenUtils.getTokenByAddress(
-      request.to!,
-      request.chainId as ChainId,
-    );
+      const _loanToken = tokenUtils.getTokenByAddress(
+        request.to!,
+        request.chainId as ChainId,
+      );
 
-    return {
-      receiver: decoded[0],
-      amount: isNative ? request.value : decoded[1],
-      rewardsEnabled: isNative ? decoded[1] : decoded[2],
-      token: lendingTokens.find(
-        item =>
-          item.chainId === request.chainId &&
-          item.loanTokenAddress === request.to?.toLowerCase(),
-      )?.token!,
-      loanToken: _loanToken,
-    };
-  }, [request]);
+      return {
+        receiver: decoded[0],
+        amount: isNative ? request.value : decoded[1],
+        rewardsEnabled: isNative ? decoded[1] : decoded[2],
+        supplyToken: lendingTokens.find(
+          item =>
+            item.chainId === request.chainId &&
+            item.loanTokenId === _loanToken.id,
+        )?.supplyToken!,
+        loanToken: _loanToken,
+      };
+    }, [request]);
 
   const receiveAmount = request.customData?.receiveAmount || null;
 
@@ -48,7 +49,8 @@ export const LendingDepositData: React.FC<DataModalProps> = ({ request }) => {
         title="Send:"
         content={
           <Text>
-            {formatAndCommify(amount, token.decimals)} {token.symbol}
+            {formatAndCommify(amount, supplyToken.decimals)}{' '}
+            {supplyToken.symbol}
           </Text>
         }
       />

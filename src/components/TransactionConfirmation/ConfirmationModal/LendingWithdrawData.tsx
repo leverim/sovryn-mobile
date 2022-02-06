@@ -11,29 +11,30 @@ import { lendingTokens } from 'config/lending-tokens';
 import { AddressBadge } from 'components/AddressBadge';
 
 export const LendingWithdrawData: React.FC<DataModalProps> = ({ request }) => {
-  const { receiver, amount, rewardsEnabled, token, loanToken } = useMemo(() => {
-    const [_receiver, _amount, _rewardsEnabled] = decodeParameters(
-      ['address', 'uint256', 'bool'],
-      `0x${request.data!.toString().substring(10)}`,
-    );
+  const { receiver, amount, rewardsEnabled, supplyToken, loanToken } =
+    useMemo(() => {
+      const [_receiver, _amount, _rewardsEnabled] = decodeParameters(
+        ['address', 'uint256', 'bool'],
+        `0x${request.data!.toString().substring(10)}`,
+      );
 
-    const _loanToken = tokenUtils.getTokenByAddress(
-      request.to!,
-      request.chainId as ChainId,
-    );
+      const _loanToken = tokenUtils.getTokenByAddress(
+        request.to!,
+        request.chainId as ChainId,
+      );
 
-    return {
-      receiver: _receiver,
-      amount: _amount,
-      rewardsEnabled: _rewardsEnabled,
-      token: lendingTokens.find(
-        item =>
-          item.chainId === request.chainId &&
-          item.loanTokenAddress === request.to?.toLowerCase(),
-      )?.token!,
-      loanToken: _loanToken,
-    };
-  }, [request]);
+      return {
+        receiver: _receiver,
+        amount: _amount,
+        rewardsEnabled: _rewardsEnabled,
+        supplyToken: lendingTokens.find(
+          item =>
+            item.chainId === request.chainId &&
+            item.loanTokenId === _loanToken.id,
+        )?.supplyToken!,
+        loanToken: _loanToken,
+      };
+    }, [request]);
 
   const receiveAmount = request.customData?.receiveAmount || null;
 
@@ -43,7 +44,7 @@ export const LendingWithdrawData: React.FC<DataModalProps> = ({ request }) => {
         title="Send:"
         content={
           <Text>
-            {formatAndCommify(amount, token.decimals)} i{token.symbol}
+            {formatAndCommify(amount, loanToken.decimals)} {loanToken.symbol}
           </Text>
         }
       />
@@ -52,9 +53,9 @@ export const LendingWithdrawData: React.FC<DataModalProps> = ({ request }) => {
         content={
           <Text>
             {receiveAmount !== null && (
-              <>~{formatAndCommify(receiveAmount, loanToken.decimals)} </>
+              <>{formatAndCommify(receiveAmount, supplyToken.decimals)} </>
             )}
-            {loanToken.symbol}
+            {supplyToken.symbol}
           </Text>
         }
       />
