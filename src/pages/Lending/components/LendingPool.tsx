@@ -1,19 +1,13 @@
 import React, { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { LendingToken, LendingTokenFlags } from 'models/lending-token';
-import {
-  commifyDecimals,
-  formatUnits,
-  parseAndCommify,
-  parseUnits,
-} from 'utils/helpers';
-import { tokenUtils } from 'utils/token-utils';
+import { formatAndCommify, parseUnits } from 'utils/helpers';
 import { Text } from 'components/Text';
 import { Button } from 'components/Buttons/Button';
 import { BigNumber } from 'ethers';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { LendingRoutesStackProps } from 'routers/lending.routes';
-import { useLendingPool } from '../hooks/userLendingPool';
+import { useLendingPool } from '../hooks/useLendingPool';
 
 type LendingPoolProps = {
   lendingToken: LendingToken;
@@ -62,29 +56,29 @@ export const LendingPool: React.FC<LendingPoolProps> = ({ lendingToken }) => {
       {lendingToken.hasFlag(LendingTokenFlags.REWARDS_ENABLED) && (
         <Text>SOV Rewards available</Text>
       )}
-      <Text>Interest: {parseAndCommify(state.supplyInterestRate, 18)} %</Text>
+      <Text>Interest: {formatAndCommify(state.supplyInterestRate, 18)} %</Text>
       <Text>
         i{lendingToken.token.symbol} price:{' '}
-        {parseAndCommify(state.tokenPrice, lendingToken.decimals)}{' '}
+        {formatAndCommify(state.tokenPrice, lendingToken.decimals)}{' '}
         {lendingToken.token.symbol}
         {}
       </Text>
       <Text>
         i{lendingToken.token.symbol} checkpoint price:{' '}
-        {parseAndCommify(state.checkpointPrice, lendingToken.decimals)}
+        {formatAndCommify(state.checkpointPrice, lendingToken.decimals)}
         {lendingToken.token.symbol}
       </Text>
       <Text>
-        Liquidity: {parseAndCommify(state.marketLiquidity, token.decimals)}{' '}
+        Liquidity: {formatAndCommify(state.marketLiquidity, token.decimals)}{' '}
         {token.symbol}
       </Text>
       <Text>
-        Your Balance: {parseAndCommify(state.assetBalanceOf, token.decimals)}{' '}
-        {token.symbol} ({parseAndCommify(iTokenBalance, lendingToken.decimals)}{' '}
+        Your Balance: {formatAndCommify(state.assetBalanceOf, token.decimals)}{' '}
+        {token.symbol} ({formatAndCommify(iTokenBalance, lendingToken.decimals)}{' '}
         i{token.symbol})
       </Text>
       <Text>
-        Your Profit: {parseAndCommify(profit, token.decimals)} {token.symbol}
+        Your Profit: {formatAndCommify(profit, token.decimals)} {token.symbol}
       </Text>
       {loading && <ActivityIndicator size={24} />}
       <View>

@@ -184,4 +184,59 @@ export const tokens = checkTokens([
     decimals: 18,
     icon: '',
   },
+  {
+    id: 'irbtc',
+    symbol: 'iRBTC',
+    name: 'RBTC Loan Token',
+    address: {
+      30: '0xa9DcDC63eaBb8a2b6f39D7fF9429d88340044a7A',
+      31: '0xe67Fe227e0504e8e96A34C3594795756dC26e14B',
+    },
+    decimals: 18,
+    icon: '',
+  },
+  {
+    id: 'ixusd',
+    symbol: 'iXUSD',
+    name: 'XUSD Loan Token',
+    address: {
+      30: '0x8F77ecf69711a4b346f23109c40416BE3dC7f129',
+      31: '0x9bD0cE087b14ef67C3D37C891139AaE7d94a961A',
+    },
+    decimals: 18,
+    icon: '',
+  },
+  {
+    id: 'idoc',
+    symbol: 'iDOC',
+    name: 'DOC Loan Token',
+    address: {
+      30: '0xd8D25f03EBbA94E15Df2eD4d6D38276B595593c1',
+      31: '0x74e00A8CeDdC752074aad367785bFae7034ed89f',
+    },
+    decimals: 18,
+    icon: '',
+  },
+  {
+    id: 'ibpro',
+    symbol: 'iBPRO',
+    name: 'BPRO Loan Token',
+    address: {
+      30: '0x6E2fb26a60dA535732F8149b25018C9c0823a715',
+      31: '0x6226b4B3F29Ecb5f9EEC3eC3391488173418dD5d',
+    },
+    decimals: 18,
+    icon: '',
+  },
+  {
+    id: 'irusdt',
+    symbol: 'iRUSDT',
+    name: 'RUSDT Loan Token',
+    address: {
+      30: '0x849C47f9C259E9D62F289BF1b2729039698D8387',
+      31: '0xd1f225BEAE98ccc51c468d1E92d0331c4f93e566',
+    },
+    decimals: 18,
+    icon: '',
+  },
 ]);

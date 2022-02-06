@@ -87,7 +87,7 @@ export const commifyDecimals = (
   decimals: number = 8,
 ): string => commify(floorDecimals(value || '0', decimals));
 
-export const parseAndCommify = (
+export const formatAndCommify = (
   value?: BigNumberish,
   unitName?: string | BigNumberish,
   decimals?: number,

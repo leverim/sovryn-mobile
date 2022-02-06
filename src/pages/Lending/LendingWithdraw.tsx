@@ -1,26 +1,21 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { RefreshControl } from 'react-native';
+import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { globalStyles } from 'global.styles';
 import { LendingRoutesStackProps } from 'routers/lending.routes';
 import {
-  commifyDecimals,
   currentChainId,
   formatUnits,
   numberIsEmpty,
-  parseAndCommify,
+  formatAndCommify,
   parseUnits,
 } from 'utils/helpers';
 import { lendingTokens } from 'config/lending-tokens';
 import { tokenUtils } from 'utils/token-utils';
-import { useLendingPool } from './hooks/userLendingPool';
+import { useLendingPool } from './hooks/useLendingPool';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 import { Button } from 'components/Buttons/Button';
-import { TokenApprovalFlow } from 'components/TokenApprovalFlow';
-import { TokenId } from 'types/token';
 import { LendingAmountField } from './components/LendingAmountField';
-import { useAssetBalance } from 'hooks/useAssetBalance';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { useBalanceToUsd } from 'hooks/useBalanceToUsd';
 import { USD_TOKEN } from 'utils/constants';
@@ -29,6 +24,7 @@ import { transactionController } from 'controllers/TransactionController';
 import { encodeFunctionData } from 'utils/contract-utils';
 import { LendingTokenFlags } from 'models/lending-token';
 import { BigNumber } from 'ethers';
+import { RefreshControl } from 'react-native';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 
@@ -131,6 +127,9 @@ export const LendingWithdraw: React.FC<Props> = ({
           `${isNative ? 'burnToBTC' : 'burn'}(address,uint256,bool)(uint256)`,
           [owner, loanTokenAmount, rewardsEnabled],
         ),
+        customData: {
+          receiveAmount: parseUnits(amount, lendingToken.token.decimals),
+        },
       });
       setSubmitting(false);
       tx.wait().finally(execute);
@@ -141,15 +140,13 @@ export const LendingWithdraw: React.FC<Props> = ({
     chainId,
     lendingToken.loanTokenId,
     lendingToken.loanTokenAddress,
+    lendingToken.token.decimals,
     owner,
     loanTokenAmount,
     rewardsEnabled,
+    amount,
     execute,
   ]);
-
-  useEffect(() => {
-    console.log('pool', pool);
-  }, [pool]);
 
   return (
     <SafeAreaPage
@@ -170,7 +167,7 @@ export const LendingWithdraw: React.FC<Props> = ({
       {rewardsEnabled && (
         <Text>
           Rewards (vested for 10 months?):{' '}
-          {parseAndCommify(
+          {formatAndCommify(
             pool.getUserAccumulatedReward!,
             rewardsToken.decimals,
           )}{' '}
@@ -180,13 +177,13 @@ export const LendingWithdraw: React.FC<Props> = ({
       {!!loanTokenAmount && (
         <Text>
           i{lendingToken.token.symbol} amount:{' '}
-          {parseAndCommify(loanTokenAmount, lendingToken.decimals)}{' '}
+          {formatAndCommify(loanTokenAmount, lendingToken.decimals)}{' '}
           {lendingToken.token.symbol}
         </Text>
       )}
       <Text>
         i{lendingToken.token.symbol} ={' '}
-        {parseAndCommify(pool.tokenPrice!, lendingToken.token.decimals)}{' '}
+        {formatAndCommify(pool.tokenPrice!, lendingToken.token.decimals)}{' '}
         {lendingToken.token.symbol}
       </Text>
       <ReadWalletAwareWrapper>

@@ -43,7 +43,7 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
   const chainId = currentChainId();
   const coin = tokenUtils.getNativeToken(chainId);
   const usd = tokenUtils.getTokenById(USD_TOKEN);
-  const { prices, balances } = useContext(AppContext);
+  const { prices, balances, loanPools } = useContext(AppContext);
 
   const [pressed, setPressed] = useState(false);
 
@@ -59,32 +59,54 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
 
   const oneUsd = parseUnits('1', usd.decimals);
 
-  const balance = useMemo(() => {
-    const _balances = Object.entries(
-      balances[chainId]?.[account.address.toLowerCase()] || {},
-    ).map(([tokenId, amount]) => ({ tokenId, amount }));
-
-    const getUsdPrice = (tokenId: TokenId) => {
+  const getUsdPrice = useCallback(
+    (tokenId: TokenId) => {
       const token = getSwappableToken(tokenId, chainId);
       if (token === USD_TOKEN) {
         return parseUnits('1', usd.decimals);
       }
       return prices[chainId]?.[token] || '0';
-    };
+    },
+    [chainId, prices, usd.decimals],
+  );
 
-    return formatUnits(
-      _balances.reduce(
-        (p, c) =>
-          p.add(
-            BigNumber.from(c.amount)
-              .mul(getUsdPrice(c.tokenId as TokenId))
-              .div(oneUsd),
-          ),
-        BigNumber.from('0'),
-      ),
-      usd.decimals,
+  const lentBalance = useMemo(() => {
+    const _balances = Object.entries(
+      loanPools[chainId]?.[account.address.toLowerCase()] || {},
+    ).map(([tokenId, pool]) => ({ tokenId, pool }));
+    return _balances.reduce(
+      (p, c) =>
+        p.add(
+          BigNumber.from(c.pool.balanceOf || '0')
+            .add(c.pool.getUserPoolTokenBalance || '0')
+            .mul(getUsdPrice(c.tokenId as TokenId))
+            .div(oneUsd),
+        ),
+      BigNumber.from('0'),
     );
-  }, [balances, chainId, account.address, oneUsd, prices, usd.decimals]);
+  }, [account.address, chainId, getUsdPrice, loanPools, oneUsd]);
+
+  const tokenBalance = useMemo(() => {
+    const _balances = Object.entries(
+      balances[chainId]?.[account.address.toLowerCase()] || {},
+    ).map(([tokenId, amount]) => ({ tokenId, amount }));
+
+    return _balances.reduce(
+      (p, c) =>
+        p.add(
+          BigNumber.from(c.amount)
+            .mul(getUsdPrice(c.tokenId as TokenId))
+            .div(oneUsd),
+        ),
+      BigNumber.from('0'),
+    );
+  }, [balances, chainId, account.address, getUsdPrice, oneUsd]);
+
+  const balance = useMemo(
+    () =>
+      formatUnits(BigNumber.from(tokenBalance).add(lentBalance), usd.decimals),
+    [lentBalance, tokenBalance, usd.decimals],
+  );
 
   return (
     <View style={styles.container}>

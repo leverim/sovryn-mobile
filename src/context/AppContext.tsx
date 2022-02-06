@@ -5,6 +5,7 @@ import { TokenId } from 'types/token';
 import { accounts, AccountType, BaseAccount } from 'utils/accounts';
 import { cache } from 'utils/cache';
 import { DEFAULT_DERIVATION_PATH, USD_TOKEN } from 'utils/constants';
+import { LoanTokenInfo } from 'utils/interactions/loan-token';
 import { getCachedBalances, getCachedPrices } from 'utils/interactions/price';
 import { getNetworks } from 'utils/network-utils';
 import { settings } from 'utils/settings';
@@ -17,6 +18,10 @@ type Prices = Partial<Record<ChainId, Record<TokenId, string>>>;
 type Balances = Partial<
   Record<ChainId, Record<string, Record<TokenId, string>>>
 >;
+// loanPools[chainId][address][tokenId] = info;
+export type LoanPools = Partial<
+  Record<ChainId, Record<string, Record<TokenId, LoanTokenInfo>>>
+>;
 
 type AppContextState = {
   accountList: BaseAccount[];
@@ -25,6 +30,7 @@ type AppContextState = {
   loading: boolean;
   prices: Prices;
   balances: Balances;
+  loanPools: LoanPools;
 };
 
 type AppContextActions = {
@@ -44,6 +50,11 @@ type AppContextActions = {
     address: string,
     balances: Record<TokenId, string>,
   ) => void;
+  setLoanPools: (
+    chainId: ChainId,
+    address: string,
+    loanPools: Record<TokenId, LoanTokenInfo>,
+  ) => void;
 };
 
 type AppContextType = AppContextState & AppContextActions;
@@ -55,6 +66,7 @@ export enum APP_ACTION {
   SET_ACCOUNT,
   SET_PRICES,
   SET_BALANCES,
+  SET_LOAN_POOLS,
   INIT_PRICES,
   INIT_BALANCES,
 }
@@ -74,6 +86,14 @@ type Action =
         chainId: ChainId;
         address: string;
         balances: Record<TokenId, string>;
+      };
+    }
+  | {
+      type: APP_ACTION.SET_LOAN_POOLS;
+      value: {
+        chainId: ChainId;
+        address: string;
+        loanPools: Record<TokenId, LoanTokenInfo>;
       };
     }
   | {
@@ -139,6 +159,17 @@ export const AppProvider: React.FC = ({ children }) => {
               },
             } as any,
           };
+        case APP_ACTION.SET_LOAN_POOLS:
+          return {
+            ...prevState,
+            loanPools: {
+              ...prevState.prices,
+              [action.value.chainId]: {
+                ...prevState.prices[action.value.chainId],
+                [action.value.address]: action.value.loanPools,
+              },
+            } as any,
+          };
         case APP_ACTION.INIT_PRICES:
           return { ...prevState, prices: action.value };
         case APP_ACTION.INIT_BALANCES:
@@ -152,6 +183,7 @@ export const AppProvider: React.FC = ({ children }) => {
       loading: true,
       prices: {} as Prices,
       balances: {} as Balances,
+      loanPools: {} as LoanPools,
     },
   );
 
@@ -197,6 +229,16 @@ export const AppProvider: React.FC = ({ children }) => {
         dispatch({
           type: APP_ACTION.SET_BALANCES,
           value: { chainId, address, balances },
+        });
+      },
+      setLoanPools: (
+        chainId: ChainId,
+        address: string,
+        loanPools: Record<TokenId, LoanTokenInfo>,
+      ) => {
+        dispatch({
+          type: APP_ACTION.SET_LOAN_POOLS,
+          value: { chainId, address, loanPools },
         });
       },
     }),

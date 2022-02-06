@@ -141,7 +141,14 @@ export async function aggregateCall<
         try {
           return decodeParameters(returnTypes, data);
         } catch (e) {
-          console.error('decodeParameters::', method, types, returnTypes, data);
+          console.error(
+            'decodeParameters::',
+            method,
+            types,
+            returnTypes,
+            item.args,
+            data,
+          );
           console.error(e);
           return data;
         }

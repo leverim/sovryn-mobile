@@ -7,13 +7,14 @@ import { LendingRoutesStackProps } from 'routers/lending.routes';
 import {
   commifyDecimals,
   currentChainId,
+  formatAndCommify,
   formatUnits,
   numberIsEmpty,
   parseUnits,
 } from 'utils/helpers';
 import { lendingTokens } from 'config/lending-tokens';
 import { tokenUtils } from 'utils/token-utils';
-import { useLendingPool } from './hooks/userLendingPool';
+import { useLendingPool } from './hooks/useLendingPool';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 import { Button } from 'components/Buttons/Button';
 import { TokenApprovalFlow } from 'components/TokenApprovalFlow';
@@ -81,6 +82,13 @@ export const LendingDeposit: React.FC<Props> = ({
     );
   }, [sendOneUSD, amount, lendingToken.token.decimals, usdToken.decimals]);
 
+  const receiveLoanToken = useMemo(() => {
+    return parseUnits(amount)
+      .mul(parseUnits('1', lendingToken.decimals))
+      .div(pool.tokenPrice)
+      .toString();
+  }, [amount, pool.tokenPrice, lendingToken.decimals]);
+
   const [submitting, setSubmitting] = useState(false);
   const handleDeposit = useCallback(async () => {
     setSubmitting(true);
@@ -98,13 +106,17 @@ export const LendingDeposit: React.FC<Props> = ({
             weiAmount,
             rewardsEnabled,
           ]);
-      const tx = await transactionController.request({
+      await transactionController.request({
         to: lendingToken.loanTokenAddress,
         value: hexlify(isNative ? weiAmount : 0),
         data,
+        customData: {
+          token: lendingToken.token.id,
+          receiveAmount: receiveLoanToken,
+        },
       });
       setSubmitting(false);
-      tx.wait().finally(execute);
+      // tx.wait().finally(execute);
     } catch (e) {
       setSubmitting(false);
     }
@@ -114,9 +126,10 @@ export const LendingDeposit: React.FC<Props> = ({
     lendingToken.loanTokenAddress,
     lendingToken.loanTokenId,
     lendingToken.token.decimals,
+    lendingToken.token.id,
     owner,
+    receiveLoanToken,
     rewardsEnabled,
-    execute,
   ]);
 
   return (
@@ -146,6 +159,11 @@ export const LendingDeposit: React.FC<Props> = ({
         balance={balance}
         price={sendUSD}
       />
+      <Text>
+        Receive:{' '}
+        {formatAndCommify(receiveLoanToken, lendingToken.token.decimals)} i
+        {lendingToken.token.symbol}
+      </Text>
       <ReadWalletAwareWrapper>
         <TokenApprovalFlow
           tokenId={lendingToken.token.id as TokenId}

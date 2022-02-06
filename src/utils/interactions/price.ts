@@ -16,7 +16,14 @@ export const getUsdPrice = (
   return getSwapExpectedReturn(tokenId, USD_TOKEN, amount, chainId);
 };
 
-const excluded: TokenId[] = ['rdoc'];
+const excluded: TokenId[] = [
+  'rdoc',
+  'irbtc',
+  'ibpro',
+  'irusdt',
+  'ixusd',
+  'idoc',
+];
 
 export const getAllPrices = (chainId: ChainId, target: TokenId) => {
   const targetToken = tokenUtils.getTokenById(target);
