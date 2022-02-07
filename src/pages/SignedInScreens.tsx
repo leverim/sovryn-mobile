@@ -9,18 +9,18 @@ import { SettingsPage } from './MainScreen/SettingsPage';
 import WalletIcon from 'assets/wallet-icon.svg';
 import ExchangeIcon from 'assets/exchange-icon.svg';
 import SettingsIcon from 'assets/settings-icon.svg';
-import ScienceIcon from 'assets/science-icon.svg';
+import PercentIcon from '../assets/percent-icon.svg';
 import { PassCodeModal } from 'components/PassCode/PassCodeModal';
 import { passcode } from 'controllers/PassCodeController';
 import { TransactionConfirmation } from 'components/TransactionConfirmation/TransactionConfirmation';
 import { PasscodeConfirmation } from 'components/PassCode/PasscodeConfirmation';
-import { LendingRoutes } from 'routers/lending.routes';
+import { EarnRoutes } from 'routers/earn.routes';
 
 export type SignedInScreensTabProps = {
   wallet: undefined;
   swap: undefined;
   settings: undefined;
-  lending: undefined;
+  earn: undefined;
 };
 
 const Tab = createBottomTabNavigator<SignedInScreensTabProps>();
@@ -68,11 +68,11 @@ export const SignedInScreens = () => {
           }}
         />
         <Tab.Screen
-          name="lending"
-          component={LendingRoutes}
+          name="earn"
+          component={EarnRoutes}
           options={{
-            title: 'Lending',
-            tabBarIcon: ({ color }) => <ScienceIcon fill={color} />,
+            title: 'Earn',
+            tabBarIcon: ({ color }) => <PercentIcon fill={color} />,
           }}
         />
         <Tab.Screen

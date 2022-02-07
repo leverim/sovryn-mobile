@@ -1,5 +1,5 @@
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { RefreshControl } from 'react-native';
+import { ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { globalStyles } from 'global.styles';
@@ -27,8 +27,11 @@ import { USD_TOKEN } from 'utils/constants';
 import { Text } from 'components/Text';
 import { transactionController } from 'controllers/TransactionController';
 import { hexlify } from 'ethers/lib/utils';
-import { encodeFunctionData } from 'utils/contract-utils';
+import { contractCall, encodeFunctionData } from 'utils/contract-utils';
 import { LendingTokenFlags } from 'models/lending-token';
+import { useDebouncedEffect } from 'hooks/useDebounceEffect';
+import { useIsMounted } from 'hooks/useIsMounted';
+import Logger from 'utils/Logger';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 
@@ -36,6 +39,8 @@ export const LendingDeposit: React.FC<Props> = ({
   navigation,
   route: { params },
 }) => {
+  const isMounted = useIsMounted();
+
   const chainId = currentChainId();
   const owner = useWalletAddress().toLowerCase();
   const lendingToken = useMemo(
@@ -137,6 +142,47 @@ export const LendingDeposit: React.FC<Props> = ({
     rewardsEnabled,
   ]);
 
+  const [_nextInterestRate, setNextInterestRate] = useState(
+    pool.supplyInterestRate,
+  );
+  const [interestLoading, setInterestLoading] = useState(true);
+
+  useDebouncedEffect(
+    () => {
+      setInterestLoading(true);
+      contractCall(
+        chainId,
+        lendingToken.loanTokenAddress,
+        'nextSupplyInterestRate(uint256)(uint256)',
+        [parseUnits(amount, lendingToken.supplyToken.decimals)],
+      )
+        .then(response => response[0].toString())
+        .then(response => {
+          if (isMounted()) {
+            setNextInterestRate(response);
+            setInterestLoading(false);
+          }
+        })
+        .catch(error => {
+          Logger.error(error, 'nextSupplyInterestRate');
+          if (isMounted()) {
+            setInterestLoading(undefined!);
+            setInterestLoading(false);
+          }
+        });
+    },
+    300,
+    [chainId, amount, lendingToken.supplyToken.decimals, isMounted],
+  );
+
+  const nextInterestRate = useMemo(
+    () =>
+      _nextInterestRate !== undefined
+        ? _nextInterestRate
+        : pool.supplyInterestRate,
+    [_nextInterestRate, pool.supplyInterestRate],
+  );
+
   return (
     <SafeAreaPage
       scrollView
@@ -146,17 +192,6 @@ export const LendingDeposit: React.FC<Props> = ({
           <RefreshControl refreshing={loading} onRefresh={execute} />
         ),
       }}>
-      <Text>
-        Interest: {formatAndCommify(pool.supplyInterestRate, 18, 4)} %
-      </Text>
-      <Text>
-        Already Deposited:{' '}
-        {formatAndCommify(
-          pool.assetBalanceOf,
-          lendingToken.supplyToken.decimals,
-        )}{' '}
-        {lendingToken.supplyToken.symbol}
-      </Text>
       <LendingAmountField
         token={lendingToken.supplyToken}
         amount={amount}
@@ -164,6 +199,7 @@ export const LendingDeposit: React.FC<Props> = ({
         balance={balance}
         price={sendUSD}
       />
+      <Text>Interest rate: {formatAndCommify(nextInterestRate, 18, 4)} %</Text>
       <Text>
         Receive:{' '}
         {formatAndCommify(receiveLoanToken, lendingToken.loanToken.decimals)}{' '}
@@ -173,13 +209,15 @@ export const LendingDeposit: React.FC<Props> = ({
         <TokenApprovalFlow
           tokenId={lendingToken.supplyToken.id as TokenId}
           spender={lendingToken.loanTokenAddress}
+          loading={interestLoading}
+          disabled={interestLoading}
           requiredAmount={amount}>
           <Button
             title="Lend"
             onPress={handleDeposit}
             primary
-            loading={submitting}
-            disabled={submitting}
+            loading={submitting || interestLoading}
+            disabled={submitting || interestLoading}
           />
         </TokenApprovalFlow>
       </ReadWalletAwareWrapper>

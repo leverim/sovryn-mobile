@@ -1,5 +1,6 @@
 import { AppContext } from 'context/AppContext';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
+import { useIsMounted } from 'hooks/useIsMounted';
 import { useCallback, useContext, useRef, useState } from 'react';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/token';
@@ -9,6 +10,7 @@ import Logger from 'utils/Logger';
 const interval = 60 * 1000; // 60 seconds
 
 export function useGlobalUsdPrices(chainId: ChainId, tokenId: TokenId) {
+  const isMounted = useIsMounted();
   const { prices, setPrices } = useContext(AppContext);
   const [value, setValue] = useState(
     prices[chainId] || getCachedPrices(chainId, tokenId),
@@ -18,13 +20,15 @@ export function useGlobalUsdPrices(chainId: ChainId, tokenId: TokenId) {
   const execute = useCallback(async () => {
     try {
       await getAllPrices(chainId, tokenId).then(response => {
-        setPrices(chainId, response);
-        setValue(response);
+        if (isMounted()) {
+          setPrices(chainId, response);
+          setValue(response);
+        }
       });
     } catch (e) {
       Logger.error(e, 'useGlobalUsdPrices');
     }
-  }, [chainId, setPrices, tokenId]);
+  }, [chainId, setPrices, tokenId, isMounted]);
 
   const executeInterval = useCallback(async () => {
     if ([30, 31].includes(chainId)) {

@@ -174,7 +174,7 @@ export const LendingWithdraw: React.FC<Props> = ({
       />
       {rewardsEnabled && (
         <Text>
-          Rewards (vested for 10 months?):{' '}
+          Rewards (vested for 10 months):{' '}
           {formatAndCommify(
             pool.getUserAccumulatedReward!,
             rewardsToken.decimals,

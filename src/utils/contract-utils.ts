@@ -14,6 +14,7 @@ import { getNetworks } from './network-utils';
 import { currentChainId, getContractAddress } from './helpers';
 import { ContractName } from 'types/contract';
 import { ChainId, Network } from 'types/network';
+import Logger from './Logger';
 
 const INSIDE_EVERY_PARENTHESES = /\((?:[^()]|\([^()]*\))*\)/g;
 
@@ -197,7 +198,11 @@ export async function aggregateCall<
       return { blockNumber: blockNumber.toString(), returnData };
     })
     .catch(error => {
-      console.log('aggregator failed', error);
+      Logger.log(
+        'aggr',
+        items.map(item => item.key),
+      );
+      Logger.error(error, 'aggregator call');
       throw error;
     });
 }
