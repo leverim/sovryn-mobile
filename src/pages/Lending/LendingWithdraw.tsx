@@ -111,6 +111,9 @@ export const LendingWithdraw: React.FC<Props> = ({
     if (weiAmount.gt(pool.assetBalanceOf || '0')) {
       return `Insufficient ${lendingToken.supplyToken.symbol} lending balance`;
     }
+    if (weiAmount.lte('0')) {
+      return 'Enter amount';
+    }
     return null;
   }, [
     amount,

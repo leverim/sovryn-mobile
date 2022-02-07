@@ -183,6 +183,22 @@ export const LendingDeposit: React.FC<Props> = ({
     [_nextInterestRate, pool.supplyInterestRate],
   );
 
+  const error = useMemo(() => {
+    const weiAmount = parseUnits(amount, lendingToken.supplyToken.decimals);
+    if (weiAmount.gt(parseUnits(balance, lendingToken.supplyToken.decimals))) {
+      return `Insufficient ${lendingToken.supplyToken.symbol} balance`;
+    }
+    if (weiAmount.lte('0')) {
+      return 'Enter amount';
+    }
+    return null;
+  }, [
+    amount,
+    balance,
+    lendingToken.supplyToken.decimals,
+    lendingToken.supplyToken.symbol,
+  ]);
+
   return (
     <SafeAreaPage
       scrollView
@@ -206,20 +222,24 @@ export const LendingDeposit: React.FC<Props> = ({
         {lendingToken.loanToken.symbol}
       </Text>
       <ReadWalletAwareWrapper>
-        <TokenApprovalFlow
-          tokenId={lendingToken.supplyToken.id as TokenId}
-          spender={lendingToken.loanTokenAddress}
-          loading={interestLoading}
-          disabled={interestLoading}
-          requiredAmount={amount}>
-          <Button
-            title="Lend"
-            onPress={handleDeposit}
-            primary
-            loading={submitting || interestLoading}
-            disabled={submitting || interestLoading}
-          />
-        </TokenApprovalFlow>
+        {error ? (
+          <Button title={error} primary disabled />
+        ) : (
+          <TokenApprovalFlow
+            tokenId={lendingToken.supplyToken.id as TokenId}
+            spender={lendingToken.loanTokenAddress}
+            loading={interestLoading}
+            disabled={interestLoading}
+            requiredAmount={amount}>
+            <Button
+              title={error ? error : 'Lend'}
+              onPress={handleDeposit}
+              primary
+              loading={submitting || interestLoading}
+              disabled={submitting || interestLoading || !!error}
+            />
+          </TokenApprovalFlow>
+        )}
       </ReadWalletAwareWrapper>
     </SafeAreaPage>
   );
