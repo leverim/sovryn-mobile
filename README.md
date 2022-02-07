@@ -2,6 +2,13 @@
 IOS and Android wallet for sovryn.app created with react-native.
 App is created by community members and are not officialy supported by Sovryn team.
 
+Test on:
+[iOS Testflight](https://testflight.apple.com/join/cSfETSV5)
+
+Latest release:
+[iOS App Store](https://apps.apple.com/us/app/sovryn-wallet/id1603993667)
+
+
 ## Features
 List of planned and available features:
 
@@ -9,7 +16,7 @@ List of planned and available features:
 - [x] Send any asset to other wallets (addresses)
 - [x] Vested assets (list)
 - [x] Vested assets (withdraw unlocked)
-- [ ] Lending
+- [x] Lending
 - [ ] Liquidity mining
 - [ ] Borrowing
 - [x] Swapping
@@ -26,7 +33,7 @@ List of planned and available features:
 - [x] PIN code and/or biometrics middleware
 - [ ] Add & track custom assets
 - [ ] Update blockchain state each block
-- [ ] Balances in USD
+- [x] Balances in USD
 - [ ] Better design / UI / UX
 
 ## Compile yourself
