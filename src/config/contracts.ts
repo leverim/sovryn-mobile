@@ -40,4 +40,11 @@ export const contracts = checkContracts([
       31: '0x61172B53423E205a399640e5283e51FE60EC2256',
     },
   },
+  {
+    name: 'liquidityMiningProxy',
+    address: {
+      30: '0xf730af26e87D9F55E46A6C447ED2235C385E55e0',
+      31: '0xe28aEbA913c34EC8F10DF0D9C92D2Aa27545870e',
+    },
+  },
 ]);

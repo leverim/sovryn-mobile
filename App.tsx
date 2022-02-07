@@ -5,6 +5,7 @@ import notifee, { EventType } from '@notifee/react-native';
 import { AppProvider } from './src/context/AppContext';
 import { MainScreen } from './src/MainScreen';
 import { notifications } from 'controllers/notifications';
+import { useIsMounted } from 'hooks/useIsMounted';
 
 init({
   dsn: 'https://3a91eacf25944a5a8cbc58b87a3e05a6@o1102915.ingest.sentry.io/6129518',
@@ -12,13 +13,15 @@ init({
 });
 
 const App = () => {
+  const isMounted = useIsMounted();
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     notifee
       .getInitialNotification()
       .then(initialNotification => {
-        if (initialNotification) {
+        if (isMounted() && initialNotification) {
           notifications.handleEvents({
             type:
               initialNotification.pressAction?.id !== 'default'
@@ -28,8 +31,12 @@ const App = () => {
           });
         }
       })
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => {
+        if (isMounted()) {
+          setLoading(false);
+        }
+      });
+  }, [isMounted]);
 
   useEffect(() => {
     return notifee.onForegroundEvent(notifications.handleEvents);

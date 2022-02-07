@@ -8,9 +8,8 @@ import {
 import Clipboard from '@react-native-clipboard/clipboard';
 import { AccountType, BaseAccount } from 'utils/accounts';
 import {
-  commifyDecimals,
   currentChainId,
-  formatUnits,
+  formatAndCommify,
   prettifyTx,
   px,
 } from 'utils/helpers';
@@ -59,21 +58,24 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
 
   const oneUsd = parseUnits('1', usd.decimals);
 
-  const balance = useMemo(() => {
-    const _balances = Object.entries(
-      balances[chainId]?.[account.address.toLowerCase()] || {},
-    ).map(([tokenId, amount]) => ({ tokenId, amount }));
-
-    const getUsdPrice = (tokenId: TokenId) => {
+  const getUsdPrice = useCallback(
+    (tokenId: TokenId) => {
       const token = getSwappableToken(tokenId, chainId);
       if (token === USD_TOKEN) {
         return parseUnits('1', usd.decimals);
       }
       return prices[chainId]?.[token] || '0';
-    };
+    },
+    [chainId, prices, usd.decimals],
+  );
 
-    return formatUnits(
-      _balances.reduce(
+  const balance = useMemo(() => {
+    const _balances = Object.entries(
+      balances[chainId]?.[account.address.toLowerCase()] || {},
+    ).map(([tokenId, amount]) => ({ tokenId, amount }));
+
+    return _balances
+      .reduce(
         (p, c) =>
           p.add(
             BigNumber.from(c.amount)
@@ -81,10 +83,9 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
               .div(oneUsd),
           ),
         BigNumber.from('0'),
-      ),
-      usd.decimals,
-    );
-  }, [balances, chainId, account.address, oneUsd, prices, usd.decimals]);
+      )
+      .toString();
+  }, [balances, chainId, account.address, getUsdPrice, oneUsd]);
 
   return (
     <View style={styles.container}>
@@ -108,7 +109,9 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
         </Pressable>
       </View>
       <View>
-        <Text style={styles.balanceText}>${commifyDecimals(balance, 4)}</Text>
+        <Text style={styles.balanceText}>
+          ${formatAndCommify(balance, usd.decimals, 4)}
+        </Text>
       </View>
       <View>
         {showActions && (

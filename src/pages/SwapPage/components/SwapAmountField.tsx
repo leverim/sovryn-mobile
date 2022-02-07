@@ -4,7 +4,7 @@ import {
   AmountFieldBaseProps,
 } from 'components/AmountFieldBase';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { commifyDecimals, currentChainId, px } from 'utils/helpers';
+import { commifyDecimals, currentChainId, floorDecimals, px } from 'utils/helpers';
 import { Text } from 'components/Text';
 import { Token, TokenId } from 'types/token';
 import { TokenPickerButton } from './TokenPickerButton';
@@ -39,7 +39,7 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
   const [_token, setToken] = useState<Token | undefined>(token);
 
   const handleBalancePress = useCallback(
-    () => onAmountChanged(balance || '0'),
+    () => onAmountChanged(floorDecimals(balance || '0', 8)),
     [onAmountChanged, balance],
   );
 

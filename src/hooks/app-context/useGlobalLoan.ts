@@ -1,19 +1,21 @@
+import { lendingTokens } from 'config/lending-tokens';
 import { AppContext } from 'context/AppContext';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
 import { useCallback, useContext, useRef, useState } from 'react';
 import { ChainId } from 'types/network';
-import { getAllBalances, getCachedBalances } from 'utils/interactions/price';
+import { TokenId } from 'types/token';
+import { getLoanTokenInfo, LoanTokenInfo } from 'utils/interactions/loan-token';
 import Logger from 'utils/Logger';
 
 const interval = 30 * 1000; // 60 seconds
 
-export function useAccountBalances(chainId: ChainId, owner: string) {
+export function useGlobalLoan(chainId: ChainId, owner: string) {
   const isMounted = useIsMounted();
   owner = owner?.toLowerCase();
-  const { balances, setBalances } = useContext(AppContext);
-  const [value, setValue] = useState(
-    balances[chainId]?.[owner] || getCachedBalances(chainId, owner!),
+  const { loanPools, setLoanPools } = useContext(AppContext);
+  const [value, setValue] = useState<Partial<Record<TokenId, LoanTokenInfo>>>(
+    loanPools[chainId]?.[owner] || {},
   );
   const intervalRef = useRef<NodeJS.Timeout>();
 
@@ -22,16 +24,29 @@ export function useAccountBalances(chainId: ChainId, owner: string) {
       return;
     }
     try {
-      await getAllBalances(chainId, owner).then(response => {
+      const pools = lendingTokens
+        .filter(item => item.chainId === chainId)
+        .map(pool =>
+          getLoanTokenInfo(pool, owner).then(item => ({
+            tokenId: pool.loanTokenId,
+            result: item,
+          })),
+        );
+
+      await Promise.all(pools).then(response => {
         if (isMounted()) {
-          setBalances(chainId, owner, response);
-          setValue(response);
+          const items = response.reduce((p, c) => {
+            p[c.tokenId] = c.result;
+            return p;
+          }, {} as Record<TokenId, LoanTokenInfo>);
+          setLoanPools(chainId, owner, items);
+          setValue(items);
         }
       });
     } catch (e) {
       Logger.error(e, 'useAccountBalances');
     }
-  }, [chainId, owner, setBalances, isMounted]);
+  }, [chainId, owner, setLoanPools, isMounted]);
 
   const executeInterval = useCallback(async () => {
     if ([30, 31].includes(chainId)) {

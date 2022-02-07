@@ -87,6 +87,12 @@ export const commifyDecimals = (
   decimals: number = 8,
 ): string => commify(floorDecimals(value || '0', decimals));
 
+export const formatAndCommify = (
+  value?: BigNumberish,
+  unitName?: string | BigNumberish,
+  decimals?: number,
+) => commifyDecimals(formatUnits(value, unitName), decimals);
+
 export const isReadOnlyWallet = (account: BaseAccount) =>
   account?.type === undefined || account.type === AccountType.PUBLIC_ADDRESS;
 

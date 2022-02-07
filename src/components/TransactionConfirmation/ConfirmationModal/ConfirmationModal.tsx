@@ -23,6 +23,9 @@ import { ErrorHolder } from './ErrorHolder';
 import { isEqual } from 'lodash';
 import { VestingWithdrawTokensData } from './VestingWithdrawTokensData';
 import { SwapData } from './SwapData';
+import Logger from 'utils/Logger';
+import { LendingDepositData } from './LendingDepositData';
+import { LendingWithdrawData } from './LendingWithdrawData';
 
 export type DataModalProps = {
   loading: boolean;
@@ -74,10 +77,14 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       : TransactionType.UNKNOWN;
   }, [request?.customData?.type, signature]);
 
+  useEffect(() => {
+    Logger.log('request signature:', type, signature);
+  }, [signature, type]);
+
   const renderTitle = useMemo(() => {
     switch (type) {
       default:
-        return 'Contract Interaction';
+        return 'Contract Execution';
       case TransactionType.SEND_COIN:
         return `Send ${
           tokenUtils.getNativeToken(
@@ -104,6 +111,12 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       case TransactionType.SWAP_NETWORK_SWAP:
       case TransactionType.WRBTC_PROXY_SWAP:
         return 'Swap Tokens';
+      case TransactionType.LENDING_DEPOSIT:
+      case TransactionType.LENDING_DEPOSIT_NATIVE:
+        return 'Deposit to Lending Pool';
+      case TransactionType.LENDING_WITHDRAW:
+      case TransactionType.LENDING_WITHDRAW_NATIVE:
+        return 'Withdraw from Lending Pool';
     }
   }, [type, request]);
 
@@ -122,6 +135,12 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       case TransactionType.SWAP_NETWORK_SWAP:
       case TransactionType.WRBTC_PROXY_SWAP:
         return SwapData;
+      case TransactionType.LENDING_DEPOSIT:
+      case TransactionType.LENDING_DEPOSIT_NATIVE:
+        return LendingDepositData;
+      case TransactionType.LENDING_WITHDRAW:
+      case TransactionType.LENDING_WITHDRAW_NATIVE:
+        return LendingWithdrawData;
     }
   }, [type]);
 
