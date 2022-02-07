@@ -8,9 +8,8 @@ import {
 import Clipboard from '@react-native-clipboard/clipboard';
 import { AccountType, BaseAccount } from 'utils/accounts';
 import {
-  commifyDecimals,
   currentChainId,
-  formatUnits,
+  formatAndCommify,
   prettifyTx,
   px,
 } from 'utils/helpers';
@@ -43,7 +42,7 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
   const chainId = currentChainId();
   const coin = tokenUtils.getNativeToken(chainId);
   const usd = tokenUtils.getTokenById(USD_TOKEN);
-  const { prices, balances, loanPools } = useContext(AppContext);
+  const { prices, balances } = useContext(AppContext);
 
   const [pressed, setPressed] = useState(false);
 
@@ -70,43 +69,23 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
     [chainId, prices, usd.decimals],
   );
 
-  const lentBalance = useMemo(() => {
-    const _balances = Object.entries(
-      loanPools[chainId]?.[account.address.toLowerCase()] || {},
-    ).map(([tokenId, pool]) => ({ tokenId, pool }));
-    return _balances.reduce(
-      (p, c) =>
-        p.add(
-          BigNumber.from(c.pool.balanceOf || '0')
-            .add(c.pool.getUserPoolTokenBalance || '0')
-            .mul(getUsdPrice(c.tokenId as TokenId))
-            .div(oneUsd),
-        ),
-      BigNumber.from('0'),
-    );
-  }, [account.address, chainId, getUsdPrice, loanPools, oneUsd]);
-
-  const tokenBalance = useMemo(() => {
+  const balance = useMemo(() => {
     const _balances = Object.entries(
       balances[chainId]?.[account.address.toLowerCase()] || {},
     ).map(([tokenId, amount]) => ({ tokenId, amount }));
 
-    return _balances.reduce(
-      (p, c) =>
-        p.add(
-          BigNumber.from(c.amount)
-            .mul(getUsdPrice(c.tokenId as TokenId))
-            .div(oneUsd),
-        ),
-      BigNumber.from('0'),
-    );
+    return _balances
+      .reduce(
+        (p, c) =>
+          p.add(
+            BigNumber.from(c.amount)
+              .mul(getUsdPrice(c.tokenId as TokenId))
+              .div(oneUsd),
+          ),
+        BigNumber.from('0'),
+      )
+      .toString();
   }, [balances, chainId, account.address, getUsdPrice, oneUsd]);
-
-  const balance = useMemo(
-    () =>
-      formatUnits(BigNumber.from(tokenBalance).add(lentBalance), usd.decimals),
-    [lentBalance, tokenBalance, usd.decimals],
-  );
 
   return (
     <View style={styles.container}>
@@ -130,7 +109,9 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
         </Pressable>
       </View>
       <View>
-        <Text style={styles.balanceText}>${commifyDecimals(balance, 4)}</Text>
+        <Text style={styles.balanceText}>
+          ${formatAndCommify(balance, usd.decimals, 4)}
+        </Text>
       </View>
       <View>
         {showActions && (

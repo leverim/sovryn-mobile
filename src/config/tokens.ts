@@ -15,7 +15,7 @@ export const tokens = checkTokens([
       31: ethers.constants.AddressZero,
     },
     decimals: 18,
-    icon: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/rbtc.svg',
     native: true,
   },
   {
@@ -61,7 +61,7 @@ export const tokens = checkTokens([
       31: '0x74858FE37d391f81F89472e1D8BC8Ef9CF67B3b1',
     },
     decimals: 18,
-    icon: '',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/xusd.svg',
   },
   {
     id: 'wrbtc',
@@ -72,7 +72,7 @@ export const tokens = checkTokens([
       31: '0x69FE5cEC81D5eF92600c1A0dB1F11986AB3758Ab',
     },
     decimals: 18,
-    icon: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/rbtc.svg',
   },
   {
     id: 'bpro',
@@ -83,7 +83,7 @@ export const tokens = checkTokens([
       31: '0x4dA7997A819bb46B6758b9102234c289Dd2ad3bf',
     },
     decimals: 18,
-    icon: 'https://s2.coinmarketcap.com/static/img/coins/64x64/7605.png',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/bpro.svg',
   },
   {
     id: 'rif',
@@ -94,7 +94,7 @@ export const tokens = checkTokens([
       31: '0x19f64674d8a5b4e652319f5e239efd3bc969a1fe',
     },
     decimals: 18,
-    icon: 'https://cryptologos.cc/logos/rsk-infrastructure-framework-rif-logo.png',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/rif.svg',
   },
   {
     id: 'rusdt',
@@ -105,7 +105,7 @@ export const tokens = checkTokens([
       31: '0x4D5a316D23eBE168d8f887b4447bf8DbFA4901CC',
     },
     decimals: 18,
-    icon: '',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/usdt.svg',
   },
   {
     id: 'eths',
@@ -116,7 +116,7 @@ export const tokens = checkTokens([
       31: '0x0Fd0d8D78Ce9299Ee0e5676a8d51F938C234162c',
     },
     decimals: 18,
-    icon: 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/eth.svg',
   },
   {
     id: 'bnbs',
@@ -127,7 +127,7 @@ export const tokens = checkTokens([
       31: '0x801F223Def9A4e3a543eAcCEFB79dCE981Fa2Fb5',
     },
     decimals: 18,
-    icon: 'https://cryptologos.cc/logos/binance-coin-bnb-logo.png',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/bnb.svg',
   },
   {
     id: 'fish',
@@ -138,7 +138,7 @@ export const tokens = checkTokens([
       31: '0xaa7038D80521351F243168FefE0352194e3f83C3',
     },
     decimals: 18,
-    icon: '',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/babelfish.svg',
   },
   {
     id: 'mynt',
@@ -149,7 +149,7 @@ export const tokens = checkTokens([
       31: '0x139483e22575826183F5b56dd242f8f2C1AEf327',
     },
     decimals: 18,
-    icon: '',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/mint.svg',
   },
   {
     id: 'doc',
@@ -160,7 +160,7 @@ export const tokens = checkTokens([
       31: '0xCB46c0ddc60D18eFEB0E586C17Af6ea36452Dae0',
     },
     decimals: 18,
-    icon: '',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/doc.svg',
   },
   {
     id: 'rdoc',
@@ -171,7 +171,7 @@ export const tokens = checkTokens([
       31: '0xc3de9f38581f83e281f260d0ddbaac0e102ff9f8',
     },
     decimals: 18,
-    icon: '',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/doc.svg',
   },
   {
     id: 'moc',
@@ -182,7 +182,7 @@ export const tokens = checkTokens([
       31: '0x45a97b54021a3f99827641afe1bfae574431e6ab',
     },
     decimals: 18,
-    icon: '',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/moc.svg',
   },
   {
     id: 'irbtc',
@@ -193,7 +193,7 @@ export const tokens = checkTokens([
       31: '0xe67Fe227e0504e8e96A34C3594795756dC26e14B',
     },
     decimals: 18,
-    icon: '',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/rbtc.svg',
   },
   {
     id: 'ixusd',
@@ -204,7 +204,7 @@ export const tokens = checkTokens([
       31: '0x9bD0cE087b14ef67C3D37C891139AaE7d94a961A',
     },
     decimals: 18,
-    icon: '',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/xusd.svg',
   },
   {
     id: 'idoc',
@@ -215,7 +215,7 @@ export const tokens = checkTokens([
       31: '0x74e00A8CeDdC752074aad367785bFae7034ed89f',
     },
     decimals: 18,
-    icon: '',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/doc.svg',
   },
   {
     id: 'ibpro',
@@ -226,7 +226,7 @@ export const tokens = checkTokens([
       31: '0x6226b4B3F29Ecb5f9EEC3eC3391488173418dD5d',
     },
     decimals: 18,
-    icon: '',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/bpro.svg',
   },
   {
     id: 'irusdt',
@@ -237,6 +237,6 @@ export const tokens = checkTokens([
       31: '0xd1f225BEAE98ccc51c468d1E92d0331c4f93e566',
     },
     decimals: 18,
-    icon: '',
+    icon: 'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/usdt.svg',
   },
 ]);
