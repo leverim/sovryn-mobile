@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
-import { SettingsStackProps } from 'pages/MainScreen/SettingsPage';
+import { SettingsStackProps } from 'routers/settings.routes';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { NavGroup } from 'components/NavGroup/NavGroup';
 import { NavItem } from 'components/NavGroup/NavItem';

@@ -1,3 +1,4 @@
+import { AssetType } from 'models/asset';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/token';
 import { cache } from 'utils/cache';
@@ -20,18 +21,20 @@ export const getAllBalances = (chainId: ChainId, owner: string) => {
   const { multicallContract } = getNetworks().find(
     item => item.chainId === chainId,
   )!;
+
   return aggregateCall<Record<TokenId, string>>(
     chainId,
     tokenUtils.listTokensForChainId(chainId).map(
       item =>
         ({
-          address: (item.native
+          address: (item.type === AssetType.NATIVE
             ? multicallContract
-            : item.address[chainId]
+            : item.address
           )?.toLowerCase(),
-          fnName: item.native
-            ? 'getEthBalance(address)(uint256)'
-            : 'balanceOf(address)(uint256)',
+          fnName:
+            item.type === AssetType.NATIVE
+              ? 'getEthBalance(address)(uint256)'
+              : 'balanceOf(address)(uint256)',
           args: [owner.toLowerCase()],
           key: item.id,
           parser: response => response[0].toString(),

@@ -3,7 +3,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AccountType } from 'utils/accounts';
 import { AppContext } from 'context/AppContext';
 import { passcode } from 'controllers/PassCodeController';
-import { SettingsStackProps } from 'pages/MainScreen/SettingsPage';
+import { SettingsStackProps } from 'routers/settings.routes';
 import { ImportWalletView } from 'components/WalletCreation/ImportWalletView';
 
 type Props = NativeStackScreenProps<SettingsStackProps, 'settings.index'>;

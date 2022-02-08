@@ -1,6 +1,7 @@
 import { tokens } from 'config/tokens';
 import { ChainId } from './network';
 
+/** @deprecated */
 export type Token = {
   id: string;
   symbol: string;

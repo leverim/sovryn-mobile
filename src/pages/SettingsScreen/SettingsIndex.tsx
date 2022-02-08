@@ -1,5 +1,5 @@
 import React, { useCallback, useContext } from 'react';
-import { Alert, Linking, ScrollView } from 'react-native';
+import { Alert, Linking, ScrollView, Switch } from 'react-native';
 import { AppContext } from 'context/AppContext';
 import { Setting, settings } from 'utils/settings';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
@@ -7,7 +7,7 @@ import { Text } from 'components/Text';
 import { NavGroup } from 'components/NavGroup/NavGroup';
 import { NavItem } from 'components/NavGroup/NavItem';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { SettingsStackProps } from 'pages/MainScreen/SettingsPage';
+import { SettingsStackProps } from 'routers/settings.routes';
 import { accounts } from 'utils/accounts';
 import { globalStyles } from 'global.styles';
 import { networks } from 'config/networks';
@@ -73,7 +73,7 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
             value={accounts.list.length}
           />
           <NavItem
-            title="Network"
+            title="Networks"
             onPress={navigate('settings.networks')}
             value={network?.name || 'Unknown'}
           />

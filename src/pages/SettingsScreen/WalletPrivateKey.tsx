@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
-import { SettingsStackProps } from 'pages/MainScreen/SettingsPage';
+import { SettingsStackProps } from 'routers/settings.routes';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { globalStyles } from 'global.styles';
 import { Text } from 'components/Text';

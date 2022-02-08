@@ -1,20 +1,19 @@
-import React, { useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { CoinRow } from 'components/CoinRow';
-import { currentChainId } from 'utils/helpers';
-import { ErrorBoundary } from '@sentry/react-native';
-import { tokenUtils } from 'utils/token-utils';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { AccountBanner } from 'components/AccountBanner';
 import { globalStyles } from 'global.styles';
 import { useCurrentAccount } from 'hooks/useCurrentAccount';
+import { AppContext } from 'context/AppContext';
+import { listAssets } from 'utils/asset-utils';
+import { AssetItem } from './components/AssetItem';
+import { NavGroup } from 'components/NavGroup/NavGroup';
 
 export const WalletScreen: React.FC = () => {
-  const chainId = currentChainId();
-  const tokens = useMemo(
-    () => tokenUtils.listTokensForChainId(chainId),
-    [chainId],
-  );
+  const { isTestnet } = useContext(AppContext);
+
+  const tokens = useMemo(() => listAssets(isTestnet), [isTestnet]);
+
   const account = useCurrentAccount();
 
   return (
@@ -26,11 +25,11 @@ export const WalletScreen: React.FC = () => {
           </View>
         )}
         <View style={styles.balanceContainer}>
-          {tokens.map(item => (
-            <ErrorBoundary key={item.id}>
-              <CoinRow token={item} chainId={chainId} />
-            </ErrorBoundary>
-          ))}
+          <NavGroup>
+            {tokens.map(item => (
+              <AssetItem key={item.id} asset={item} />
+            ))}
+          </NavGroup>
         </View>
       </ScrollView>
     </SafeAreaPage>
@@ -43,13 +42,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
   },
   balanceContainer: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    paddingVertical: 15,
     paddingHorizontal: 5,
     marginHorizontal: 10,
     marginBottom: 25,
-    flex: 1,
   },
 });

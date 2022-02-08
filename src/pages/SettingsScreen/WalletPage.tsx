@@ -2,7 +2,7 @@ import React, { useCallback, useContext } from 'react';
 import { Alert, ScrollView } from 'react-native';
 import { AppContext } from 'context/AppContext';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
-import { SettingsStackProps } from 'pages/MainScreen/SettingsPage';
+import { SettingsStackProps } from 'routers/settings.routes';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { NavGroup } from 'components/NavGroup/NavGroup';
 import { NavItem } from 'components/NavGroup/NavItem';

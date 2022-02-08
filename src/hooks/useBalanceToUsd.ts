@@ -8,6 +8,7 @@ import { formatUnits, parseUnits } from 'utils/helpers';
 import { tokenUtils } from 'utils/token-utils';
 import { useCachedUsdPrice } from './app-context/useCachedUsdPrice';
 
+/** @deprecated */
 export function useBalanceToUsd(
   chainId: ChainId,
   token: Token,

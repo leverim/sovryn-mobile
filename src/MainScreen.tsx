@@ -14,7 +14,6 @@ import { WelcomeFlow } from 'pages/WelcomeFlow';
 import { SignedInScreens } from 'pages/SignedInScreens';
 import { useGlobalUsdPrices } from 'hooks/app-context/useGlobalUsdPrices';
 import { currentChainId } from 'utils/helpers';
-import { USD_TOKEN } from 'utils/constants';
 import { useAccountBalances } from 'hooks/app-context/useAccountBalances';
 import { useGlobalLoan } from 'hooks/app-context/useGlobalLoan';
 
@@ -23,8 +22,8 @@ const Stack = createNativeStackNavigator();
 export const MainScreen: React.FC = () => {
   const { address, loading } = useContext(AppContext);
 
-  useGlobalUsdPrices(currentChainId(), USD_TOKEN);
-  useAccountBalances(currentChainId(), address!);
+  useGlobalUsdPrices(currentChainId());
+  useAccountBalances(address!);
   useGlobalLoan(currentChainId(), address!);
 
   const isDark = useIsDarkTheme();

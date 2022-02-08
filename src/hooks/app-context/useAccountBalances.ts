@@ -1,20 +1,19 @@
 import { AppContext } from 'context/AppContext';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
-import { useCallback, useContext, useRef, useState } from 'react';
-import { ChainId } from 'types/network';
-import { getAllBalances, getCachedBalances } from 'utils/interactions/price';
+import { useCallback, useContext, useRef } from 'react';
+import { getAllBalances } from 'utils/interactions/price';
 import Logger from 'utils/Logger';
+import { getNetworkIds } from 'utils/network-utils';
 
-const interval = 30 * 1000; // 60 seconds
+const interval = 180 * 1000; // 60 seconds
 
-export function useAccountBalances(chainId: ChainId, owner: string) {
+export function useAccountBalances(owner: string) {
+  const { isTestnet } = useContext(AppContext);
   const isMounted = useIsMounted();
   owner = owner?.toLowerCase();
-  const { balances, setBalances } = useContext(AppContext);
-  const [value, setValue] = useState(
-    balances[chainId]?.[owner] || getCachedBalances(chainId, owner!),
-  );
+  const { setBalances } = useContext(AppContext);
+
   const intervalRef = useRef<NodeJS.Timeout>();
 
   const execute = useCallback(async () => {
@@ -22,23 +21,25 @@ export function useAccountBalances(chainId: ChainId, owner: string) {
       return;
     }
     try {
-      await getAllBalances(chainId, owner).then(response => {
-        if (isMounted()) {
-          setBalances(chainId, owner, response);
-          setValue(response);
-        }
-      });
+      const chainIds = getNetworkIds(isTestnet);
+      for (const chainId of chainIds) {
+        await getAllBalances(chainId, owner)
+          .then(response => {
+            if (isMounted()) {
+              setBalances(chainId, owner, response);
+            }
+          })
+          .catch(e => Logger.error(e, 'getAllBalances'));
+      }
     } catch (e) {
       Logger.error(e, 'useAccountBalances');
     }
-  }, [chainId, owner, setBalances, isMounted]);
+  }, [owner, isTestnet, isMounted, setBalances]);
 
   const executeInterval = useCallback(async () => {
-    if ([30, 31].includes(chainId)) {
-      await execute();
-      intervalRef.current = setTimeout(executeInterval, interval);
-    }
-  }, [execute, chainId]);
+    await execute();
+    intervalRef.current = setTimeout(executeInterval, interval);
+  }, [execute]);
 
   useDebouncedEffect(
     () => {
@@ -54,7 +55,6 @@ export function useAccountBalances(chainId: ChainId, owner: string) {
   );
 
   return {
-    value,
     execute,
   };
 }

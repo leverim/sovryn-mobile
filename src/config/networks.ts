@@ -8,18 +8,19 @@ function checkNetworks<S extends string, R extends number>(
 }
 
 export const networks = checkNetworks([
-  // {
-  //   id: 'eth',
-  //   chainId: 1,
-  //   name: 'Ethereum Mainnet',
-  //   rpc: [
-  //     'https://cloudflare-eth.com',
-  //     'https://api.mycryptoapi.com/eth',
-  //     `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
-  //   ],
-  //   explorer: ['https://etherscan.io'],
-  //   multicallContract: '0x5ba1e12693dc8f9c48aad8770482f4739beed696',
-  // },
+  {
+    id: 'eth',
+    chainId: 1,
+    name: 'Ethereum Mainnet',
+    rpc: [
+      'https://cloudflare-eth.com',
+      'https://api.mycryptoapi.com/eth',
+      // `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
+    ],
+    explorer: ['https://etherscan.io'],
+    multicallContract: '0x5ba1e12693dc8f9c48aad8770482f4739beed696',
+    multicallSupportsTry: true,
+  },
   {
     id: 'rsk',
     chainId: 30,
@@ -40,26 +41,31 @@ export const networks = checkNetworks([
     multicallContract: '0x9e469e1fc7fb4c5d17897b68eaf1afc9df39f103',
     isTestnet: true,
   },
-  // {
-  //   id: 'bsc',
-  //   name: 'Binance Smart Chain',
-  //   chainId: 56,
-  //   rpc: [
-  //     'https://bsc-dataseed.binance.org',
-  //     'https://bsc-dataseed1.defibit.io',
-  //     'https://bsc-dataseed1.ninicoin.io',
-  //     'https://bsc-dataseed2.defibit.io',
-  //     'https://bsc-dataseed3.defibit.io',
-  //     'https://bsc-dataseed4.defibit.io',
-  //     'https://bsc-dataseed2.ninicoin.io',
-  //     'https://bsc-dataseed3.ninicoin.io',
-  //     'https://bsc-dataseed4.ninicoin.io',
-  //     'https://bsc-dataseed1.binance.org',
-  //     'https://bsc-dataseed2.binance.org',
-  //     'https://bsc-dataseed3.binance.org',
-  //     'https://bsc-dataseed4.binance.org',
-  //   ],
-  //   explorer: ['https://bscscan.io'],
-  //   multicallContract: '0x41263cba59eb80dc200f3e2544eda4ed6a90e76c',
-  // },
+  {
+    id: 'bsc',
+    name: 'Binance Smart Chain',
+    chainId: 56,
+    rpc: [
+      'https://bsc-dataseed.binance.org',
+      // 'https://bsc-dataseed1.defibit.io',
+      // 'https://bsc-dataseed1.ninicoin.io',
+    ],
+    explorer: ['https://bscscan.io'],
+    multicallContract: '0x41263cba59eb80dc200f3e2544eda4ed6a90e76c',
+    multicallSupportsTry: false,
+  },
+  {
+    id: 'tbsc',
+    name: 'Binance Smart Testnet',
+    chainId: 97,
+    rpc: [
+      'https://data-seed-prebsc-1-s1.binance.org:8545',
+      // 'https://data-seed-prebsc-2-s1.binance.org:8545',
+      // 'https://data-seed-prebsc-1-s2.binance.org:8545',
+      // 'https://data-seed-prebsc-2-s2.binance.org:8545',
+    ],
+    explorer: ['https://testnet.bscscan.io'],
+    multicallContract: '0xae11c5b5f29a6a25e955f0cb8ddcc416f522af5c',
+    isTestnet: true,
+  },
 ]);

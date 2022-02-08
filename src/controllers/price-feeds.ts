@@ -2,6 +2,7 @@ import { BigNumber } from 'ethers';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/token';
 import { parseUnits } from 'utils/helpers';
+import { getNetworkIds } from 'utils/network-utils';
 import { tokenUtils } from 'utils/token-utils';
 import {
   IPriceOracle,
@@ -13,14 +14,30 @@ import sovrynLoanOracle from './price-oracles/sovryn-loan-oracle';
 class PriceFeeds {
   private items: Partial<Record<ChainId, PriceOracleResult[]>> = {};
 
-  constructor(protected oracles: IPriceOracle[] = []) {}
+  constructor(
+    protected oracles: Partial<Record<ChainId, IPriceOracle[]>> = {},
+  ) {}
 
-  public async getAll(chainId: ChainId) {
-    const result = await Promise.all(
-      this.oracles.map(item => item.getAll(chainId)),
-    ).then(response => response.flat());
-    this.items[chainId] = result;
-    return result;
+  public async getAll(isTestnet: boolean) {
+    const chains = getNetworkIds(isTestnet)
+      .map(chainId =>
+        (this.oracles[chainId] || []).map(item =>
+          item.getAll(chainId).then(result => ({ [chainId]: result })),
+        ),
+      )
+      .flat();
+
+    const result = await Promise.all(chains);
+
+    for (let item of result) {
+      const [_key, value] = Object.entries(item)[0];
+      const chainId = Number(_key) as ChainId;
+      if (!this.items.hasOwnProperty(chainId)) {
+        this.items[chainId] = [];
+      }
+      this.items[chainId] = [...this.items[chainId]!, ...value];
+    }
+    return this.items;
   }
 
   public get(chainId: ChainId, tokenId: TokenId, amount: string = '1') {
@@ -35,4 +52,9 @@ class PriceFeeds {
   }
 }
 
-export const priceFeeds = new PriceFeeds([sovrynAmmOracle, sovrynLoanOracle]);
+const rskOracles = [sovrynAmmOracle, sovrynLoanOracle];
+
+export const priceFeeds = new PriceFeeds({
+  30: rskOracles,
+  31: rskOracles,
+});

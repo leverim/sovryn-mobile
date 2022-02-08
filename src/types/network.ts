@@ -7,6 +7,7 @@ export type Network = {
   rpc: string[];
   explorer: string[];
   multicallContract: string;
+  multicallSupportsTry?: boolean;
   isTestnet?: boolean;
 };
 
