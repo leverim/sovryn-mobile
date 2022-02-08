@@ -6,6 +6,7 @@ import { AppProvider } from './src/context/AppContext';
 import { MainScreen } from './src/MainScreen';
 import { notifications } from 'controllers/notifications';
 import { useIsMounted } from 'hooks/useIsMounted';
+import { BalanceProvider } from 'context/BalanceContext';
 
 init({
   dsn: 'https://3a91eacf25944a5a8cbc58b87a3e05a6@o1102915.ingest.sentry.io/6129518',
@@ -47,10 +48,12 @@ const App = () => {
   }
 
   return (
-    <AppProvider>
-      <MainScreen />
-      <ModalPortal />
-    </AppProvider>
+    <BalanceProvider>
+      <AppProvider>
+        <MainScreen />
+        <ModalPortal />
+      </AppProvider>
+    </BalanceProvider>
   );
 };
 

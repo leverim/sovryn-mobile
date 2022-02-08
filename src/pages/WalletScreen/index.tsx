@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { AccountBanner } from 'components/AccountBanner';
@@ -8,6 +8,8 @@ import { AppContext } from 'context/AppContext';
 import { listAssets } from 'utils/asset-utils';
 import { AssetItem } from './components/AssetItem';
 import { NavGroup } from 'components/NavGroup/NavGroup';
+import { Asset } from 'models/asset';
+import { AssetModal } from './components/AssetModal';
 
 export const WalletScreen: React.FC = () => {
   const { isTestnet } = useContext(AppContext);
@@ -15,6 +17,8 @@ export const WalletScreen: React.FC = () => {
   const tokens = useMemo(() => listAssets(isTestnet), [isTestnet]);
 
   const account = useCurrentAccount();
+
+  const [asset, setAsset] = useState<Asset>();
 
   return (
     <SafeAreaPage>
@@ -27,11 +31,16 @@ export const WalletScreen: React.FC = () => {
         <View style={styles.balanceContainer}>
           <NavGroup>
             {tokens.map(item => (
-              <AssetItem key={item.id} asset={item} />
+              <AssetItem
+                key={item.id}
+                asset={item}
+                onPress={() => setAsset(item)}
+              />
             ))}
           </NavGroup>
         </View>
       </ScrollView>
+      <AssetModal asset={asset!} onClose={() => setAsset(undefined)} />
     </SafeAreaPage>
   );
 };

@@ -1,11 +1,11 @@
 import { useContext, useMemo } from 'react';
+import { get } from 'lodash';
 import { utils } from 'ethers/lib.esm';
 import { Asset } from 'models/asset';
-import { AppContext } from 'context/AppContext';
-import { get } from 'lodash';
+import { BalanceContext } from 'context/BalanceContext';
 
 export function useAssetBalance(asset: Asset, _owner: string) {
-  const { balances } = useContext(AppContext);
+  const { balances } = useContext(BalanceContext);
   const owner = _owner?.toLowerCase();
 
   const value = useMemo(() => {

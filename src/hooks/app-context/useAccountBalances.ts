@@ -1,4 +1,5 @@
 import { AppContext } from 'context/AppContext';
+import { BalanceContext } from 'context/BalanceContext';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
 import { useCallback, useContext, useRef } from 'react';
@@ -10,9 +11,9 @@ const interval = 180 * 1000; // 60 seconds
 
 export function useAccountBalances(owner: string) {
   const { isTestnet } = useContext(AppContext);
+  const { execute: startBalances, setBalances } = useContext(BalanceContext);
   const isMounted = useIsMounted();
   owner = owner?.toLowerCase();
-  const { setBalances } = useContext(AppContext);
 
   const intervalRef = useRef<NodeJS.Timeout>();
 
@@ -21,6 +22,7 @@ export function useAccountBalances(owner: string) {
       return;
     }
     try {
+      startBalances();
       const chainIds = getNetworkIds(isTestnet);
       for (const chainId of chainIds) {
         await getAllBalances(chainId, owner)
@@ -34,7 +36,7 @@ export function useAccountBalances(owner: string) {
     } catch (e) {
       Logger.error(e, 'useAccountBalances');
     }
-  }, [owner, isTestnet, isMounted, setBalances]);
+  }, [owner, startBalances, isTestnet, isMounted, setBalances]);
 
   const executeInterval = useCallback(async () => {
     await execute();

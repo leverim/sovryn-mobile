@@ -37,5 +37,7 @@ export function useAssetUsdBalance(asset: Asset, amount: string) {
   return {
     weiValue,
     value: weiValue !== null ? formatUnits(weiValue, xusdToken.decimals) : null,
+    token: xusdToken,
+    price: xusdPrice,
   };
 }
