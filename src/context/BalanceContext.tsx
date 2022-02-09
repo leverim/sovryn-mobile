@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { set } from 'lodash';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
+import { cache } from 'utils/cache';
 
 // balances[chainId][address][tokenId] = balance;
 type Balances = Partial<

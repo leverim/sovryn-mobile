@@ -10,9 +10,14 @@ import {
 } from './price-oracles/price-oracle-interface';
 import sovrynAmmOracle from './price-oracles/sovryn-amm-oracle';
 import sovrynLoanOracle from './price-oracles/sovryn-loan-oracle';
+import { cache } from 'utils/cache';
+import { get, set } from 'lodash';
 
 class PriceFeeds {
-  private items: Partial<Record<ChainId, PriceOracleResult[]>> = {};
+  private items: Partial<Record<ChainId, PriceOracleResult[]>> = cache.get(
+    'prices',
+    {} as any,
+  );
 
   constructor(
     protected oracles: Partial<Record<ChainId, IPriceOracle[]>> = {},
@@ -32,11 +37,13 @@ class PriceFeeds {
     for (let item of result) {
       const [_key, value] = Object.entries(item)[0];
       const chainId = Number(_key) as ChainId;
-      if (!this.items.hasOwnProperty(chainId)) {
-        this.items[chainId] = [];
-      }
-      this.items[chainId] = [...this.items[chainId]!, ...value];
+      this.items = set(
+        this.items,
+        [chainId],
+        [...get(this.items, [chainId], []), ...value],
+      );
     }
+    await cache.set('prices', this.items);
     return this.items;
   }
 

@@ -52,34 +52,3 @@ export const getCachedBalances = (chainId: ChainId, owner: string) => {
     {} as Record<TokenId, string>,
   );
 };
-
-export const getCachedPrices = (chainId: ChainId, target: TokenId) => {
-  return cache.get<Record<TokenId, string>>(
-    `prices_${chainId}_${target}`,
-    {} as Record<TokenId, string>,
-  );
-};
-
-export const getCachedBalance = (
-  chainId: ChainId,
-  owner: string,
-  tokenId: TokenId,
-) => {
-  const balances = getCachedBalances(chainId, owner);
-  if (balances.hasOwnProperty(tokenId)) {
-    return balances[tokenId];
-  }
-  return '0';
-};
-
-export const getCachedPrice = (
-  chainId: ChainId,
-  source: TokenId,
-  target: TokenId,
-) => {
-  const prices = getCachedPrices(chainId, target);
-  if (prices.hasOwnProperty(source)) {
-    return prices[source];
-  }
-  return '0';
-};

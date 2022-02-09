@@ -5,6 +5,7 @@ import {
   NavigationContainer,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ModalPortal } from 'react-native-modals';
 
 import { AppContext } from 'context/AppContext';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
@@ -38,6 +39,7 @@ export const MainScreen: React.FC = () => {
       ) : (
         <>{address === null ? <WelcomeFlow /> : <SignedInScreens />}</>
       )}
+      <ModalPortal />
     </NavigationContainer>
   );
 };

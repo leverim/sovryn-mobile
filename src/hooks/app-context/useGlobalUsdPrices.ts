@@ -7,35 +7,30 @@ import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
 import { listAssetsForChain } from 'utils/asset-utils';
 import Logger from 'utils/Logger';
+import { UsdPriceContext } from 'context/UsdPriceContext';
 
 const interval = 210 * 1000; // 60 seconds
 
 export function useGlobalUsdPrices(chainId: ChainId) {
   const isMounted = useIsMounted();
-  const { prices, setPrices, isTestnet } = useContext(AppContext);
+  const { isTestnet } = useContext(AppContext);
+  const { execute: startPrices, initPrices } = useContext(UsdPriceContext);
   const [value, setValue] = useState({});
   const intervalRef = useRef<NodeJS.Timeout>();
 
   const execute = useCallback(async () => {
     try {
-      await priceFeeds.getAll(isTestnet).then(() => {
-        const response = listAssetsForChain(chainId).reduce((p, c) => {
-          const price = priceFeeds.get(chainId, c.id as TokenId);
-          if (price !== undefined) {
-            p[c.id as TokenId] = price;
-          }
-          return p;
-        }, {} as Record<TokenId, string>);
-
+      startPrices();
+      await priceFeeds.getAll(isTestnet).then(response => {
         if (isMounted()) {
-          // setPrices(chainId, response);
+          initPrices(response);
           setValue(response);
         }
       });
     } catch (e) {
       Logger.error(e, 'useGlobalUsdPrices');
     }
-  }, [isTestnet, chainId, isMounted]);
+  }, [startPrices, isTestnet, isMounted, initPrices]);
 
   const executeInterval = useCallback(async () => {
     if ([30, 31].includes(chainId)) {

@@ -1,4 +1,3 @@
-import { BigNumber } from 'ethers';
 import { ChainId } from 'types/network';
 import { parseUnits } from 'utils/helpers';
 
@@ -9,7 +8,7 @@ export enum AssetType {
 
 export class Asset {
   public readonly address: string;
-  public readonly ONE: BigNumber;
+  public readonly ONE: string;
   constructor(
     public readonly chainId: ChainId,
     public readonly id: string,
@@ -22,7 +21,7 @@ export class Asset {
     public readonly type: AssetType,
   ) {
     this.address = _address.toLowerCase();
-    this.ONE = parseUnits('1', this.decimals);
+    this.ONE = parseUnits('1', this.decimals).toString();
   }
   public get native() {
     return this.type === AssetType.NATIVE;

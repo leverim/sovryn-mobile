@@ -1,5 +1,4 @@
 import type { Network } from 'types/network';
-import { GETBLOCK_API_KEY } from 'env';
 
 function checkNetworks<S extends string, R extends number>(
   arr: (Network & { id: S } & { chainId: R })[],
@@ -34,7 +33,7 @@ export const networks = checkNetworks([
     chainId: 31,
     name: 'RSK Testnet',
     rpc: [
-      `https://rsk.getblock.io/testnet/?api_key=${GETBLOCK_API_KEY}`,
+      // `https://rsk.getblock.io/testnet/?api_key=${GETBLOCK_API_KEY}`,
       'https://public-node.testnet.rsk.co',
       'https://testnet.sovryn.app/rpc',
     ],

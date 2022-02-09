@@ -10,6 +10,8 @@ import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { Asset, AssetType } from 'models/asset';
 import { formatAndCommify } from 'utils/helpers';
+import { VestedAssets } from './VestedAssets/VestedAssets';
+import { TokenId } from 'types/asset';
 
 type AssetModalProps = {
   asset: Asset;
@@ -43,7 +45,9 @@ const AssetModalContent: React.FC<AssetModalProps> = ({ asset }) => {
           {formatAndCommify(tokenBalance, asset.decimals)} {asset.symbol}
         </Text>
         {usdBalance !== null && (
-          <Text>${formatAndCommify(usdBalance, usdToken.decimals)}</Text>
+          <Text style={styles.usdBalanceText}>
+            ${formatAndCommify(usdBalance, usdToken.decimals)}
+          </Text>
         )}
       </View>
       <View>
@@ -61,6 +65,7 @@ const AssetModalContent: React.FC<AssetModalProps> = ({ asset }) => {
             }
           />
         )}
+        <VestedAssets tokenId={asset.id as TokenId} chainId={asset.chainId} />
       </View>
     </ModalContent>
   );

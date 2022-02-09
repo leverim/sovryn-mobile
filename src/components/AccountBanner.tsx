@@ -25,9 +25,9 @@ import { TokenId } from 'types/asset';
 import { parseUnits } from 'ethers/lib/utils';
 import { getSwappableToken } from 'config/swapables';
 import { USD_TOKEN } from 'utils/constants';
-import { AppContext } from 'context/AppContext';
 import { BalanceContext } from 'context/BalanceContext';
 import { findAsset, getNativeAsset } from 'utils/asset-utils';
+import { UsdPriceContext } from 'context/UsdPriceContext';
 
 type AccountBannerProps = {
   account: BaseAccount;
@@ -43,7 +43,7 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
   const chainId = currentChainId();
   const coin = getNativeAsset(chainId);
   const usd = findAsset(chainId, USD_TOKEN);
-  const { prices } = useContext(AppContext);
+  const { prices } = useContext(UsdPriceContext);
   const { balances } = useContext(BalanceContext);
 
   const [pressed, setPressed] = useState(false);
@@ -66,7 +66,9 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
       if (token === USD_TOKEN) {
         return parseUnits('1', usd.decimals);
       }
-      return prices[chainId]?.[token] || '0';
+      return (
+        prices[chainId]?.find(item => item.tokenId === token)?.price || '0'
+      );
     },
     [chainId, prices, usd.decimals],
   );
