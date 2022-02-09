@@ -1,19 +1,19 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Token } from 'types/token';
 import { WalletScreen } from 'pages/WalletScreen';
 import { WalletDetails } from 'pages/WalletScreen/WalletDetails';
 import { WalletVestings } from 'pages/WalletScreen/WalletVestings';
 import { ReceiveAsset } from 'pages/WalletScreen/ReceiveAsset';
 import { SendAsset } from 'pages/WalletScreen/SendAsset';
 import { ChainId } from 'types/network';
+import { Asset } from 'models/asset';
 
 export type WalletStackProps = {
   'wallet.list': undefined;
-  'wallet.details': { token: Token; chainId: ChainId };
-  'wallet.vestings': { token: Token; chainId: ChainId };
-  'wallet.receive': { token: Token; chainId: ChainId };
-  'wallet.send': { token: Token; chainId: ChainId };
+  'wallet.details': { token: Asset; chainId: ChainId };
+  'wallet.vestings': { token: Asset; chainId: ChainId };
+  'wallet.receive': { token: Asset; chainId: ChainId };
+  'wallet.send': { token: Asset; chainId: ChainId };
 };
 
 const Stack = createNativeStackNavigator<WalletStackProps>();

@@ -12,7 +12,6 @@ import { Text } from 'components/Text';
 import { Asset } from 'models/asset';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { useBalanceToUsd } from 'hooks/useBalanceToUsd';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 
 type AssetItemProps = {

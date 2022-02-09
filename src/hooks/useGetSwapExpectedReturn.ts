@@ -1,10 +1,10 @@
 import { getSwappableToken } from 'config/swapables';
 import { useEffect, useState } from 'react';
 import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
+import { findAsset } from 'utils/asset-utils';
 import { callToContract } from 'utils/contract-utils';
 import { formatUnits, numberIsEmpty, parseUnits } from 'utils/helpers';
-import { tokenUtils } from 'utils/token-utils';
 import { useDebouncedEffect } from './useDebounceEffect';
 
 export function useGetSwapExpectedReturn(
@@ -34,15 +34,12 @@ export function useGetSwapExpectedReturn(
         'sovrynProtocol',
         'getSwapExpectedReturn(address,address,uint256)(uint256)',
         [
-          tokenUtils.getTokenAddressForId(
-            getSwappableToken(sendTokenId, chainId),
-          ),
-          tokenUtils.getTokenAddressForId(
-            getSwappableToken(receiveTokenId, chainId),
-          ),
+          findAsset(chainId, getSwappableToken(sendTokenId, chainId)).address,
+          findAsset(chainId, getSwappableToken(receiveTokenId, chainId))
+            .address,
           parseUnits(
             ofOne ? '1' : amount,
-            tokenUtils.getTokenById(sendTokenId).decimals,
+            findAsset(chainId, sendTokenId).decimals,
           ),
         ],
       )
@@ -51,18 +48,11 @@ export function useGetSwapExpectedReturn(
             return response[0];
           }
           return response[0]
-            .mul(
-              parseUnits(amount, tokenUtils.getTokenById(sendTokenId).decimals),
-            )
-            .div(
-              parseUnits('1', tokenUtils.getTokenById(sendTokenId).decimals),
-            );
+            .mul(parseUnits(amount, findAsset(chainId, sendTokenId).decimals))
+            .div(parseUnits('1', findAsset(chainId, sendTokenId).decimals));
         })
         .then(response =>
-          formatUnits(
-            response,
-            tokenUtils.getTokenById(receiveTokenId).decimals,
-          ),
+          formatUnits(response, findAsset(chainId, receiveTokenId).decimals),
         )
         .then(response => {
           setValue(response);

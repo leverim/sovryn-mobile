@@ -6,7 +6,6 @@ import { Text } from 'components/Text';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { TransactionType } from './transaction-types';
-import { tokenUtils } from 'utils/token-utils';
 import { commifyDecimals, currentChainId, formatUnits } from 'utils/helpers';
 import { ChainId } from 'types/network';
 import { SendCoinData } from './SendCoinData';
@@ -26,6 +25,7 @@ import { SwapData } from './SwapData';
 import Logger from 'utils/Logger';
 import { LendingDepositData } from './LendingDepositData';
 import { LendingWithdrawData } from './LendingWithdrawData';
+import { findAssetByAddress, getNativeAsset } from 'utils/asset-utils';
 
 export type DataModalProps = {
   loading: boolean;
@@ -87,24 +87,19 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         return 'Contract Execution';
       case TransactionType.SEND_COIN:
         return `Send ${
-          tokenUtils.getNativeToken(
-            (request?.chainId || currentChainId()) as ChainId,
-          )?.symbol || 'Coin'
+          getNativeAsset((request?.chainId || currentChainId()) as ChainId)
+            ?.symbol || 'Coin'
         }
           `;
       case TransactionType.APPROVE_TOKEN:
         return `Approve ${
-          tokenUtils.getTokenByAddress(
-            request?.to!,
-            request?.chainId as ChainId,
-          )?.symbol || 'Token'
+          findAssetByAddress(request?.chainId as ChainId, request?.to!)
+            ?.symbol || 'Token'
         }`;
       case TransactionType.TRANSFER_TOKEN:
         return `Transfer ${
-          tokenUtils.getTokenByAddress(
-            request?.to!,
-            request?.chainId as ChainId,
-          )?.symbol || 'Token'
+          findAssetByAddress(request?.chainId as ChainId, request?.to!)
+            ?.symbol || 'Token'
         }`;
       case TransactionType.VESTING_WITHDRAW_TOKENS:
         return 'Withdraw Tokens';
@@ -251,7 +246,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     estimatedGasPrice,
   ]);
 
-  const coin = tokenUtils.getNativeToken(request?.chainId as ChainId);
+  const coin = getNativeAsset(request?.chainId as ChainId);
 
   const errorMessage = useMemo(() => {
     if (error) {

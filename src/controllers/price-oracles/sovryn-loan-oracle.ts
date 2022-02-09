@@ -1,12 +1,12 @@
 import { BigNumber } from 'ethers';
 import { lendingTokens } from 'config/lending-tokens';
 import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { aggregateCall, CallData } from 'utils/contract-utils';
 import { getContractAddress, parseUnits } from 'utils/helpers';
-import { tokenUtils } from 'utils/token-utils';
 import { IPriceOracle, PriceOracleResult } from './price-oracle-interface';
 import { getSwappableToken, swapables } from 'config/swapables';
+import { findAsset } from 'utils/asset-utils';
 
 const targetTokenId: TokenId = 'xusd';
 
@@ -15,20 +15,20 @@ class SovrynLoanOracle implements IPriceOracle {
     chainId: ChainId,
     sourceTokenId: TokenId,
   ): Promise<PriceOracleResult> {
-    const targetToken = tokenUtils.getTokenById(targetTokenId);
+    const targetToken = findAsset(chainId, targetTokenId);
 
     const loanToken = lendingTokens.find(
       item => item.chainId === chainId && item.loanTokenId === sourceTokenId,
     )!;
 
-    const swapp = tokenUtils.getTokenAddressForId(
-      getSwappableToken(loanToken.supplyTokenId, chainId),
+    const swapp = findAsset(
       chainId,
+      getSwappableToken(loanToken.supplyTokenId, chainId),
     );
 
     const calls: CallData[] = [
       {
-        address: loanToken.loanToken.address[chainId]?.toLowerCase()!,
+        address: loanToken.loanToken.address,
         fnName: 'tokenPrice()(uint256)',
         args: [],
         key: 'tokenPrice',
@@ -41,8 +41,8 @@ class SovrynLoanOracle implements IPriceOracle {
         address: getContractAddress('sovrynProtocol', chainId),
         fnName: 'getSwapExpectedReturn(address,address,uint256)(uint256)',
         args: [
-          swapp,
-          targetToken.address[chainId]?.toLowerCase(),
+          swapp.address,
+          targetToken.address,
           parseUnits('1', targetToken.decimals).toString(),
         ],
         key: 'getSwapExpectedReturn',

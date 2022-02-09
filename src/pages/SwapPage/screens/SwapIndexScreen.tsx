@@ -11,13 +11,12 @@ import {
   numberIsEmpty,
   parseUnits,
 } from 'utils/helpers';
-import { tokenUtils } from 'utils/token-utils';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SwapStackProps } from '..';
-import { getSwappableToken, swapables, wrapSwapables } from 'config/swapables';
-import { TokenId } from 'types/token';
+import { swapables, wrapSwapables } from 'config/swapables';
+import { TokenId } from 'types/asset';
 import { Button } from 'components/Buttons/Button';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 import { DarkTheme } from '@react-navigation/native';
@@ -35,7 +34,12 @@ import { SwapSettingsModal } from '../components/SwapSettingsModal';
 import SettingsIcon from 'assets/settings-icon.svg';
 import { hexlify } from 'ethers/lib/utils';
 import { BigNumber } from 'ethers';
-import { useBalanceToUsd } from 'hooks/useBalanceToUsd';
+import {
+  findAsset,
+  getNativeAsset,
+  listAssetsForChain,
+} from 'utils/asset-utils';
+import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
@@ -47,8 +51,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   const [showSettings, setShowSettings] = useState(false);
 
   const tokens: TokenId[] = useMemo(() => {
-    return tokenUtils
-      .listTokensForChainId(chainId)
+    return listAssetsForChain(chainId)
       .filter(item => swapables[chainId]?.includes(item.id as TokenId))
       .filter(item => wrapSwapables[chainId]![1] !== item.id) // exclude wrapped native token
       .map(item => item.id as TokenId);
@@ -68,8 +71,8 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     });
   }, [navigation]);
 
-  const usdToken = tokenUtils.getTokenById(USD_TOKEN);
-  const nativeToken = tokenUtils.getNativeToken(chainId);
+  const usdToken = findAsset(chainId, USD_TOKEN);
+  const nativeToken = getNativeAsset(chainId);
 
   const [sendTokenId, setSendTokenId] = useState(tokens[0]);
   const [receiveTokenId, setReceiveTokenId] = useState(tokens[1]);
@@ -77,29 +80,13 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   const [sendAmount, setSendAmount] = useState('');
 
   const sendToken = useMemo(
-    () => tokenUtils.getTokenById(sendTokenId),
-    [sendTokenId],
+    () => findAsset(chainId, sendTokenId),
+    [chainId, sendTokenId],
   );
 
   const receiveToken = useMemo(
-    () => tokenUtils.getTokenById(receiveTokenId),
-    [receiveTokenId],
-  );
-
-  const sendTokenAddress = useMemo(
-    () =>
-      tokenUtils.getTokenAddressForId(
-        getSwappableToken(sendTokenId, currentChainId()),
-      ),
-    [sendTokenId],
-  );
-
-  const receiveTokenAddress = useMemo(
-    () =>
-      tokenUtils.getTokenAddressForId(
-        getSwappableToken(receiveTokenId, currentChainId()),
-      ),
-    [receiveTokenId],
+    () => findAsset(chainId, receiveTokenId),
+    [chainId, receiveTokenId],
   );
 
   const handleSetSendTokenId = useCallback(
@@ -122,13 +109,11 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     [sendTokenId, tokens],
   );
 
-  const sendOneUSD = useBalanceToUsd(
-    chainId,
+  const { value: sendOneUSD } = useAssetUsdBalance(
     sendToken,
     parseUnits('1', sendToken.decimals).toString(),
   );
-  const receiveOneUSD = useBalanceToUsd(
-    chainId,
+  const { value: receiveOneUSD } = useAssetUsdBalance(
     receiveToken,
     parseUnits('1', sendToken.decimals).toString(),
   );
@@ -181,8 +166,8 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     return calculateChange(Number(sendUSD), Number(receiveUSD));
   }, [sendUSD, receiveUSD, loading]);
 
-  const sendBalance = useAssetBalance(sendToken, owner, chainId);
-  const receiveBalance = useAssetBalance(receiveToken, owner, chainId);
+  const sendBalance = useAssetBalance(sendToken, owner);
+  const receiveBalance = useAssetBalance(receiveToken, owner);
 
   const [slippage, setSlippage] = useState('0.1');
   const { minReturn, minReturnFormatted } = useSlippage(
@@ -205,7 +190,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     const path = await callToContract(
       'swapNetwork',
       'conversionPath(address,address)(address[])',
-      [sendTokenAddress, receiveTokenAddress],
+      [sendToken.address, receiveToken.address],
     ).then(response => response[0]);
 
     const amount = parseUnits(sendAmount || '0', sendToken.decimals).toString();
@@ -242,10 +227,10 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     minReturn,
     nativeToken.id,
     owner,
-    receiveTokenAddress,
+    receiveToken.address,
     sendAmount,
+    sendToken.address,
     sendToken.decimals,
-    sendTokenAddress,
     sendTokenId,
     useBtcProxy,
   ]);
@@ -324,7 +309,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.estimateText}>
             Slippage: {commifyDecimals(slippage, 3)}%
           </Text>
-          {!sellPriceLoading && !numberIsEmpty(sendOneUSD) && (
+          {!sellPriceLoading && sendOneUSD !== null && (
             <>
               <Text style={styles.estimateText}>
                 Buy price: 1 {sendToken.symbol} ={' '}

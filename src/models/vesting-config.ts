@@ -1,7 +1,7 @@
 import { vestings } from 'config/vestings';
 import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
-import { tokenUtils } from 'utils/token-utils';
+import { TokenId } from 'types/asset';
+import { findAsset } from 'utils/asset-utils';
 
 export enum VestingContractType {
   SINGLE,
@@ -28,7 +28,7 @@ export class VestingConfig {
     return this._registryAddress.toLowerCase();
   }
   public get token() {
-    return tokenUtils.getTokenById(this.tokenId);
+    return findAsset(this.chainId, this.tokenId);
   }
 
   public static get(tokenId: TokenId, chainId: ChainId) {

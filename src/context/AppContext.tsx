@@ -2,7 +2,7 @@ import { passcode } from 'controllers/PassCodeController';
 import React, { useContext, useEffect, useMemo } from 'react';
 import { set } from 'lodash';
 import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { accounts, AccountType, BaseAccount } from 'utils/accounts';
 import { cache } from 'utils/cache';
 import {

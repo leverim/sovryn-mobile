@@ -1,6 +1,7 @@
 import React, { useLayoutEffect } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { DefaultTheme } from '@react-navigation/native';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { AssetLogo } from 'components/AssetLogo';
@@ -9,11 +10,10 @@ import { AddressBadge } from 'components/AddressBadge';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
-import { DefaultTheme } from '@react-navigation/native';
 import { commifyDecimals } from 'utils/helpers';
-import { TokenId } from 'types/token';
-import { useBalanceToUsd } from 'hooks/useBalanceToUsd';
+import { TokenId } from 'types/asset';
 import { Button } from 'components/Buttons/Button';
+import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.details'>;
 
@@ -28,12 +28,8 @@ export const WalletDetails: React.FC<Props> = ({
   }, [params, navigation]);
 
   const address = useWalletAddress();
-  const { value, weiValue } = useAssetBalance(
-    params.token,
-    address,
-    params.chainId,
-  );
-  const usdBalance = useBalanceToUsd(params.chainId, params.token, weiValue);
+  const { value, weiValue } = useAssetBalance(params.token, address);
+  const { weiValue: usdBalance } = useAssetUsdBalance(params.token, weiValue);
 
   return (
     <SafeAreaPage>

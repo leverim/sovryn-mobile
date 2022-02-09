@@ -6,11 +6,12 @@ import {
   AssetPickerModal,
   AssetPickerModalProps,
 } from 'components/AssetPickerModal';
-import { tokenUtils } from 'utils/token-utils';
 import { Text } from 'components/Text';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import DownIcon from 'assets/chevron-down.svg';
 import { AssetLogo } from 'components/AssetLogo';
+import { findAsset } from 'utils/asset-utils';
+import { currentChainId } from 'utils/helpers';
 
 export const AssetPicker: React.FC<AssetPickerModalProps> = ({
   value,
@@ -38,7 +39,7 @@ export const AssetPicker: React.FC<AssetPickerModalProps> = ({
   }, [value]);
 
   const selected = useMemo(() => {
-    return tokenUtils.getTokenById(items.find(item => item === _value)!);
+    return findAsset(currentChainId(), items.find(item => item === _value)!);
   }, [items, _value]);
 
   return (

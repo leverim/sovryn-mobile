@@ -2,7 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LendingIndex } from 'pages/Lending/LendingIndex';
 import { LendingDeposit } from 'pages/Lending/LendingDeposit';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { LendingWithdraw } from 'pages/Lending/LendingWithdraw';
 
 export type LendingRoutesStackProps = {

@@ -24,7 +24,7 @@ export const MainScreen: React.FC = () => {
 
   useGlobalUsdPrices(currentChainId());
   useAccountBalances(address!);
-  useGlobalLoan(currentChainId(), address!);
+  useGlobalLoan(address!);
 
   const isDark = useIsDarkTheme();
   const theme = useMemo(() => (isDark ? DarkTheme : DefaultTheme), [isDark]);

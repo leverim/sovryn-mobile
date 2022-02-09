@@ -7,8 +7,7 @@ import {
   View,
 } from 'react-native';
 import debounce from 'lodash/debounce';
-import { TokenId } from 'types/token';
-import { tokenUtils } from 'utils/token-utils';
+import { TokenId } from 'types/asset';
 import { currentChainId } from 'utils/helpers';
 import { commify } from 'ethers/lib/utils';
 import { Text } from 'components/Text';
@@ -17,6 +16,7 @@ import DownIcon from 'assets/chevron-down.svg';
 import { DefaultTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { AssetLogo } from 'components/AssetLogo';
+import { findAsset, listAssetsForChain } from 'utils/asset-utils';
 
 type AssetPickerWithAmountProps = {
   amount: string;
@@ -47,9 +47,7 @@ export const AssetPickerWithAmount: React.FC<AssetPickerWithAmountProps> = ({
     () =>
       tokenIdList
         ? tokenIdList
-        : tokenUtils
-            .listTokensForChainId(currentChainId())
-            .map(item => item.id as TokenId),
+        : listAssetsForChain(currentChainId()).map(item => item.id as TokenId),
     [tokenIdList],
   );
 
@@ -102,7 +100,10 @@ export const AssetPickerWithAmount: React.FC<AssetPickerWithAmountProps> = ({
     setTokenId(tokenId);
   }, [tokenId]);
 
-  const token = useMemo(() => tokenUtils.getTokenById(_tokenId!), [_tokenId]);
+  const token = useMemo(
+    () => findAsset(currentChainId(), _tokenId!),
+    [_tokenId],
+  );
 
   const [open, setOpen] = useState(false);
 

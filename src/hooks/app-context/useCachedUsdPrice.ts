@@ -1,7 +1,7 @@
 import { useContext, useMemo } from 'react';
 import { AppContext } from 'context/AppContext';
 import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { getCachedPrices } from 'utils/interactions/price';
 import { USD_TOKEN } from 'utils/constants';
 

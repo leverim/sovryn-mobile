@@ -16,7 +16,6 @@ import { TokenAmountField } from 'components/TokenAmountField';
 import { getProvider } from 'utils/RpcEngine';
 import { encodeFunctionData } from 'utils/contract-utils';
 import { utils, constants } from 'ethers/lib.esm';
-import { tokenUtils } from 'utils/token-utils';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
@@ -24,8 +23,9 @@ import { transactionController } from 'controllers/TransactionController';
 import { Button, ButtonIntent } from 'components/Buttons/Button';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
+import { getNativeAsset } from 'utils/asset-utils';
 
-type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
+type Props = NativeStackScreenProps<WalletStackProps, 'wallet.send'>;
 
 export const SendAsset: React.FC<Props> = ({
   route: { params },
@@ -52,9 +52,9 @@ export const SendAsset: React.FC<Props> = ({
         ? !receiver
           ? constants.AddressZero
           : receiver
-        : tokenUtils.getTokenAddressForChainId(params.token, params.chainId)
+        : params.token.address
     ).toLowerCase();
-  }, [params.token, params.chainId, receiver]);
+  }, [params.token, receiver]);
 
   const owner = useWalletAddress().toLowerCase();
 
@@ -162,22 +162,14 @@ export const SendAsset: React.FC<Props> = ({
   );
 
   const nativeToken = useMemo(
-    () => tokenUtils.getNativeToken(params.chainId),
+    () => getNativeAsset(params.chainId),
     [params.chainId],
   );
 
-  const { value: tokenBalance } = useAssetBalance(
-    params.token,
-    owner,
-    params.chainId,
-  );
+  const { value: tokenBalance } = useAssetBalance(params.token, owner);
 
   // TODO: if token is already native - just assign value
-  const { value: nativeBalance } = useAssetBalance(
-    nativeToken,
-    owner,
-    params.chainId,
-  );
+  const { value: nativeBalance } = useAssetBalance(nativeToken, owner);
 
   const balanceError = useMemo(() => {
     const _nativeBalance = utils.parseUnits(

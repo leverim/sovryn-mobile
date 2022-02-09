@@ -8,7 +8,6 @@ import {
 import Clipboard from '@react-native-clipboard/clipboard';
 import { AccountType, BaseAccount } from 'utils/accounts';
 import { currentChainId, prettifyTx, px } from 'utils/helpers';
-import { tokenUtils } from 'utils/token-utils';
 import { Text } from './Text';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 
@@ -16,6 +15,7 @@ import CopyIcon from 'assets/copy-icon.svg';
 import SendIcon from 'assets/send-icon.svg';
 import ReceiveIcon from 'assets/receive-icon.svg';
 import { toChecksumAddress } from 'utils/rsk';
+import { getNativeAsset } from 'utils/asset-utils';
 
 type AccountBannerProps = {
   account: BaseAccount;
@@ -29,7 +29,7 @@ export const AccountBannerMini: React.FC<AccountBannerProps> = ({
   const navigation =
     useNavigation<NavigationProp<WalletStackProps, 'wallet.details'>>();
   const chainId = currentChainId();
-  const coin = tokenUtils.getNativeToken(chainId);
+  const coin = getNativeAsset(chainId);
 
   const [pressed, setPressed] = useState(false);
 

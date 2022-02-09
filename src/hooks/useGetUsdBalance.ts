@@ -1,10 +1,10 @@
 import { getSwappableToken } from 'config/swapables';
 import { useState } from 'react';
 import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
+import { findAsset } from 'utils/asset-utils';
 import { callToContract } from 'utils/contract-utils';
 import { formatUnits, parseUnits } from 'utils/helpers';
-import { tokenUtils } from 'utils/token-utils';
 import { useDebouncedEffect } from './useDebounceEffect';
 
 const usdTokenId = 'rusdt';
@@ -31,13 +31,11 @@ export function useGetUsdBalance(
         'sovrynProtocol',
         'getSwapExpectedReturn(address,address,uint256)(uint256)',
         [
-          tokenUtils.getTokenAddressForId(getSwappableToken(tokenId, chainId)),
-          tokenUtils.getTokenAddressForId(
-            getSwappableToken(usdTokenId, chainId),
-          ),
+          findAsset(chainId, getSwappableToken(tokenId, chainId)).address,
+          findAsset(chainId, getSwappableToken(usdTokenId, chainId)).address,
           parseUnits(
             ofOne ? '1' : amount,
-            tokenUtils.getTokenById(tokenId).decimals,
+            findAsset(chainId, tokenId).decimals,
           ),
         ],
       )
@@ -46,11 +44,11 @@ export function useGetUsdBalance(
             return response[0];
           }
           return response[0]
-            .mul(parseUnits(amount, tokenUtils.getTokenById(tokenId).decimals))
-            .div(parseUnits('1', tokenUtils.getTokenById(tokenId).decimals));
+            .mul(parseUnits(amount, findAsset(chainId, tokenId).decimals))
+            .div(parseUnits('1', findAsset(chainId, tokenId).decimals));
         })
         .then(response =>
-          formatUnits(response, tokenUtils.getTokenById(usdTokenId).decimals),
+          formatUnits(response, findAsset(chainId, usdTokenId).decimals),
         )
         .then(response => {
           setValue(response);

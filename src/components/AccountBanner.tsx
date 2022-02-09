@@ -13,7 +13,6 @@ import {
   prettifyTx,
   px,
 } from 'utils/helpers';
-import { tokenUtils } from 'utils/token-utils';
 import { Text } from './Text';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 
@@ -22,12 +21,13 @@ import SendIcon from 'assets/send-icon.svg';
 import ReceiveIcon from 'assets/receive-icon.svg';
 import { toChecksumAddress } from 'utils/rsk';
 import { BigNumber } from 'ethers';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { parseUnits } from 'ethers/lib/utils';
 import { getSwappableToken } from 'config/swapables';
 import { USD_TOKEN } from 'utils/constants';
 import { AppContext } from 'context/AppContext';
 import { BalanceContext } from 'context/BalanceContext';
+import { findAsset, getNativeAsset } from 'utils/asset-utils';
 
 type AccountBannerProps = {
   account: BaseAccount;
@@ -41,8 +41,8 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
   const navigation =
     useNavigation<NavigationProp<WalletStackProps, 'wallet.details'>>();
   const chainId = currentChainId();
-  const coin = tokenUtils.getNativeToken(chainId);
-  const usd = tokenUtils.getTokenById(USD_TOKEN);
+  const coin = getNativeAsset(chainId);
+  const usd = findAsset(chainId, USD_TOKEN);
   const { prices } = useContext(AppContext);
   const { balances } = useContext(BalanceContext);
 

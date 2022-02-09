@@ -1,12 +1,12 @@
 import { AssetType } from 'models/asset';
 import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
+import { listAssetsForChain } from 'utils/asset-utils';
 import { cache } from 'utils/cache';
 import { USD_TOKEN } from 'utils/constants';
 import { aggregateCall, CallData } from 'utils/contract-utils';
 import { currentChainId } from 'utils/helpers';
 import { getNetworks } from 'utils/network-utils';
-import { tokenUtils } from 'utils/token-utils';
 import { getSwapExpectedReturn } from '.';
 
 export const getUsdPrice = (
@@ -24,7 +24,7 @@ export const getAllBalances = (chainId: ChainId, owner: string) => {
 
   return aggregateCall<Record<TokenId, string>>(
     chainId,
-    tokenUtils.listTokensForChainId(chainId).map(
+    listAssetsForChain(chainId).map(
       item =>
         ({
           address: (item.type === AssetType.NATIVE

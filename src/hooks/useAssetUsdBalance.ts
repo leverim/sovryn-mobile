@@ -3,10 +3,10 @@ import { useContext, useMemo } from 'react';
 import { getSwappableToken } from 'config/swapables';
 import { USD_TOKEN } from 'utils/constants';
 import { formatUnits, parseUnits } from 'utils/helpers';
-import { tokenUtils } from 'utils/token-utils';
 import { useCachedUsdPrice } from './app-context/useCachedUsdPrice';
 import { Asset, AssetType } from 'models/asset';
 import { AppContext } from 'context/AppContext';
+import { findAsset } from 'utils/asset-utils';
 
 export function useAssetUsdBalance(asset: Asset, amount: string) {
   const { prices } = useContext(AppContext);
@@ -18,9 +18,13 @@ export function useAssetUsdBalance(asset: Asset, amount: string) {
       : asset.id,
   );
 
-  const xusdToken = tokenUtils.getTokenById(USD_TOKEN);
+  const xusdToken = findAsset(asset.chainId, USD_TOKEN);
 
   const weiValue = useMemo(() => {
+    if (!xusdToken) {
+      return null;
+    }
+
     if (asset.id === xusdToken.id) {
       return amount || '0';
     }
@@ -32,7 +36,7 @@ export function useAssetUsdBalance(asset: Asset, amount: string) {
         .toString();
     }
     return null;
-  }, [asset.id, xusdToken.id, xusdToken.decimals, xusdPrice, amount]);
+  }, [asset.id, xusdToken, xusdPrice, amount]);
 
   return {
     weiValue,

@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { BigNumber } from 'ethers';
 import { utils } from 'ethers/lib.esm';
 import { useVestedAssets } from 'hooks/useVestedAssets';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { commifyDecimals } from 'utils/helpers';
 import { ChainId } from 'types/network';
 import { VestingConfig } from 'models/vesting-config';

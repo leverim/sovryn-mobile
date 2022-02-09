@@ -1,9 +1,9 @@
 import { BigNumber } from 'ethers';
 import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
+import { findAsset } from 'utils/asset-utils';
 import { parseUnits } from 'utils/helpers';
 import { getNetworkIds } from 'utils/network-utils';
-import { tokenUtils } from 'utils/token-utils';
 import {
   IPriceOracle,
   PriceOracleResult,
@@ -44,7 +44,7 @@ class PriceFeeds {
     const token = this.items[chainId]?.find(item => item.tokenId === tokenId);
     if (token !== undefined) {
       return BigNumber.from(token.price)
-        .mul(parseUnits(amount, tokenUtils.getTokenById(tokenId).decimals))
+        .mul(parseUnits(amount, findAsset(chainId, tokenId).decimals))
         .div(token.precision)
         .toString();
     }

@@ -2,11 +2,11 @@ import React from 'react';
 import { GestureResponderEvent, Pressable, StyleSheet } from 'react-native';
 import DownIcon from 'assets/chevron-down.svg';
 import { AssetLogo } from 'components/AssetLogo';
-import { Token } from 'types/token';
 import { Text } from 'components/Text';
+import { Asset } from 'models/asset';
 
 type TokenPickerButtonProps = {
-  token?: Token;
+  token?: Asset;
   onPress?: (event: GestureResponderEvent) => void;
 };
 

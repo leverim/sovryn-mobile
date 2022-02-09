@@ -1,9 +1,9 @@
 import { getSwappableToken } from 'config/swapables';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { callToContract } from 'utils/contract-utils';
 import { currentChainId, formatUnits, parseUnits } from 'utils/helpers';
-import { tokenUtils } from 'utils/token-utils';
 import { ChainId } from 'types/network';
+import { findAsset } from 'utils/asset-utils';
 
 export const getSwapExpectedReturn = (
   sendToken: TokenId,
@@ -15,13 +15,13 @@ export const getSwapExpectedReturn = (
     'sovrynProtocol',
     'getSwapExpectedReturn(address,address,uint256)(uint256)',
     [
-      tokenUtils.getTokenAddressForId(getSwappableToken(sendToken, chainId)),
-      tokenUtils.getTokenAddressForId(getSwappableToken(receiveToken, chainId)),
-      parseUnits(sendAmount, tokenUtils.getTokenById(sendToken).decimals),
+      findAsset(chainId, getSwappableToken(sendToken, chainId)).address,
+      findAsset(chainId, getSwappableToken(receiveToken, chainId)).address,
+      parseUnits(sendAmount, findAsset(chainId, sendToken).decimals),
     ],
   )
     .then(response =>
-      formatUnits(response[0], tokenUtils.getTokenById(receiveToken).decimals),
+      formatUnits(response[0], findAsset(chainId, receiveToken).decimals),
     )
     .catch(() => '0');
 };

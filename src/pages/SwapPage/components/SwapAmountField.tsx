@@ -4,17 +4,23 @@ import {
   AmountFieldBaseProps,
 } from 'components/AmountFieldBase';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { commifyDecimals, currentChainId, floorDecimals, px } from 'utils/helpers';
+import {
+  commifyDecimals,
+  currentChainId,
+  floorDecimals,
+  px,
+} from 'utils/helpers';
 import { Text } from 'components/Text';
-import { Token, TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { TokenPickerButton } from './TokenPickerButton';
 import { AssetPickerModal } from 'components/AssetPickerModal';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
-import { tokenUtils } from 'utils/token-utils';
 import { ChainId } from 'types/network';
+import { Asset } from 'models/asset';
+import { findAsset } from 'utils/asset-utils';
 
 type SwapAmountFieldProps = {
-  token: Token;
+  token: Asset;
   onTokenChanged: (tokenId: TokenId) => void;
   price?: string;
   difference?: number;
@@ -36,7 +42,7 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
   ...props
 }) => {
   const [open, setOpen] = useState(false);
-  const [_token, setToken] = useState<Token | undefined>(token);
+  const [_token, setToken] = useState<Asset | undefined>(token);
 
   const handleBalancePress = useCallback(
     () => onAmountChanged(floorDecimals(balance || '0', 8)),
@@ -61,8 +67,8 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
   }, [token]);
 
   const onTokenChange = useCallback(
-    (tokenId: TokenId) => setToken(tokenUtils.getTokenById(tokenId)),
-    [],
+    (tokenId: TokenId) => setToken(findAsset(chainId, tokenId)),
+    [chainId],
   );
 
   return (

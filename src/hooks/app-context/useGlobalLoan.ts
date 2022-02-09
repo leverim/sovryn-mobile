@@ -3,17 +3,19 @@ import { AppContext } from 'context/AppContext';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
 import { useCallback, useContext, useRef, useState } from 'react';
-import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { getLoanTokenInfo, LoanTokenInfo } from 'utils/interactions/loan-token';
 import Logger from 'utils/Logger';
 
 const interval = 30 * 1000; // 60 seconds
 
-export function useGlobalLoan(chainId: ChainId, owner: string) {
+export function useGlobalLoan(owner: string) {
   const isMounted = useIsMounted();
   owner = owner?.toLowerCase();
-  const { loanPools, setLoanPools } = useContext(AppContext);
+  const { isTestnet, loanPools, setLoanPools } = useContext(AppContext);
+
+  const chainId = isTestnet ? 31 : 30;
+
   const [value, setValue] = useState<Partial<Record<TokenId, LoanTokenInfo>>>(
     loanPools[chainId]?.[owner] || {},
   );

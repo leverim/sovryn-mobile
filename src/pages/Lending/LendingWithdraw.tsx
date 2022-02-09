@@ -11,13 +11,11 @@ import {
   parseUnits,
 } from 'utils/helpers';
 import { lendingTokens } from 'config/lending-tokens';
-import { tokenUtils } from 'utils/token-utils';
 import { useLendingPool } from './hooks/useLendingPool';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 import { Button } from 'components/Buttons/Button';
 import { LendingAmountField } from './components/LendingAmountField';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { useBalanceToUsd } from 'hooks/useBalanceToUsd';
 import { USD_TOKEN } from 'utils/constants';
 import { Text } from 'components/Text';
 import { transactionController } from 'controllers/TransactionController';
@@ -25,6 +23,8 @@ import { encodeFunctionData } from 'utils/contract-utils';
 import { LendingTokenFlags } from 'models/lending-token';
 import { BigNumber } from 'ethers';
 import { RefreshControl } from 'react-native';
+import { findAsset, getNativeAsset } from 'utils/asset-utils';
+import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 
@@ -49,13 +49,12 @@ export const LendingWithdraw: React.FC<Props> = ({
   }, [navigation, lendingToken.supplyToken.symbol]);
 
   const { value: pool, loading, execute } = useLendingPool(lendingToken);
-  const sendOneUSD = useBalanceToUsd(
-    chainId,
+  const { value: sendOneUSD } = useAssetUsdBalance(
     lendingToken.supplyToken,
     parseUnits('1', lendingToken.supplyToken.decimals).toString(),
   );
-  const usdToken = tokenUtils.getTokenById(USD_TOKEN);
-  const rewardsToken = tokenUtils.getTokenById('sov');
+  const usdToken = findAsset(chainId, USD_TOKEN);
+  const rewardsToken = findAsset(chainId, 'sov');
   const rewardsEnabled = lendingToken.hasFlag(
     LendingTokenFlags.REWARDS_ENABLED,
   );
@@ -126,7 +125,7 @@ export const LendingWithdraw: React.FC<Props> = ({
   const handleWithdraw = useCallback(async () => {
     setSubmitting(true);
     try {
-      const native = tokenUtils.getNativeToken(chainId);
+      const native = getNativeAsset(chainId);
       const isNative = lendingToken.loanTokenId === native.id;
       const tx = await transactionController.request({
         to: lendingToken.loanTokenAddress,
