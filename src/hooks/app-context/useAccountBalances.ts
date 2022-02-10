@@ -7,7 +7,7 @@ import { getAllBalances } from 'utils/interactions/price';
 import Logger from 'utils/Logger';
 import { getNetworkIds } from 'utils/network-utils';
 
-const interval = 180 * 1000; // 60 seconds
+const interval = 30 * 1000; // 30 seconds
 
 export function useAccountBalances(owner: string) {
   const { isTestnet } = useContext(AppContext);

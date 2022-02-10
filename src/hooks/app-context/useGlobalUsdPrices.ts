@@ -4,12 +4,10 @@ import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
 import { useCallback, useContext, useRef, useState } from 'react';
 import { ChainId } from 'types/network';
-import { TokenId } from 'types/asset';
-import { listAssetsForChain } from 'utils/asset-utils';
 import Logger from 'utils/Logger';
 import { UsdPriceContext } from 'context/UsdPriceContext';
 
-const interval = 210 * 1000; // 60 seconds
+const interval = 210 * 1000; // 3 minutes and 30 seconds
 
 export function useGlobalUsdPrices(chainId: ChainId) {
   const isMounted = useIsMounted();
