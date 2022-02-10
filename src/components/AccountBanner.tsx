@@ -24,9 +24,8 @@ import { BigNumber } from 'ethers';
 import { TokenId } from 'types/asset';
 import { parseUnits } from 'ethers/lib/utils';
 import { getSwappableToken } from 'config/swapables';
-import { USD_TOKEN } from 'utils/constants';
 import { BalanceContext } from 'context/BalanceContext';
-import { findAsset, getNativeAsset } from 'utils/asset-utils';
+import { getNativeAsset, getUsdAsset } from 'utils/asset-utils';
 import { UsdPriceContext } from 'context/UsdPriceContext';
 
 type AccountBannerProps = {
@@ -42,7 +41,7 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
     useNavigation<NavigationProp<WalletStackProps, 'wallet.details'>>();
   const chainId = currentChainId();
   const coin = getNativeAsset(chainId);
-  const usd = findAsset(chainId, USD_TOKEN);
+  const usd = getUsdAsset(chainId);
   const { prices } = useContext(UsdPriceContext);
   const { balances } = useContext(BalanceContext);
 
@@ -63,14 +62,14 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
   const getUsdPrice = useCallback(
     (tokenId: TokenId) => {
       const token = getSwappableToken(tokenId, chainId);
-      if (token === USD_TOKEN) {
+      if (token === usd.id) {
         return parseUnits('1', usd.decimals);
       }
       return (
         prices[chainId]?.find(item => item.tokenId === token)?.price || '0'
       );
     },
-    [chainId, prices, usd.decimals],
+    [chainId, prices, usd.decimals, usd.id],
   );
 
   const balance = useMemo(() => {

@@ -15,22 +15,22 @@ export const swapables: Partial<Record<ChainId, TokenId[]>> = {
     'bnbs',
   ],
   31: [
-    'rbtc',
-    'wrbtc',
-    'sov',
-    'eths',
-    'fish',
-    'mynt',
-    'doc',
-    'rusdt',
-    'xusd',
-    'bnbs',
+    'trbtc',
+    'twrbtc',
+    'tsov',
+    'teths',
+    'tfish',
+    'tmynt',
+    'tdoc',
+    'trusdt',
+    'txusd',
+    'tbnbs',
   ],
 };
 
 export const wrapSwapables: Partial<Record<ChainId, [TokenId, TokenId]>> = {
   30: ['rbtc', 'wrbtc'],
-  31: ['rbtc', 'wrbtc'],
+  31: ['trbtc', 'twrbtc'],
 };
 
 export const getSwappableToken = (

@@ -28,7 +28,7 @@ import { transactionController } from 'controllers/TransactionController';
 import { Button } from 'components/Buttons/Button';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
-import { getNativeAsset, listAssets } from 'utils/asset-utils';
+import { getNativeAsset, listAssetsForChains } from 'utils/asset-utils';
 import { AssetAmountField } from 'components/AssetAmountField';
 import { AppContext } from 'context/AppContext';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
@@ -41,7 +41,7 @@ export const SendAsset: React.FC<Props> = ({
   route: { params },
   navigation,
 }) => {
-  const { isTestnet } = useContext(AppContext);
+  const { chainIds } = useContext(AppContext);
   const isMounted = useIsMounted();
 
   const [receiver, setReceiver] = useState('');
@@ -254,7 +254,7 @@ export const SendAsset: React.FC<Props> = ({
     balance.value,
   ]);
 
-  const tokens = useMemo(() => listAssets(isTestnet), [isTestnet]);
+  const tokens = useMemo(() => listAssetsForChains(chainIds), [chainIds]);
 
   return (
     <SafeAreaPage>

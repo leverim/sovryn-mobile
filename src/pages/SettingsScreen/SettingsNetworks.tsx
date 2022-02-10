@@ -1,8 +1,6 @@
 import React, { useCallback, useContext } from 'react';
 import { ScrollView, Switch } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import RNRestart from 'react-native-restart';
-import { Setting, settings } from 'utils/settings';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { NavGroup } from 'components/NavGroup/NavGroup';
@@ -12,49 +10,73 @@ import { globalStyles } from 'global.styles';
 import { networks } from 'config/networks';
 import { ChainId } from 'types/network';
 import { AppContext } from 'context/AppContext';
+import { clone, remove, uniq } from 'lodash';
 
 type Props = NativeStackScreenProps<SettingsStackProps, 'settings.networks'>;
 
 export const SettingsNetworks: React.FC<Props> = () => {
-  const { isTestnet: isMainnet, setNetwork } = useContext(AppContext);
-
-  const setChainId = useCallback((chainId: number) => {
-    settings.set(Setting.DEFAULT_CHAIN_ID, chainId);
-    RNRestart.Restart();
-  }, []);
+  const { isTestnet, setNetwork, chainIds, setChainIds } =
+    useContext(AppContext);
 
   const handleNetworkChange = useCallback(
-    () => setNetwork(!isMainnet),
-    [setNetwork, isMainnet],
+    () => setNetwork(!isTestnet),
+    [setNetwork, isTestnet],
+  );
+
+  const networkEnabled = useCallback(
+    (chainId: ChainId) => chainIds.includes(chainId),
+    [chainIds],
+  );
+
+  const toggleChainId = useCallback(
+    (chainId: ChainId) => (value: boolean) => {
+      let ids: ChainId[] = clone(chainIds);
+      if (value) {
+        ids = uniq([...ids, chainId]);
+      } else {
+        remove(ids, item => item === chainId);
+      }
+      console.log('ids', ids);
+      setChainIds(ids);
+    },
+    [chainIds, setChainIds],
   );
 
   return (
     <SafeAreaPage>
       <ScrollView style={globalStyles.page}>
-        <Text style={globalStyles.title}>Switch Network</Text>
+        <Text style={globalStyles.title}>Sovryn Protocol</Text>
 
         <NavGroup>
+          <NavItem
+            title="Mainnet"
+            hideArrow
+            value={
+              <Switch value={!isTestnet} onValueChange={handleNetworkChange} />
+            }
+          />
           <NavItem
             title="Testnet"
             hideArrow
             value={
-              <Switch value={isMainnet} onValueChange={handleNetworkChange} />
+              <Switch value={isTestnet} onValueChange={handleNetworkChange} />
             }
           />
         </NavGroup>
 
+        <Text style={globalStyles.title}>Track Tokens</Text>
         <NavGroup>
           {networks.map(item => (
             <NavItem
               key={item.chainId}
               title={item.name}
-              onPress={() => setChainId(item.chainId)}
               value={
-                item.chainId ===
-                (settings.get(Setting.DEFAULT_CHAIN_ID) as ChainId)
-                  ? 'Current'
-                  : undefined
+                <Switch
+                  value={networkEnabled(item.chainId)}
+                  onValueChange={toggleChainId(item.chainId)}
+                />
               }
+              hideArrow
             />
           ))}
         </NavGroup>

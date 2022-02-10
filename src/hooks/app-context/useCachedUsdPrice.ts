@@ -2,9 +2,7 @@ import { useCallback, useContext, useMemo } from 'react';
 import { get } from 'lodash';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
-import { USD_TOKEN } from 'utils/constants';
 import { UsdPriceContext } from 'context/UsdPriceContext';
-import { cache } from 'utils/cache';
 import { PriceOracleResult } from 'controllers/price-oracles/price-oracle-interface';
 
 type SyncWith = Partial<
@@ -13,21 +11,21 @@ type SyncWith = Partial<
 
 const syncWithAnotherNetwork: SyncWith = {
   1: {
-    eth: [30, 'eths', USD_TOKEN],
-    esov: [30, 'sov', USD_TOKEN],
+    eth: [30, 'eths', 'xusd'],
+    esov: [30, 'sov', 'xusd'],
   },
   56: {
-    bnb: [30, 'bnbs', USD_TOKEN],
+    bnb: [30, 'bnbs', 'xusd'],
   },
   97: {
-    bnb: [31, 'bnbs', USD_TOKEN],
+    bnb: [31, 'bnbs', 'txusd'],
   },
 };
 
 export function useCachedUsdPrice(
   chainId: ChainId,
   sourceId: TokenId,
-  targetId: TokenId = USD_TOKEN,
+  targetId: TokenId,
 ) {
   const { prices } = useContext(UsdPriceContext);
 

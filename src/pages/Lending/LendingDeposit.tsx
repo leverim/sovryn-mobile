@@ -20,7 +20,6 @@ import { TokenId } from 'types/asset';
 import { LendingAmountField } from './components/LendingAmountField';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { USD_TOKEN } from 'utils/constants';
 import { Text } from 'components/Text';
 import { transactionController } from 'controllers/TransactionController';
 import { hexlify } from 'ethers/lib/utils';
@@ -30,7 +29,7 @@ import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
 import Logger from 'utils/Logger';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
-import { findAsset } from 'utils/asset-utils';
+import { getUsdAsset } from 'utils/asset-utils';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 
@@ -62,7 +61,7 @@ export const LendingDeposit: React.FC<Props> = ({
     lendingToken.supplyToken,
     parseUnits('1', lendingToken.supplyToken.decimals).toString(),
   );
-  const usdToken = findAsset(chainId, USD_TOKEN);
+  const usdToken = getUsdAsset(chainId);
   const rewardsEnabled = lendingToken.hasFlag(
     LendingTokenFlags.REWARDS_ENABLED,
   );

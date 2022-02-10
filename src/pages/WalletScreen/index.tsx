@@ -5,16 +5,16 @@ import { AccountBanner } from 'components/AccountBanner';
 import { globalStyles } from 'global.styles';
 import { useCurrentAccount } from 'hooks/useCurrentAccount';
 import { AppContext } from 'context/AppContext';
-import { listAssets } from 'utils/asset-utils';
+import { listAssetsForChains } from 'utils/asset-utils';
 import { AssetItem } from './components/AssetItem';
 import { NavGroup } from 'components/NavGroup/NavGroup';
 import { Asset } from 'models/asset';
 import { AssetModal } from './components/AssetModal';
 
 export const WalletScreen: React.FC = () => {
-  const { isTestnet } = useContext(AppContext);
+  const { chainIds } = useContext(AppContext);
 
-  const tokens = useMemo(() => listAssets(isTestnet), [isTestnet]);
+  const tokens = useMemo(() => listAssetsForChains(chainIds), [chainIds]);
 
   const account = useCurrentAccount();
 

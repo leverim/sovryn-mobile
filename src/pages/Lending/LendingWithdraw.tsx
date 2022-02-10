@@ -16,14 +16,13 @@ import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 import { Button } from 'components/Buttons/Button';
 import { LendingAmountField } from './components/LendingAmountField';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { USD_TOKEN } from 'utils/constants';
 import { Text } from 'components/Text';
 import { transactionController } from 'controllers/TransactionController';
 import { encodeFunctionData } from 'utils/contract-utils';
 import { LendingTokenFlags } from 'models/lending-token';
 import { BigNumber } from 'ethers';
 import { RefreshControl } from 'react-native';
-import { findAsset } from 'utils/asset-utils';
+import { getSovAsset, getUsdAsset } from 'utils/asset-utils';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
@@ -53,8 +52,8 @@ export const LendingWithdraw: React.FC<Props> = ({
     lendingToken.supplyToken,
     parseUnits('1', lendingToken.supplyToken.decimals).toString(),
   );
-  const usdToken = findAsset(chainId, USD_TOKEN);
-  const rewardsToken = findAsset(chainId, 'sov');
+  const usdToken = getUsdAsset(chainId);
+  const rewardsToken = getSovAsset(chainId);
   const rewardsEnabled = lendingToken.hasFlag(
     LendingTokenFlags.REWARDS_ENABLED,
   );

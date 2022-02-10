@@ -18,6 +18,8 @@ import { clearStorage } from 'utils/storage';
 import { wallet } from 'utils/wallet';
 import { BalanceContext } from './BalanceContext';
 import { UsdPriceContext } from './UsdPriceContext';
+import { enabledChainIds, setEnabledChainIds } from 'utils/helpers';
+import Logger from 'utils/Logger';
 
 // loanPools[chainId][address][tokenId] = info;
 export type LoanPools = Partial<
@@ -33,6 +35,7 @@ type AppContextState = {
   isTestnet: boolean;
   connectionType: NetInfoStateType;
   isConnected: boolean | null;
+  chainIds: ChainId[];
 };
 
 type AppContextActions = {
@@ -52,6 +55,7 @@ type AppContextActions = {
     loanPools: Record<TokenId, LoanTokenInfo>,
   ) => void;
   setNetwork: (isTestnet: boolean) => void;
+  setChainIds: (chainIds: ChainId[]) => void;
 };
 
 type AppContextType = AppContextState & AppContextActions;
@@ -65,6 +69,7 @@ export enum APP_ACTION {
   INIT_NETWORK,
   SET_NETWORK,
   SET_CONNECTION_TYPE,
+  SET_CHAIN_IDS,
 }
 
 type Action =
@@ -88,7 +93,8 @@ type Action =
       type: APP_ACTION.INIT_NETWORK;
       value: boolean;
     }
-  | { type: APP_ACTION.SET_CONNECTION_TYPE; value: NetInfoState };
+  | { type: APP_ACTION.SET_CONNECTION_TYPE; value: NetInfoState }
+  | { type: APP_ACTION.SET_CHAIN_IDS; value: ChainId[] };
 
 export const AppContext = React.createContext<AppContextType>({
   accountList: [],
@@ -148,6 +154,12 @@ export const AppProvider: React.FC = ({ children }) => {
             connectionType: action.value.type,
             isConnected: action.value.isConnected,
           };
+        case APP_ACTION.SET_CHAIN_IDS:
+          setEnabledChainIds(action.value).catch(Logger.error);
+          return {
+            ...prevState,
+            chainIds: action.value,
+          };
       }
     },
     {
@@ -159,6 +171,7 @@ export const AppProvider: React.FC = ({ children }) => {
       connectionType: NetInfoStateType.unknown,
       isConnected: false,
       loanPools: {} as LoanPools,
+      chainIds: [],
     },
   );
 
@@ -207,6 +220,8 @@ export const AppProvider: React.FC = ({ children }) => {
         dispatch({ type: APP_ACTION.SET_NETWORK, value: isTestnet }),
       initNetwork: (isTestnet: boolean) =>
         dispatch({ type: APP_ACTION.INIT_NETWORK, value: isTestnet }),
+      setChainIds: (chainIds: ChainId[]) =>
+        dispatch({ type: APP_ACTION.SET_CHAIN_IDS, value: chainIds }),
     }),
     [],
   );
@@ -214,6 +229,11 @@ export const AppProvider: React.FC = ({ children }) => {
   useEffect(() => {
     Promise.all([cache.load(), settings.load(), accounts.load()]).finally(
       () => {
+        dispatch({
+          type: APP_ACTION.SET_CHAIN_IDS,
+          value: enabledChainIds(),
+        });
+
         const cachedBalances = getNetworks().reduce((p, c) => {
           p[c.chainId] = accounts.list.reduce((pa, ca) => {
             pa[ca.address.toLowerCase()] = getCachedBalances(

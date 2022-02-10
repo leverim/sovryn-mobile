@@ -6,8 +6,13 @@ import { ContractName } from 'types/contract';
 import { ChainId } from 'types/network';
 import { AccountType, BaseAccount } from './accounts';
 import { cache } from './cache';
-import { STORAGE_IS_TESTNET } from './constants';
+import {
+  STORAGE_CACHE_ENABLED_CHAINS,
+  STORAGE_CACHE_SOVRYN_CHAIN,
+  STORAGE_IS_TESTNET,
+} from './constants';
 import { contractUtils } from './contract';
+import { listMainnetNetworks } from './network-utils';
 
 export const noop = () => {};
 
@@ -110,3 +115,17 @@ export const numberIsEmpty = (value: string | number | undefined) =>
 
 export const isTestnet = () => cache.get(STORAGE_IS_TESTNET) === '1';
 export const isMainnet = () => !isTestnet();
+
+export const enabledChainIds = () =>
+  cache.get(
+    STORAGE_CACHE_ENABLED_CHAINS,
+    listMainnetNetworks().map(item => item.chainId),
+  );
+
+export const sovrynChainId = () => cache.get(STORAGE_CACHE_SOVRYN_CHAIN, 30);
+
+export const setEnabledChainIds = (chainIds: ChainId[]) =>
+  cache.set(STORAGE_CACHE_ENABLED_CHAINS, chainIds);
+
+export const setSovrynChainId = (chainId: ChainId) =>
+  cache.set(STORAGE_CACHE_SOVRYN_CHAIN, chainId);

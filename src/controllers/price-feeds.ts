@@ -3,7 +3,6 @@ import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
 import { findAsset } from 'utils/asset-utils';
 import { parseUnits } from 'utils/helpers';
-import { getNetworkIds } from 'utils/network-utils';
 import {
   IPriceOracle,
   PriceOracleResult,
@@ -23,8 +22,8 @@ class PriceFeeds {
     protected oracles: Partial<Record<ChainId, IPriceOracle[]>> = {},
   ) {}
 
-  public async getAll(isTestnet: boolean) {
-    const chains = getNetworkIds(isTestnet)
+  public async getAll(chainIds: ChainId[]) {
+    const chains = chainIds
       .map(chainId =>
         (this.oracles[chainId] || []).map(item =>
           item.getAll(chainId).then(result => ({ [chainId]: result })),

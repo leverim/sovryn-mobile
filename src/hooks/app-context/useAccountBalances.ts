@@ -5,12 +5,11 @@ import { useIsMounted } from 'hooks/useIsMounted';
 import { useCallback, useContext, useRef } from 'react';
 import { getAllBalances } from 'utils/interactions/price';
 import Logger from 'utils/Logger';
-import { getNetworkIds } from 'utils/network-utils';
 
 const interval = 30 * 1000; // 30 seconds
 
 export function useAccountBalances(owner: string) {
-  const { isTestnet } = useContext(AppContext);
+  const { chainIds } = useContext(AppContext);
   const { execute: startBalances, setBalances } = useContext(BalanceContext);
   const isMounted = useIsMounted();
   owner = owner?.toLowerCase();
@@ -23,7 +22,6 @@ export function useAccountBalances(owner: string) {
     }
     try {
       startBalances();
-      const chainIds = getNetworkIds(isTestnet);
       for (const chainId of chainIds) {
         await getAllBalances(chainId, owner)
           .then(response => {
@@ -36,7 +34,7 @@ export function useAccountBalances(owner: string) {
     } catch (e) {
       Logger.error(e, 'useAccountBalances');
     }
-  }, [owner, startBalances, isTestnet, isMounted, setBalances]);
+  }, [owner, startBalances, chainIds, isMounted, setBalances]);
 
   const executeInterval = useCallback(async () => {
     await execute();

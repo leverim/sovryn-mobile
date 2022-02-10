@@ -1,7 +1,6 @@
 import React, { useCallback, useContext } from 'react';
-import { Alert, Linking, ScrollView, Switch } from 'react-native';
+import { Alert, Linking, ScrollView } from 'react-native';
 import { AppContext } from 'context/AppContext';
-import { Setting, settings } from 'utils/settings';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { NavGroup } from 'components/NavGroup/NavGroup';
@@ -10,8 +9,6 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SettingsStackProps } from 'routers/settings.routes';
 import { accounts } from 'utils/accounts';
 import { globalStyles } from 'global.styles';
-import { networks } from 'config/networks';
-import { ChainId } from 'types/network';
 import { passcode } from 'controllers/PassCodeController';
 import { usePrettyBiometryName } from 'hooks/useBiometryType';
 
@@ -57,11 +54,6 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
     );
   }, [signOut]);
 
-  const network = networks.find(
-    item =>
-      item.chainId === (settings.get(Setting.DEFAULT_CHAIN_ID) as ChainId),
-  );
-
   return (
     <SafeAreaPage>
       <ScrollView style={globalStyles.page}>
@@ -72,11 +64,7 @@ export const SettingsScreen: React.FC<Props> = ({ navigation }) => {
             onPress={navigate('settings.wallets')}
             value={accounts.list.length}
           />
-          <NavItem
-            title="Networks"
-            onPress={navigate('settings.networks')}
-            value={network?.name || 'Unknown'}
-          />
+          <NavItem title="Networks" onPress={navigate('settings.networks')} />
         </NavGroup>
 
         <NavGroup>

@@ -1,19 +1,19 @@
 import { BigNumber } from 'ethers';
 import { useMemo } from 'react';
 import { getSwappableToken } from 'config/swapables';
-import { USD_TOKEN } from 'utils/constants';
 import { formatUnits, parseUnits } from 'utils/helpers';
 import { useCachedUsdPrice } from './app-context/useCachedUsdPrice';
 import { Asset } from 'models/asset';
-import { findAsset } from 'utils/asset-utils';
+import { getUsdAsset } from 'utils/asset-utils';
 
 export function useAssetUsdBalance(asset: Asset, amount: string) {
   const xusdPrice = useCachedUsdPrice(
     asset.chainId,
     asset.native ? getSwappableToken(asset.id, asset.chainId) : asset.id,
+    getUsdAsset(asset.chainId)?.id,
   );
   // todo: use correct chain id
-  const xusdToken = findAsset(30, USD_TOKEN);
+  const xusdToken = getUsdAsset(30);
 
   const weiValue = useMemo(() => {
     if (!xusdToken) {

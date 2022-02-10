@@ -32,4 +32,5 @@ export const STORAGE_IS_TESTNET = `${prefix}isTestnet`;
 
 export const STORAGE_CACHE = `${prefix}cache`;
 
-export const USD_TOKEN: TokenId = 'xusd';
+export const STORAGE_CACHE_ENABLED_CHAINS = `${prefix}chainsEnabled`;
+export const STORAGE_CACHE_SOVRYN_CHAIN = `${prefix}sovrynChain`;

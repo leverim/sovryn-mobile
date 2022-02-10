@@ -11,7 +11,7 @@ const interval = 210 * 1000; // 3 minutes and 30 seconds
 
 export function useGlobalUsdPrices(chainId: ChainId) {
   const isMounted = useIsMounted();
-  const { isTestnet } = useContext(AppContext);
+  const { chainIds } = useContext(AppContext);
   const { execute: startPrices, initPrices } = useContext(UsdPriceContext);
   const [value, setValue] = useState({});
   const intervalRef = useRef<NodeJS.Timeout>();
@@ -19,7 +19,7 @@ export function useGlobalUsdPrices(chainId: ChainId) {
   const execute = useCallback(async () => {
     try {
       startPrices();
-      await priceFeeds.getAll(isTestnet).then(response => {
+      await priceFeeds.getAll(chainIds).then(response => {
         if (isMounted()) {
           initPrices(response);
           setValue(response);
@@ -28,7 +28,7 @@ export function useGlobalUsdPrices(chainId: ChainId) {
     } catch (e) {
       Logger.error(e, 'useGlobalUsdPrices');
     }
-  }, [startPrices, isTestnet, isMounted, initPrices]);
+  }, [startPrices, chainIds, isMounted, initPrices]);
 
   const executeInterval = useCallback(async () => {
     if ([30, 31].includes(chainId)) {

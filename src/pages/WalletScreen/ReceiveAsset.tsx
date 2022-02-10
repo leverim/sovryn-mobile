@@ -19,7 +19,7 @@ import { Text } from 'components/Text';
 import { TokenPickerButton } from 'components/TokenPickerButton';
 import { AssetPickerDialog } from 'components/AssetPickerDialog';
 import { Asset } from 'models/asset';
-import { listAssets } from 'utils/asset-utils';
+import { listAssetsForChains } from 'utils/asset-utils';
 import { AppContext } from 'context/AppContext';
 import { toChecksumAddress } from 'utils/rsk';
 
@@ -29,7 +29,7 @@ export const ReceiveAsset: React.FC<Props> = ({
   route: { params },
   navigation,
 }) => {
-  const { isTestnet } = useContext(AppContext);
+  const { chainIds } = useContext(AppContext);
   const [token, setToken] = useState(params.token);
   const [open, setOpen] = useState(false);
 
@@ -50,7 +50,7 @@ export const ReceiveAsset: React.FC<Props> = ({
 
   useEffect(() => setToken(params.token), [params.token]);
 
-  const tokens = useMemo(() => listAssets(isTestnet), [isTestnet]);
+  const tokens = useMemo(() => listAssetsForChains(chainIds), [chainIds]);
   const onTokenChange = useCallback((asset: Asset) => setToken(asset), []);
 
   return (

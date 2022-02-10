@@ -1,12 +1,15 @@
 import { swapables } from 'config/swapables';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
-import { findAsset } from 'utils/asset-utils';
+import { findAsset, getNativeAsset } from 'utils/asset-utils';
 import { aggregateCall, contractCall } from 'utils/contract-utils';
 import { getContractAddress, parseUnits } from 'utils/helpers';
 import { IPriceOracle, PriceOracleResult } from './price-oracle-interface';
 
-const targetTokenId: TokenId = 'xusd';
+const targetTokenId: Partial<Record<ChainId, TokenId>> = {
+  30: 'xusd',
+  31: 'txusd',
+};
 
 class SovrynAmmOracle implements IPriceOracle {
   async getOne(
@@ -14,7 +17,7 @@ class SovrynAmmOracle implements IPriceOracle {
     sourceTokenId: TokenId,
   ): Promise<PriceOracleResult> {
     const sourceToken = findAsset(chainId, sourceTokenId);
-    const targetToken = findAsset(chainId, targetTokenId);
+    const targetToken = findAsset(chainId, targetTokenId[chainId]!);
 
     return contractCall(
       chainId,
@@ -34,13 +37,15 @@ class SovrynAmmOracle implements IPriceOracle {
 
   async getAll(chainId: ChainId): Promise<PriceOracleResult[]> {
     const sovrynProtocolAddress = getContractAddress('sovrynProtocol', chainId);
-    const targetToken = findAsset(chainId, targetTokenId);
+    const targetToken = findAsset(chainId, targetTokenId[chainId]!);
     const targetAddress = targetToken.address;
     const amountOne = parseUnits('1', targetToken.decimals).toString();
 
     const items =
       swapables[chainId]?.filter(
-        item => item !== targetTokenId && item !== 'rbtc',
+        item =>
+          item !== targetTokenId[chainId] &&
+          item !== getNativeAsset(chainId).id,
       ) || [];
 
     return aggregateCall<Record<TokenId, PriceOracleResult>>(

@@ -28,7 +28,7 @@ import { TokenApprovalFlow } from 'components/TokenApprovalFlow';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { callToContract, encodeFunctionData } from 'utils/contract-utils';
 import { transactionController } from 'controllers/TransactionController';
-import { AFFILIATE_ACCOUNT, AFFILIATE_FEE, USD_TOKEN } from 'utils/constants';
+import { AFFILIATE_ACCOUNT, AFFILIATE_FEE } from 'utils/constants';
 import { useSlippage } from 'hooks/useSlippage';
 import { SwapSettingsModal } from '../components/SwapSettingsModal';
 import SettingsIcon from 'assets/settings-icon.svg';
@@ -37,6 +37,7 @@ import { BigNumber } from 'ethers';
 import {
   findAsset,
   getNativeAsset,
+  getUsdAsset,
   listAssetsForChain,
 } from 'utils/asset-utils';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
@@ -72,7 +73,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     });
   }, [navigation]);
 
-  const usdToken = findAsset(chainId, USD_TOKEN);
+  const usdToken = getUsdAsset(chainId);
   const nativeToken = getNativeAsset(chainId);
 
   const [sendTokenId, setSendTokenId] = useState(tokens[0]);

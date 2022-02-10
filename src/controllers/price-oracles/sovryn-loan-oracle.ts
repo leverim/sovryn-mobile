@@ -8,14 +8,17 @@ import { IPriceOracle, PriceOracleResult } from './price-oracle-interface';
 import { getSwappableToken, swapables } from 'config/swapables';
 import { findAsset } from 'utils/asset-utils';
 
-const targetTokenId: TokenId = 'xusd';
+const targetTokenId: Partial<Record<ChainId, TokenId>> = {
+  30: 'xusd',
+  31: 'txusd',
+};
 
 class SovrynLoanOracle implements IPriceOracle {
   async getOne(
     chainId: ChainId,
     sourceTokenId: TokenId,
   ): Promise<PriceOracleResult> {
-    const targetToken = findAsset(chainId, targetTokenId);
+    const targetToken = findAsset(chainId, targetTokenId[chainId]!);
 
     const loanToken = lendingTokens.find(
       item => item.chainId === chainId && item.loanTokenId === sourceTokenId,
@@ -36,7 +39,7 @@ class SovrynLoanOracle implements IPriceOracle {
       },
     ];
 
-    if (loanToken.supplyTokenId !== targetTokenId) {
+    if (loanToken.supplyTokenId !== targetTokenId[chainId]) {
       calls.push({
         address: getContractAddress('sovrynProtocol', chainId),
         fnName: 'getSwapExpectedReturn(address,address,uint256)(uint256)',
