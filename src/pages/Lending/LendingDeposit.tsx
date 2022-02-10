@@ -30,7 +30,7 @@ import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
 import Logger from 'utils/Logger';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
-import { findAsset, getNativeAsset } from 'utils/asset-utils';
+import { findAsset } from 'utils/asset-utils';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 
@@ -97,8 +97,7 @@ export const LendingDeposit: React.FC<Props> = ({
   const handleDeposit = useCallback(async () => {
     setSubmitting(true);
     try {
-      const native = getNativeAsset(chainId);
-      const isNative = lendingToken.loanTokenId === native.id;
+      const isNative = lendingToken.supplyToken.native;
       const weiAmount = parseUnits(amount, lendingToken.supplyToken.decimals);
       const data = isNative
         ? encodeFunctionData('mintWithBTC(address,bool)(uint256)', [
@@ -126,11 +125,10 @@ export const LendingDeposit: React.FC<Props> = ({
     }
   }, [
     amount,
-    chainId,
     lendingToken.loanTokenAddress,
-    lendingToken.loanTokenId,
     lendingToken.supplyToken.decimals,
     lendingToken.supplyToken.id,
+    lendingToken.supplyToken.native,
     owner,
     receiveLoanToken,
     rewardsEnabled,
