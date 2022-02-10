@@ -9,14 +9,14 @@ import { Item } from './Item';
 import { TransactionType } from './transaction-types';
 import { unwrapSwappableToken } from 'config/swapables';
 import { TokenId } from 'types/asset';
-import { findAssetByAddress } from 'utils/asset-utils';
+import { findAsset, findAssetByAddress } from 'utils/asset-utils';
 
 export const SwapData: React.FC<DataModalProps> = ({ request }) => {
   const { tokenSend, tokenReceive, amount, minReturn } = useMemo(() => {
     const signature = request?.data?.toString().substring(0, 10) || '0x';
 
     const [path, _amount, _minReturn] = decodeParameters(
-      signature === TransactionType.SWAP_NETWORK_SWAP
+      signature === TransactionType.WRBTC_PROXY_SWAP
         ? ['address[]', 'uint256', 'uint256']
         : ['address[]', 'uint256', 'uint256', 'address', 'address', 'uint256'],
       `0x${request.data!.toString().substring(10)}`,
@@ -31,23 +31,17 @@ export const SwapData: React.FC<DataModalProps> = ({ request }) => {
     if (signature === TransactionType.WRBTC_PROXY_SWAP) {
       const unwrappedSend = unwrapSwappableToken(
         _tokenSend.id as TokenId,
-        request.chainId as ChainId,
+        _tokenSend.chainId,
       );
       if (unwrappedSend !== _tokenSend.id) {
-        _tokenSend = findAssetByAddress(
-          request.chainId as ChainId,
-          unwrappedSend,
-        );
+        _tokenSend = findAsset(request.chainId as ChainId, unwrappedSend);
       }
       const unwrappedReceive = unwrapSwappableToken(
         _tokenReceive.id as TokenId,
         request.chainId as ChainId,
       );
       if (unwrappedReceive !== _tokenReceive.id) {
-        _tokenReceive = findAssetByAddress(
-          request.chainId as ChainId,
-          unwrappedReceive,
-        );
+        _tokenReceive = findAsset(request.chainId as ChainId, unwrappedReceive);
       }
     }
 

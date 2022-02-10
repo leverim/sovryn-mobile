@@ -12,8 +12,8 @@ export type WalletStackProps = {
   'wallet.list': undefined;
   'wallet.details': { token: Asset; chainId: ChainId };
   'wallet.vestings': { token: Asset; chainId: ChainId };
-  'wallet.receive': { token: Asset; chainId: ChainId };
-  'wallet.send': { token: Asset; chainId: ChainId };
+  'wallet.receive': { token: Asset };
+  'wallet.send': { token: Asset };
 };
 
 const Stack = createNativeStackNavigator<WalletStackProps>();

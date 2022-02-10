@@ -15,7 +15,7 @@ import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SwapStackProps } from '..';
-import { swapables, wrapSwapables } from 'config/swapables';
+import { getSwappableToken, swapables, wrapSwapables } from 'config/swapables';
 import { TokenId } from 'types/asset';
 import { Button } from 'components/Buttons/Button';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
@@ -40,6 +40,7 @@ import {
   listAssetsForChain,
 } from 'utils/asset-utils';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
+import { ChainId } from 'types/network';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
@@ -187,10 +188,23 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   const handleSubmitButton = useCallback(async () => {
     setSubmitting(true);
 
+    const _sendToken = findAsset(
+      sendToken.chainId,
+      getSwappableToken(sendToken.id as TokenId, sendToken.chainId as ChainId),
+    );
+
+    const _receiveToken = findAsset(
+      receiveToken.chainId,
+      getSwappableToken(
+        receiveToken.id as TokenId,
+        receiveToken.chainId as ChainId,
+      ),
+    );
+
     const path = await callToContract(
       'swapNetwork',
       'conversionPath(address,address)(address[])',
-      [sendToken.address, receiveToken.address],
+      [_sendToken.address, _receiveToken.address],
     ).then(response => response[0]);
 
     const amount = parseUnits(sendAmount || '0', sendToken.decimals).toString();
@@ -206,14 +220,15 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
         : [path, amount, minReturn, owner, AFFILIATE_ACCOUNT, AFFILIATE_FEE],
     );
 
+    console.log('path!', path, amount, minReturn);
+
     await transactionController
       .request({
         to: contractAddress,
         from: owner,
-        value: hexlify(
-          BigNumber.from(sendTokenId === nativeToken.id ? amount : '0'),
-        ),
+        value: hexlify(BigNumber.from(sendToken.native ? amount : '0')),
         data,
+        chainId: sendToken.chainId,
       })
       .then(() => {
         setSubmitting(false);
@@ -225,13 +240,14 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   }, [
     contractAddress,
     minReturn,
-    nativeToken.id,
     owner,
-    receiveToken.address,
+    receiveToken.chainId,
+    receiveToken.id,
     sendAmount,
-    sendToken.address,
+    sendToken.chainId,
     sendToken.decimals,
-    sendTokenId,
+    sendToken.id,
+    sendToken.native,
     useBtcProxy,
   ]);
 

@@ -71,7 +71,7 @@ export const AccountBannerMini: React.FC<AccountBannerProps> = ({
               <Pressable
                 style={styles.action}
                 onPress={() =>
-                  navigation.navigate('wallet.send', { token: coin, chainId })
+                  navigation.navigate('wallet.send', { token: coin })
                 }>
                 <View style={styles.actionIcon}>
                   <SendIcon fill="white" />
@@ -87,7 +87,6 @@ export const AccountBannerMini: React.FC<AccountBannerProps> = ({
               onPress={() =>
                 navigation.navigate('wallet.receive', {
                   token: coin,
-                  chainId,
                 })
               }>
               <View style={styles.actionIcon}>

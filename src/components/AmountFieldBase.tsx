@@ -87,6 +87,7 @@ const styles = StyleSheet.create({
     backgroundColor: DarkTheme.colors.border,
     borderRadius: 12,
     marginVertical: 4,
+    width: '100%',
   },
   inputWrapperView: {
     flexDirection: 'row',

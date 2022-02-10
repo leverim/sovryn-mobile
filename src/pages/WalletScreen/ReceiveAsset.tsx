@@ -1,4 +1,11 @@
-import React, { useCallback, useLayoutEffect } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Button, ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -9,6 +16,12 @@ import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
+import { TokenPickerButton } from 'components/TokenPickerButton';
+import { AssetPickerDialog } from 'components/AssetPickerDialog';
+import { Asset } from 'models/asset';
+import { listAssets } from 'utils/asset-utils';
+import { AppContext } from 'context/AppContext';
+import { toChecksumAddress } from 'utils/rsk';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
 
@@ -16,11 +29,15 @@ export const ReceiveAsset: React.FC<Props> = ({
   route: { params },
   navigation,
 }) => {
+  const { isTestnet } = useContext(AppContext);
+  const [token, setToken] = useState(params.token);
+  const [open, setOpen] = useState(false);
+
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: `Receive ${params.token.symbol}`,
+      title: `Receive ${token.symbol}`,
     });
-  }, [navigation, params]);
+  }, [navigation, token.symbol]);
 
   const address = useWalletAddress();
 
@@ -31,33 +48,48 @@ export const ReceiveAsset: React.FC<Props> = ({
 
   const dark = useIsDarkTheme();
 
+  useEffect(() => setToken(params.token), [params.token]);
+
+  const tokens = useMemo(() => listAssets(isTestnet), [isTestnet]);
+  const onTokenChange = useCallback((asset: Asset) => setToken(asset), []);
+
   return (
     <SafeAreaPage>
       <ScrollView style={styles.container}>
         <View style={styles.detailsContainer}>
-          <Text style={styles.title}>Receive {params.token.symbol}</Text>
+          <TokenPickerButton
+            token={token}
+            onPress={() => setOpen(prev => !prev)}
+          />
           <View style={[styles.qrWrapper, dark && styles.qrWrapperDark]}>
             <QRCode
               value={address.toLowerCase()}
               backgroundColor={dark ? 'black' : 'white'}
               color={dark ? 'white' : 'black'}
-              size={280}
+              size={150}
             />
           </View>
           <View style={styles.addressContainer}>
             <Text style={styles.address}>
-              {prettifyTx(address, 16, 16).toLowerCase()}
+              {prettifyTx(toChecksumAddress(address, token.chainId), 16, 16)}
             </Text>
           </View>
           <Button onPress={onCopyToClipboard} title="Copy" />
           <View style={styles.noteContainer}>
             <Text style={styles.note}>
-              Only send {params.token.symbol} to this address. Any other tokens
-              send to this address will be lost.
+              Only send {token.symbol} to this address. Any other tokens send to
+              this address will be lost.
             </Text>
           </View>
         </View>
       </ScrollView>
+      <AssetPickerDialog
+        open={open}
+        value={token}
+        items={tokens}
+        onChange={onTokenChange}
+        onClose={() => setOpen(false)}
+      />
     </SafeAreaPage>
   );
 };
@@ -94,6 +126,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   qrWrapper: {
+    marginTop: 24,
     padding: 8,
     backgroundColor: 'white',
   },

@@ -30,6 +30,6 @@ export const STORAGE_PASSCODE = `${prefix}passcode`;
 
 export const STORAGE_IS_TESTNET = `${prefix}isTestnet`;
 
-export const STORAGE_CACHE = `${prefix}cache122`;
+export const STORAGE_CACHE = `${prefix}cache`;
 
 export const USD_TOKEN: TokenId = 'xusd';

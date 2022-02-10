@@ -1,6 +1,10 @@
-import { passcode } from 'controllers/PassCodeController';
 import React, { useContext, useEffect, useMemo } from 'react';
 import { set } from 'lodash';
+import NetInfo, {
+  NetInfoState,
+  NetInfoStateType,
+} from '@react-native-community/netinfo';
+import { passcode } from 'controllers/PassCodeController';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
 import { accounts, AccountType, BaseAccount } from 'utils/accounts';
@@ -27,6 +31,8 @@ type AppContextState = {
   loading: boolean;
   loanPools: LoanPools;
   isTestnet: boolean;
+  connectionType: NetInfoStateType;
+  isConnected: boolean | null;
 };
 
 type AppContextActions = {
@@ -58,6 +64,7 @@ export enum APP_ACTION {
   SET_LOAN_POOLS,
   INIT_NETWORK,
   SET_NETWORK,
+  SET_CONNECTION_TYPE,
 }
 
 type Action =
@@ -80,7 +87,8 @@ type Action =
   | {
       type: APP_ACTION.INIT_NETWORK;
       value: boolean;
-    };
+    }
+  | { type: APP_ACTION.SET_CONNECTION_TYPE; value: NetInfoState };
 
 export const AppContext = React.createContext<AppContextType>({
   accountList: [],
@@ -134,6 +142,12 @@ export const AppProvider: React.FC = ({ children }) => {
         case APP_ACTION.SET_NETWORK:
           cache.set(STORAGE_IS_TESTNET, action.value ? '1' : '0');
           return { ...prevState, isTestnet: action.value };
+        case APP_ACTION.SET_CONNECTION_TYPE:
+          return {
+            ...prevState,
+            connectionType: action.value.type,
+            isConnected: action.value.isConnected,
+          };
       }
     },
     {
@@ -142,6 +156,8 @@ export const AppProvider: React.FC = ({ children }) => {
       address: null,
       loading: true,
       isTestnet: false,
+      connectionType: NetInfoStateType.unknown,
+      isConnected: false,
       loanPools: {} as LoanPools,
     },
   );
@@ -230,6 +246,13 @@ export const AppProvider: React.FC = ({ children }) => {
       accounts.off('selected', actions.setActiveAccount);
     };
   }, [actions]);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(value => {
+      dispatch({ type: APP_ACTION.SET_CONNECTION_TYPE, value });
+    });
+    return unsubscribe();
+  }, []);
 
   const value = useMemo(() => ({ ...state, ...actions }), [state, actions]);
 

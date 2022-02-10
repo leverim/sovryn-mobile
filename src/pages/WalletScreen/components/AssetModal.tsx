@@ -12,6 +12,7 @@ import { Asset, AssetType } from 'models/asset';
 import { formatAndCommify } from 'utils/helpers';
 import { VestedAssets } from './VestedAssets/VestedAssets';
 import { TokenId } from 'types/asset';
+import { Button } from 'components/Buttons/Button';
 
 type AssetModalProps = {
   asset: Asset;
@@ -26,7 +27,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
   );
 };
 
-const AssetModalContent: React.FC<AssetModalProps> = ({ asset }) => {
+const AssetModalContent: React.FC<AssetModalProps> = ({ asset, onClose }) => {
   const owner = useWalletAddress();
   const { weiValue: tokenBalance } = useAssetBalance(asset, owner);
   const {
@@ -66,6 +67,7 @@ const AssetModalContent: React.FC<AssetModalProps> = ({ asset }) => {
           />
         )}
         <VestedAssets tokenId={asset.id as TokenId} chainId={asset.chainId} />
+        <Button title="Close" onPress={onClose} />
       </View>
     </ModalContent>
   );
