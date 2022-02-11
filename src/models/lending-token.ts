@@ -1,6 +1,7 @@
 import { ChainId } from 'types/network';
-import { Token, TokenId } from 'types/token';
-import { tokenUtils } from 'utils/token-utils';
+import { TokenId } from 'types/asset';
+import { findAsset } from 'utils/asset-utils';
+import { Asset } from './asset';
 
 export enum LendingTokenFlags {
   REWARDS_ENABLED, // pool pays SOV rewards for lenders.
@@ -8,10 +9,8 @@ export enum LendingTokenFlags {
 }
 
 export class LendingToken {
-  private _loanToken: Token;
-  private _supplyToken: Token;
-  private _loanTokenAddress: string;
-  private _supplyTokenAddress: string;
+  private _loanToken: Asset;
+  private _supplyToken: Asset;
   constructor(
     public readonly chainId: ChainId,
     public readonly supplyTokenId: TokenId,
@@ -19,18 +18,8 @@ export class LendingToken {
     public readonly collateralTokenIds: TokenId[],
     private readonly _flags: LendingTokenFlags | LendingTokenFlags[] = [],
   ) {
-    this._supplyToken = tokenUtils.getTokenById(this.supplyTokenId);
-    this._loanToken = tokenUtils.getTokenById(this.loanTokenId);
-
-    this._loanTokenAddress = tokenUtils.getTokenAddressForChainId(
-      this._loanToken,
-      this.chainId,
-    );
-    this._supplyTokenAddress = tokenUtils.getTokenAddressForChainId(
-      this._supplyToken,
-      this.chainId,
-    );
-
+    this._supplyToken = findAsset(this.chainId, this.supplyTokenId);
+    this._loanToken = findAsset(this.chainId, this.loanTokenId);
     if (!Array.isArray(this._flags)) {
       this._flags = [this._flags];
     }
@@ -48,9 +37,9 @@ export class LendingToken {
     return this._loanToken;
   }
   public get loanTokenAddress() {
-    return this._loanTokenAddress.toLowerCase();
+    return this.loanToken.address;
   }
   public get supplyTokenAddress() {
-    return this._supplyTokenAddress.toLowerCase();
+    return this.supplyToken.address;
   }
 }

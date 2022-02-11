@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { SettingsStackProps } from 'pages/MainScreen/SettingsPage';
+import { SettingsStackProps } from 'routers/settings.routes';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { ScrollView, Switch } from 'react-native';

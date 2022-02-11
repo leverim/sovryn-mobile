@@ -120,9 +120,13 @@ class PassCodeController {
   }
 
   public async resetPassword() {
-    await AsyncStorage.removeItem(STORAGE_PASSCODE_TYPE);
-    await EncryptedStorage.removeItem(STORAGE_PASSCODE);
-    return resetGenericPassword({ service: defaultKeychainOptions.service });
+    try {
+      await AsyncStorage.removeItem(STORAGE_PASSCODE_TYPE);
+      await EncryptedStorage.removeItem(STORAGE_PASSCODE);
+      return resetGenericPassword({ service: defaultKeychainOptions.service });
+    } catch (error) {
+      console.error('error resetting password', error);
+    }
   }
 
   public async setUnlocked(value: boolean) {

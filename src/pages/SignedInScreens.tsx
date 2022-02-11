@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import { WalletPage } from './MainScreen/WalletPage';
 import { SwapPage } from './SwapPage';
-import { SettingsPage } from './MainScreen/SettingsPage';
+import { SettingsRoutes } from '../routers/settings.routes';
 
 import WalletIcon from 'assets/wallet-icon.svg';
 import ExchangeIcon from 'assets/exchange-icon.svg';
@@ -77,14 +77,16 @@ export const SignedInScreens = () => {
         />
         <Tab.Screen
           name="settings"
-          component={SettingsPage}
+          component={SettingsRoutes}
           options={{
             title: 'Settings',
             tabBarIcon: ({ color }) => <SettingsIcon fill={color} />,
           }}
         />
       </Tab.Navigator>
-      <PassCodeModal visible={askToUnlock} onUnlocked={handleUnlock} />
+      {!__DEV__ && (
+        <PassCodeModal visible={askToUnlock} onUnlocked={handleUnlock} />
+      )}
       <TransactionConfirmation />
       <PasscodeConfirmation />
     </>

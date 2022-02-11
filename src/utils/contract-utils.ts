@@ -78,12 +78,12 @@ export const prefixHex = (value: string) =>
   isHexString(value) ? value : `0x${value}`;
 
 export async function callToContract<T = Record<string | number, any>>(
+  chainId: ChainId,
   contractName: ContractName,
   methodAndTypes: string,
   args: ReadonlyArray<any>,
   request?: Deferrable<TransactionRequest>,
 ): Promise<T> {
-  const chainId = currentChainId();
   const to = getContractAddress(contractName, chainId);
   return contractCall(chainId, to, methodAndTypes, args, request);
 }
@@ -144,6 +144,8 @@ export async function aggregateCall<
         } catch (e) {
           console.error(
             'decodeParameters::',
+            chainId,
+            item.address,
             method,
             types,
             returnTypes,
@@ -200,6 +202,82 @@ export async function aggregateCall<
     .catch(error => {
       Logger.log(
         'aggr',
+        chainId,
+        items.map(item => item.key),
+      );
+      Logger.error(error, 'aggregator call');
+      throw error;
+    });
+}
+
+export async function tryAggregateCall<
+  T = Record<string, BytesLike | Result | string>,
+>(chainId: ChainId, callData: CallData[]) {
+  const network: Network = getNetworks().find(
+    item => item.chainId === chainId,
+  )!;
+  const items = callData.map(item => {
+    const { method, types, returnTypes } = prepareFunction(item.fnName);
+    return {
+      target: item.address,
+      callData: encodeFunctionDataWithTypes(method, types, item.args),
+      returns: (data: BytesLike) => {
+        try {
+          return decodeParameters(returnTypes, data);
+        } catch (e) {
+          console.error(
+            'decodeParameters:!',
+            chainId,
+            method,
+            types,
+            returnTypes,
+            item.args,
+            data,
+          );
+          console.error(e);
+          return data;
+        }
+      },
+      key: item.key,
+      parser: item.parser,
+    };
+  });
+
+  const data = encodeFunctionData('tryAggregate(bool,(address,bytes)[])', [
+    false,
+    items.map(item => [item.target, item.callData]),
+  ]);
+
+  return getProvider(chainId)
+    .call({ to: network.multicallContract, data })
+    .then(result => {
+      const response = decodeParameters(['(bool,bytes)[]'], result)[0];
+
+      const returnData: T = {} as T;
+      // @ts-ignore
+      response.forEach(([success, item], index: number) => {
+        const key: string = (items[index].key || index) as string;
+        if (success) {
+          const value = items[index].returns(item);
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          returnData[key] = items[index].parser
+            ? // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              items[index]?.parser(value)
+            : value;
+        } else {
+          // @ts-ignore
+          returnData[key] = undefined;
+        }
+      });
+      console.log('response 3: ', chainId, returnData);
+      return { returnData };
+    })
+    .catch(error => {
+      Logger.log(
+        'try aggr ',
+        chainId,
         items.map(item => item.key),
       );
       Logger.error(error, 'aggregator call');

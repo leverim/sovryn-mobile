@@ -1,20 +1,22 @@
 import { AppContext } from 'context/AppContext';
+import { BalanceContext } from 'context/BalanceContext';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
-import { useCallback, useContext, useRef, useState } from 'react';
-import { ChainId } from 'types/network';
-import { getAllBalances, getCachedBalances } from 'utils/interactions/price';
+import { set } from 'lodash';
+import { useCallback, useContext, useRef } from 'react';
+import { cache } from 'utils/cache';
+import { STORAGE_CACHE_BALANCES } from 'utils/constants';
+import { getAllBalances } from 'utils/interactions/price';
 import Logger from 'utils/Logger';
 
-const interval = 30 * 1000; // 60 seconds
+const interval = 30 * 1000; // 30 seconds
 
-export function useAccountBalances(chainId: ChainId, owner: string) {
+export function useAccountBalances(owner: string) {
+  const { chainIds } = useContext(AppContext);
+  const { execute: startBalances, setBalances } = useContext(BalanceContext);
   const isMounted = useIsMounted();
   owner = owner?.toLowerCase();
-  const { balances, setBalances } = useContext(AppContext);
-  const [value, setValue] = useState(
-    balances[chainId]?.[owner] || getCachedBalances(chainId, owner!),
-  );
+
   const intervalRef = useRef<NodeJS.Timeout>();
 
   const execute = useCallback(async () => {
@@ -22,23 +24,30 @@ export function useAccountBalances(chainId: ChainId, owner: string) {
       return;
     }
     try {
-      await getAllBalances(chainId, owner).then(response => {
-        if (isMounted()) {
-          setBalances(chainId, owner, response);
-          setValue(response);
-        }
-      });
+      startBalances();
+      for (const chainId of chainIds) {
+        getAllBalances(chainId, owner)
+          .then(response => {
+            if (isMounted()) {
+              setBalances(chainId, owner, response);
+              const cached = cache.get(STORAGE_CACHE_BALANCES, {});
+              cache.set(
+                STORAGE_CACHE_BALANCES,
+                set(cached, [chainId, owner], response),
+              );
+            }
+          })
+          .catch(e => Logger.error(e, 'getAllBalances'));
+      }
     } catch (e) {
       Logger.error(e, 'useAccountBalances');
     }
-  }, [chainId, owner, setBalances, isMounted]);
+  }, [owner, startBalances, chainIds, isMounted, setBalances]);
 
   const executeInterval = useCallback(async () => {
-    if ([30, 31].includes(chainId)) {
-      await execute();
-      intervalRef.current = setTimeout(executeInterval, interval);
-    }
-  }, [execute, chainId]);
+    await execute();
+    intervalRef.current = setTimeout(executeInterval, interval);
+  }, [execute]);
 
   useDebouncedEffect(
     () => {
@@ -54,7 +63,6 @@ export function useAccountBalances(chainId: ChainId, owner: string) {
   );
 
   return {
-    value,
     execute,
   };
 }

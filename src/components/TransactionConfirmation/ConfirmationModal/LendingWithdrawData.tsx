@@ -2,13 +2,13 @@ import React, { useMemo } from 'react';
 import { View } from 'react-native';
 import { Text } from 'components/Text';
 import { decodeParameters } from 'utils/contract-utils';
-import { tokenUtils } from 'utils/token-utils';
 import { formatAndCommify } from 'utils/helpers';
 import { ChainId } from 'types/network';
 import { DataModalProps } from './ConfirmationModal';
 import { Item } from './Item';
 import { lendingTokens } from 'config/lending-tokens';
 import { AddressBadge } from 'components/AddressBadge';
+import { findAssetByAddress } from 'utils/asset-utils';
 
 export const LendingWithdrawData: React.FC<DataModalProps> = ({ request }) => {
   const { receiver, amount, rewardsEnabled, supplyToken, loanToken } =
@@ -18,9 +18,9 @@ export const LendingWithdrawData: React.FC<DataModalProps> = ({ request }) => {
         `0x${request.data!.toString().substring(10)}`,
       );
 
-      const _loanToken = tokenUtils.getTokenByAddress(
-        request.to!,
+      const _loanToken = findAssetByAddress(
         request.chainId as ChainId,
+        request.to!,
       );
 
       return {

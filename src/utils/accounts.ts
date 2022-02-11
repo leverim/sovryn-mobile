@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import RNRestart from 'react-native-restart';
 import { Wallet } from 'ethers';
 import { addHexPrefix } from 'ethereumjs-util';
 import { mnemonicToSeedSync } from 'bip39';
@@ -121,7 +120,6 @@ class AccountManager extends EventEmitter {
     }
     await this.save();
     this.onSelected();
-    RNRestart.Restart();
   }
   public async update(index: number, config: Partial<AccountUpdate>) {
     const account = this._accounts[index];
@@ -132,7 +130,7 @@ class AccountManager extends EventEmitter {
     this._accounts[index] = account;
     await this.save();
     this.onSelected();
-    RNRestart.Restart();
+    this.onLoaded();
   }
   public async remove(index: number) {
     let nextSelectionIndex = this._selected;
@@ -145,6 +143,7 @@ class AccountManager extends EventEmitter {
   public async delete() {
     this._accounts = [];
     await this.select(0);
+    this.onLoaded();
   }
   public get(index: number) {
     return this._accounts[index];

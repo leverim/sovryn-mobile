@@ -4,23 +4,22 @@ import {
   AmountFieldBaseProps,
 } from 'components/AmountFieldBase';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { commifyDecimals, currentChainId, floorDecimals, px } from 'utils/helpers';
+import { commifyDecimals, floorDecimals, px } from 'utils/helpers';
 import { Text } from 'components/Text';
-import { Token, TokenId } from 'types/token';
 import { TokenPickerButton } from './TokenPickerButton';
-import { AssetPickerModal } from 'components/AssetPickerModal';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
-import { tokenUtils } from 'utils/token-utils';
 import { ChainId } from 'types/network';
+import { Asset } from 'models/asset';
+import { AssetPickerDialog } from 'components/AssetPickerDialog';
 
 type SwapAmountFieldProps = {
-  token: Token;
-  onTokenChanged: (tokenId: TokenId) => void;
+  token: Asset;
+  onTokenChanged: (token: Asset) => void;
   price?: string;
   difference?: number;
   chainId?: ChainId;
   balance?: string;
-  tokens: TokenId[];
+  tokens: Asset[];
 } & AmountFieldBaseProps;
 
 export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
@@ -31,12 +30,11 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
   price,
   difference,
   balance,
-  chainId = currentChainId(),
   tokens: items,
   ...props
 }) => {
   const [open, setOpen] = useState(false);
-  const [_token, setToken] = useState<Token | undefined>(token);
+  const [_token, setToken] = useState<Asset | undefined>(token);
 
   const handleBalancePress = useCallback(
     () => onAmountChanged(floorDecimals(balance || '0', 8)),
@@ -49,7 +47,7 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
 
   useDebouncedEffect(
     () => {
-      onTokenChanged(_token?.id as TokenId);
+      onTokenChanged(_token!);
     },
     300,
     [_token, onTokenChanged],
@@ -60,10 +58,7 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
     setToken(token);
   }, [token]);
 
-  const onTokenChange = useCallback(
-    (tokenId: TokenId) => setToken(tokenUtils.getTokenById(tokenId)),
-    [],
-  );
+  const onTokenChange = useCallback((asset: Asset) => setToken(asset), []);
 
   return (
     <>
@@ -104,9 +99,9 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
           </View>
         }
       />
-      <AssetPickerModal
+      <AssetPickerDialog
         open={open}
-        value={_token?.id as TokenId}
+        value={_token}
         items={items}
         onChange={onTokenChange}
         onClose={() => setOpen(false)}

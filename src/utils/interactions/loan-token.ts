@@ -73,7 +73,10 @@ export const getLoanTokenInfo = async (
   ];
 
   if (lendingToken.hasFlag(LendingTokenFlags.REWARDS_ENABLED)) {
-    const liquidityMiningProxy = getContractAddress('liquidityMiningProxy');
+    const liquidityMiningProxy = getContractAddress(
+      'liquidityMiningProxy',
+      lendingToken.supplyToken.chainId,
+    );
     calls.push(
       ...([
         {

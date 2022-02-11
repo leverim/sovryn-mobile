@@ -1,23 +1,28 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import {
   calculateChange,
   commifyDecimals,
-  currentChainId,
   formatUnits,
   getContractAddress,
   noop,
   numberIsEmpty,
   parseUnits,
 } from 'utils/helpers';
-import { tokenUtils } from 'utils/token-utils';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SwapStackProps } from '..';
 import { getSwappableToken, swapables, wrapSwapables } from 'config/swapables';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { Button } from 'components/Buttons/Button';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 import { DarkTheme } from '@react-navigation/native';
@@ -29,29 +34,37 @@ import { TokenApprovalFlow } from 'components/TokenApprovalFlow';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { callToContract, encodeFunctionData } from 'utils/contract-utils';
 import { transactionController } from 'controllers/TransactionController';
-import { AFFILIATE_ACCOUNT, AFFILIATE_FEE, USD_TOKEN } from 'utils/constants';
+import { AFFILIATE_ACCOUNT, AFFILIATE_FEE } from 'utils/constants';
 import { useSlippage } from 'hooks/useSlippage';
 import { SwapSettingsModal } from '../components/SwapSettingsModal';
 import SettingsIcon from 'assets/settings-icon.svg';
 import { hexlify } from 'ethers/lib/utils';
 import { BigNumber } from 'ethers';
-import { useBalanceToUsd } from 'hooks/useBalanceToUsd';
+import {
+  findAsset,
+  getNativeAsset,
+  getUsdAsset,
+  listAssetsForChain,
+} from 'utils/asset-utils';
+import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
+import { ChainId } from 'types/network';
+import { AppContext } from 'context/AppContext';
+import { Asset } from 'models/asset';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
 export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
-  const chainId = currentChainId();
+  const { isTestnet } = useContext(AppContext);
+  const chainId = isTestnet ? 31 : 30;
 
   const owner = useWalletAddress().toLowerCase();
   const [submitting, setSubmitting] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  const tokens: TokenId[] = useMemo(() => {
-    return tokenUtils
-      .listTokensForChainId(chainId)
+  const tokens: Asset[] = useMemo(() => {
+    return listAssetsForChain(chainId)
       .filter(item => swapables[chainId]?.includes(item.id as TokenId))
-      .filter(item => wrapSwapables[chainId]![1] !== item.id) // exclude wrapped native token
-      .map(item => item.id as TokenId);
+      .filter(item => wrapSwapables[chainId]![1] !== item.id); // exclude wrapped native token;
   }, [chainId]);
 
   useLayoutEffect(() => {
@@ -68,87 +81,61 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     });
   }, [navigation]);
 
-  const usdToken = tokenUtils.getTokenById(USD_TOKEN);
-  const nativeToken = tokenUtils.getNativeToken(chainId);
+  const usdToken = getUsdAsset(chainId);
+  const nativeToken = getNativeAsset(chainId);
 
-  const [sendTokenId, setSendTokenId] = useState(tokens[0]);
-  const [receiveTokenId, setReceiveTokenId] = useState(tokens[1]);
+  const [sendToken, setSendToken] = useState(tokens[0]);
+  const [receiveToken, setReceiveToken] = useState(tokens[1]);
+
+  useEffect(() => {
+    setSendToken(tokens[0]);
+    setReceiveToken(tokens[1]);
+  }, [tokens]);
 
   const [sendAmount, setSendAmount] = useState('');
 
-  const sendToken = useMemo(
-    () => tokenUtils.getTokenById(sendTokenId),
-    [sendTokenId],
-  );
-
-  const receiveToken = useMemo(
-    () => tokenUtils.getTokenById(receiveTokenId),
-    [receiveTokenId],
-  );
-
-  const sendTokenAddress = useMemo(
-    () =>
-      tokenUtils.getTokenAddressForId(
-        getSwappableToken(sendTokenId, currentChainId()),
-      ),
-    [sendTokenId],
-  );
-
-  const receiveTokenAddress = useMemo(
-    () =>
-      tokenUtils.getTokenAddressForId(
-        getSwappableToken(receiveTokenId, currentChainId()),
-      ),
-    [receiveTokenId],
-  );
-
-  const handleSetSendTokenId = useCallback(
-    (tokenId: TokenId) => {
-      if (tokenId === receiveTokenId) {
-        setReceiveTokenId(tokens.filter(item => item !== tokenId)[0]);
+  const handleSetSendToken = useCallback(
+    (token: Asset) => {
+      if (token.id === receiveToken.id) {
+        setReceiveToken(tokens.filter(item => item.id !== token.id)[0]);
       }
-      setSendTokenId(tokenId);
+      setSendToken(token);
     },
-    [receiveTokenId, tokens],
+    [receiveToken, tokens],
   );
 
-  const handleSetReceiveTokenId = useCallback(
-    (tokenId: TokenId) => {
-      if (tokenId === sendTokenId) {
-        setSendTokenId(tokens.filter(item => item !== tokenId)[0]);
+  const handleSetReceiveToken = useCallback(
+    (token: Asset) => {
+      if (token.id === sendToken.id) {
+        setSendToken(tokens.filter(item => item.id !== token.id)[0]);
       }
-      setReceiveTokenId(tokenId);
+      setReceiveToken(token);
     },
-    [sendTokenId, tokens],
+    [sendToken, tokens],
   );
 
-  const sendOneUSD = useBalanceToUsd(
-    chainId,
-    sendToken,
-    parseUnits('1', sendToken.decimals).toString(),
-  );
-  const receiveOneUSD = useBalanceToUsd(
-    chainId,
+  const { value: sendOneUSD } = useAssetUsdBalance(sendToken, sendToken?.ONE);
+  const { value: receiveOneUSD } = useAssetUsdBalance(
     receiveToken,
-    parseUnits('1', sendToken.decimals).toString(),
+    receiveToken?.ONE,
   );
 
   const { value: sellPrice, loading: sellPriceLoading } =
-    useGetSwapExpectedReturn(chainId, sendTokenId, receiveTokenId, '1');
+    useGetSwapExpectedReturn(chainId, sendToken.id, receiveToken.id, '1');
 
   const { value: receiveAmount, loading } = useGetSwapExpectedReturn(
     chainId,
-    sendTokenId,
-    receiveTokenId,
+    sendToken.id,
+    receiveToken.id,
     sendAmount,
     false,
   );
 
   const handleSwapAssets = useCallback(() => {
-    setSendTokenId(receiveTokenId);
-    setReceiveTokenId(sendTokenId);
+    setSendToken(receiveToken);
+    setReceiveToken(sendToken);
     setSendAmount(receiveAmount);
-  }, [receiveAmount, receiveTokenId, sendTokenId]);
+  }, [receiveAmount, receiveToken, sendToken]);
 
   const sendUSD = useMemo(() => {
     if (sendOneUSD === null || numberIsEmpty(sendAmount)) {
@@ -181,8 +168,8 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     return calculateChange(Number(sendUSD), Number(receiveUSD));
   }, [sendUSD, receiveUSD, loading]);
 
-  const sendBalance = useAssetBalance(sendToken, owner, chainId);
-  const receiveBalance = useAssetBalance(receiveToken, owner, chainId);
+  const sendBalance = useAssetBalance(sendToken, owner);
+  const receiveBalance = useAssetBalance(receiveToken, owner);
 
   const [slippage, setSlippage] = useState('0.1');
   const { minReturn, minReturnFormatted } = useSlippage(
@@ -191,7 +178,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     slippage,
   );
 
-  const useBtcProxy = [sendTokenId, receiveTokenId].includes(
+  const useBtcProxy = [sendToken.id, receiveToken.id].includes(
     nativeToken.id as TokenId,
   );
   const contractAddress = getContractAddress(
@@ -202,10 +189,24 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   const handleSubmitButton = useCallback(async () => {
     setSubmitting(true);
 
+    const _sendToken = findAsset(
+      sendToken.chainId,
+      getSwappableToken(sendToken.id as TokenId, sendToken.chainId as ChainId),
+    );
+
+    const _receiveToken = findAsset(
+      receiveToken.chainId,
+      getSwappableToken(
+        receiveToken.id as TokenId,
+        receiveToken.chainId as ChainId,
+      ),
+    );
+
     const path = await callToContract(
+      chainId,
       'swapNetwork',
       'conversionPath(address,address)(address[])',
-      [sendTokenAddress, receiveTokenAddress],
+      [_sendToken.address, _receiveToken.address],
     ).then(response => response[0]);
 
     const amount = parseUnits(sendAmount || '0', sendToken.decimals).toString();
@@ -221,14 +222,15 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
         : [path, amount, minReturn, owner, AFFILIATE_ACCOUNT, AFFILIATE_FEE],
     );
 
+    console.log('path!', path, amount, minReturn);
+
     await transactionController
       .request({
         to: contractAddress,
         from: owner,
-        value: hexlify(
-          BigNumber.from(sendTokenId === nativeToken.id ? amount : '0'),
-        ),
+        value: hexlify(BigNumber.from(sendToken.native ? amount : '0')),
         data,
+        chainId: sendToken.chainId,
       })
       .then(() => {
         setSubmitting(false);
@@ -240,13 +242,14 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   }, [
     contractAddress,
     minReturn,
-    nativeToken.id,
     owner,
-    receiveTokenAddress,
+    receiveToken.chainId,
+    receiveToken.id,
     sendAmount,
+    sendToken.chainId,
     sendToken.decimals,
-    sendTokenAddress,
-    sendTokenId,
+    sendToken.id,
+    sendToken.native,
     useBtcProxy,
   ]);
 
@@ -271,7 +274,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
             amount={sendAmount}
             onAmountChanged={setSendAmount}
             token={sendToken}
-            onTokenChanged={handleSetSendTokenId}
+            onTokenChanged={handleSetSendToken}
             price={sendUSD}
             balance={sendBalance.value}
             tokens={tokens}
@@ -282,7 +285,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
               amount={receiveAmount}
               onAmountChanged={noop}
               token={receiveToken}
-              onTokenChanged={handleSetReceiveTokenId}
+              onTokenChanged={handleSetReceiveToken}
               inputProps={{ editable: false }}
               debounceDelay={0}
               containerStyle={styles.fullWidth}
@@ -304,7 +307,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
         ) : (
           <ReadWalletAwareWrapper>
             <TokenApprovalFlow
-              tokenId={sendTokenId}
+              tokenId={sendToken.id}
               spender={contractAddress}
               loading={loading || submitting}
               disabled={loading || submitting}
@@ -324,7 +327,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.estimateText}>
             Slippage: {commifyDecimals(slippage, 3)}%
           </Text>
-          {!sellPriceLoading && !numberIsEmpty(sendOneUSD) && (
+          {!sellPriceLoading && sendOneUSD !== null && (
             <>
               <Text style={styles.estimateText}>
                 Buy price: 1 {sendToken.symbol} ={' '}

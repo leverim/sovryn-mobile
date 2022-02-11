@@ -11,10 +11,15 @@ import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { Text } from '../Text';
 import { PressableButton } from '../PressableButton';
-import { Token, TokenId } from 'types/token';
-import { tokenUtils } from 'utils/token-utils';
+import { TokenId } from 'types/asset';
 import { AssetLogo } from 'components/AssetLogo';
 import { InputField } from 'components/InputField';
+import { findAsset } from 'utils/asset-utils';
+import { currentChainId, formatAndCommify } from 'utils/helpers';
+import { Asset } from 'models/asset';
+import { useAssetBalance } from 'hooks/useAssetBalance';
+import { useWalletAddress } from 'hooks/useWalletAddress';
+import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 
 export type AssetPickerModalProps = {
   value?: TokenId;
@@ -28,6 +33,7 @@ type AssetPickerExtraProps = {
   onClose?: () => void;
 };
 
+/** @deprecated */
 export const AssetPickerModal: React.FC<
   AssetPickerModalProps & AssetPickerExtraProps
 > = ({ value, items, onChange, open, onClose, title = 'Choose asset' }) => {
@@ -59,7 +65,9 @@ export const AssetPickerModal: React.FC<
 
   const tokens = useMemo(
     () =>
-      items.map(item => tokenUtils.getTokenById(item)).filter(item => !!item),
+      items
+        .map(item => findAsset(currentChainId(), item))
+        .filter(item => !!item),
     [items],
   );
 
@@ -105,12 +113,17 @@ export const AssetPickerModal: React.FC<
 };
 
 type ItemProps = {
-  token: Token;
+  token: Asset;
   active: boolean;
   onSelect: (tokenId: TokenId) => void;
 };
 
 const Item: React.FC<ItemProps> = ({ token, active, onSelect }) => {
+  const { weiValue } = useAssetBalance(token, useWalletAddress());
+  const { weiValue: usdBalance, token: usdToken } = useAssetUsdBalance(
+    token,
+    weiValue,
+  );
   return (
     <Pressable
       onPress={() => onSelect(token.id as TokenId)}
@@ -124,9 +137,16 @@ const Item: React.FC<ItemProps> = ({ token, active, onSelect }) => {
           <Text style={styles.tokenNameText}>{token.name}</Text>
         </View>
       </View>
-      {/* <View>
-        <Text style={styles.balanceText}>{commify(100000.43)}</Text>
-      </View> */}
+      <View>
+        <Text style={styles.balanceText}>
+          {formatAndCommify(weiValue, token.decimals)}
+        </Text>
+        {usdBalance !== null && (
+          <Text style={styles.balanceText}>
+            ${formatAndCommify(usdBalance, usdToken.decimals, 2)}
+          </Text>
+        )}
+      </View>
     </Pressable>
   );
 };
@@ -208,9 +228,12 @@ const styles = StyleSheet.create({
   },
   tokenNameText: {
     color: 'gray',
+    fontSize: 12,
   },
   balanceText: {
     color: 'gray',
+    textAlign: 'right',
+    fontSize: 12,
   },
   searchInput: {
     marginBottom: 12,

@@ -1,21 +1,34 @@
 import { networks } from 'config/networks';
 import { BigNumberish, ethers } from 'ethers';
 import { commify } from 'ethers/lib/utils';
-import { Dimensions, ImageSourcePropType } from 'react-native';
+import { Dimensions } from 'react-native';
 import { ContractName } from 'types/contract';
 import { ChainId } from 'types/network';
 import { AccountType, BaseAccount } from './accounts';
+import { cache } from './cache';
+import {
+  STORAGE_CACHE_ENABLED_CHAINS,
+  STORAGE_CACHE_SOVRYN_CHAIN,
+  STORAGE_IS_TESTNET,
+} from './constants';
 import { contractUtils } from './contract';
-import { Setting, settings } from './settings';
+import { listMainnetNetworks } from './network-utils';
 
 export const noop = () => {};
 
-export const currentChainId = (): ChainId =>
-  settings.get(Setting.DEFAULT_CHAIN_ID, 30);
+/** @deprecated */
+export const currentChainId = (): ChainId => (isMainnet() ? 30 : 31);
+
+export const contractExists = (contractName: ContractName, chainId: number) => {
+  const contract = contractUtils.getContractByName(contractName);
+  return (
+    contract && contractUtils.contractHasChainId(contract, chainId as ChainId)
+  );
+};
 
 export const getContractAddress = (
   contractName: ContractName,
-  chainId: number = currentChainId(),
+  chainId: number,
 ) => {
   const contract = contractUtils.getContractByName(contractName);
   if (!contractUtils.contractHasChainId(contract, chainId as ChainId)) {
@@ -37,24 +50,6 @@ export const prettifyTx = (
   const start = text.substr(0, startLength);
   const end = text.substr(-endLength);
   return `${start} ··· ${end}`;
-};
-
-export const prepareImageSource = (
-  uri?: string,
-): ImageSourcePropType | null => {
-  if (uri) {
-    if (uri.startsWith('assets/')) {
-      // todo load by path
-      // return require(uri);
-    }
-
-    if (uri.startsWith('data:') || uri.startsWith('http')) {
-      return {
-        uri,
-      };
-    }
-  }
-  return null;
 };
 
 export const formatUnits = (
@@ -117,3 +112,20 @@ export const calculateChange = (a: number, b: number) =>
 
 export const numberIsEmpty = (value: string | number | undefined) =>
   !value || Number(value) === 0;
+
+export const isTestnet = () => cache.get(STORAGE_IS_TESTNET) === '1';
+export const isMainnet = () => !isTestnet();
+
+export const enabledChainIds = () =>
+  cache.get(
+    STORAGE_CACHE_ENABLED_CHAINS,
+    listMainnetNetworks().map(item => item.chainId),
+  );
+
+export const sovrynChainId = () => cache.get(STORAGE_CACHE_SOVRYN_CHAIN, 30);
+
+export const setEnabledChainIds = (chainIds: ChainId[]) =>
+  cache.set(STORAGE_CACHE_ENABLED_CHAINS, chainIds);
+
+export const setSovrynChainId = (chainId: ChainId) =>
+  cache.set(STORAGE_CACHE_SOVRYN_CHAIN, chainId);

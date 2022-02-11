@@ -2,12 +2,12 @@ import React, { useMemo } from 'react';
 import { View } from 'react-native';
 import { Text } from 'components/Text';
 import { decodeParameters } from 'utils/contract-utils';
-import { tokenUtils } from 'utils/token-utils';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { ChainId } from 'types/network';
 import { DataModalProps } from './ConfirmationModal';
 import { AddressBadge } from 'components/AddressBadge';
 import { Item } from './Item';
+import { findAsset, getNativeAsset } from 'utils/asset-utils';
 
 export const VestingWithdrawTokensData: React.FC<DataModalProps> = ({
   request,
@@ -19,8 +19,11 @@ export const VestingWithdrawTokensData: React.FC<DataModalProps> = ({
     );
   }, [request.data]);
 
-  const token = tokenUtils.getTokenById(request.customData?.tokenId);
-  const coin = tokenUtils.getNativeToken(request.chainId as ChainId);
+  const token = findAsset(
+    request.chainId as ChainId,
+    request.customData?.tokenId,
+  );
+  const coin = getNativeAsset(request.chainId as ChainId);
 
   return (
     <View>

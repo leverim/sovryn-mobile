@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ModalPortal } from 'react-native-modals';
 import { init, wrap } from '@sentry/react-native';
 import notifee, { EventType } from '@notifee/react-native';
 import { AppProvider } from './src/context/AppContext';
 import { MainScreen } from './src/MainScreen';
 import { notifications } from 'controllers/notifications';
 import { useIsMounted } from 'hooks/useIsMounted';
+import { BalanceProvider } from 'context/BalanceContext';
+import { UsdPriceProvider } from 'context/UsdPriceContext';
 
 init({
   dsn: 'https://3a91eacf25944a5a8cbc58b87a3e05a6@o1102915.ingest.sentry.io/6129518',
@@ -47,10 +48,13 @@ const App = () => {
   }
 
   return (
-    <AppProvider>
-      <MainScreen />
-      <ModalPortal />
-    </AppProvider>
+    <UsdPriceProvider>
+      <BalanceProvider>
+        <AppProvider>
+          <MainScreen />
+        </AppProvider>
+      </BalanceProvider>
+    </UsdPriceProvider>
   );
 };
 

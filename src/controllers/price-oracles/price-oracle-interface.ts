@@ -1,5 +1,5 @@
 import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 
 export type PriceOracleResult = {
   tokenId: TokenId;

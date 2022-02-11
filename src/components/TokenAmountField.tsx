@@ -2,15 +2,16 @@ import React, { useMemo } from 'react';
 import { StyleSheet, TextInputProps, View } from 'react-native';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { Token, TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { currentChainId } from 'utils/helpers';
-import { tokenUtils } from 'utils/token-utils';
 import { AmountField } from './AmountField';
 import { ChainId } from 'types/network';
+import { Asset } from 'models/asset';
+import { findAsset } from 'utils/asset-utils';
 
 type Props = {
   label?: string;
-  token?: Token;
+  token?: Asset;
   tokenId?: TokenId;
   chainId?: ChainId;
   fee?: number;
@@ -23,18 +24,18 @@ export const TokenAmountField: React.FC<Props & TextInputProps> = ({
   fee = 0,
   ...props
 }) => {
-  const _token: Token | never = useMemo(() => {
+  const _token: Asset | never = useMemo(() => {
     if (token) {
       return token;
     }
-    if (tokenId) {
-      return tokenUtils.getTokenById(tokenId);
+    if (tokenId && chainId) {
+      return findAsset(chainId, tokenId);
     }
-    throw new Error("'token' or 'tokenId' must be set.");
-  }, [token, tokenId]);
+    throw new Error("'token' or 'tokenId' with 'chainId' must be set.");
+  }, [chainId, token, tokenId]);
 
   const owner = useWalletAddress();
-  const { value } = useAssetBalance(_token, owner, chainId);
+  const { value } = useAssetBalance(_token, owner);
 
   return (
     <View style={styles.container}>

@@ -15,6 +15,7 @@
     "@notifee/react-native": "^4.1.0",
     "@react-native-clipboard/clipboard": "^1.8.5",
     "@react-native-community/async-storage": "^1.12.1",
+    "@react-native-community/netinfo": "^7.1.12",
     "@react-navigation/bottom-tabs": "^6.0.9",
     "@react-navigation/native": "^6.0.6",
     "@react-navigation/native-stack": "^6.2.5",

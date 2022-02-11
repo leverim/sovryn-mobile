@@ -84,11 +84,11 @@ export const SwapSettingsModal: React.FC<SwapSettingsModalProps> = ({
             onChange={handleSlippageChange}>
             {slippageAmounts.map(value => (
               <RadioButton key={value} value={value.toString()}>
-                <Text>{value}%</Text>
+                <Text style={styles.buttonText}>{value}%</Text>
               </RadioButton>
             ))}
             <RadioButton value="custom">
-              <Text>Custom</Text>
+              <Text style={styles.buttonText}>Custom</Text>
             </RadioButton>
           </RadioGroup>
 
@@ -163,5 +163,8 @@ const styles = StyleSheet.create({
   },
   label: {
     marginBottom: 8,
+  },
+  buttonText: {
+    fontSize: 12,
   },
 });

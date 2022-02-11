@@ -38,7 +38,7 @@ export default class Logger {
    * @param {string|object} extra - Extra error info
    * @returns - void
    */
-  static async error(error: Error, extra: string | Error) {
+  static async error(error: Error, extra?: string | Error) {
     // Check if user passed accepted opt-in to metrics
     const metricsOptIn = await DefaultPreference.get(METRICS_OPT_IN);
     if (__DEV__) {

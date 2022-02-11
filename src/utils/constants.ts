@@ -1,4 +1,4 @@
-import type { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 
 export const ETH_DERIVATION_PATH = "m/44'/60'/0'/0";
 export const RSK_DERIVATION_PATH = "m/44'/137'/0'/0";
@@ -28,4 +28,13 @@ export const STORAGE_PASSCODE_CHOICE = `${prefix}passcodeChoice`;
 export const STORAGE_PASSCODE_TYPE = `${prefix}passcodeType`;
 export const STORAGE_PASSCODE = `${prefix}passcode`;
 
-export const USD_TOKEN: TokenId = 'xusd';
+export const STORAGE_IS_TESTNET = `${prefix}isTestnet`;
+
+export const STORAGE_CACHE = `${prefix}cache`;
+
+export const STORAGE_CACHE_ENABLED_CHAINS = `${prefix}chainsEnabled`;
+export const STORAGE_CACHE_SOVRYN_CHAIN = `${prefix}sovrynChain`;
+
+export const STORAGE_CACHE_BALANCES = `${prefix}balances`;
+export const STORAGE_CACHE_PRICES = `${prefix}prices`;
+export const STORAGE_CACHE_LOAN_POOLS = `${prefix}loanPools`;

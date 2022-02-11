@@ -3,10 +3,16 @@ IOS and Android wallet for sovryn.app created with react-native.
 App is created by community members and are not officialy supported by Sovryn team.
 
 Test on:
-[iOS Testflight](https://testflight.apple.com/join/cSfETSV5)
+
+iOS: [Testflight](https://testflight.apple.com/join/cSfETSV5)
+
+Android: [Google Play](https://play.google.com/apps/testing/com.defray.sovryn)
 
 Latest release:
+
 [iOS App Store](https://apps.apple.com/us/app/sovryn-wallet/id1603993667)
+
+[Google Play](https://play.google.com/store/apps/details?id=com.defray.sovryn)
 
 
 ## Features
@@ -59,5 +65,6 @@ git clone git@github.com:defray-labs/sovryn-mobile.git
 cd sovryn-mobile
 yarn install
 cd android
-./gradlew :app:assembleRelease
+./gradlew :app:assembleRelease // .apk
+./gradlew :app:bundleRelease // .aab
 ```

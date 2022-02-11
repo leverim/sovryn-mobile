@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
-import { SettingsStackProps } from 'pages/MainScreen/SettingsPage';
+import { SettingsStackProps } from 'routers/settings.routes';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { globalStyles } from 'global.styles';
 import { Text } from 'components/Text';
-import { AccountType } from 'utils/accounts';
-import { makeWalletPrivateKey, wallet } from 'utils/wallet';
+import { wallet } from 'utils/wallet';
 import { WarningBadge } from 'components/WarningBadge';
 import { MnemonicPhrasePrinter } from 'components/MnemonicPhrasePrinter';
 

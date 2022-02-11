@@ -1,11 +1,10 @@
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, RefreshControl } from 'react-native';
+import { RefreshControl } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { globalStyles } from 'global.styles';
 import { LendingRoutesStackProps } from 'routers/lending.routes';
 import {
-  commifyDecimals,
   currentChainId,
   formatAndCommify,
   formatUnits,
@@ -13,17 +12,14 @@ import {
   parseUnits,
 } from 'utils/helpers';
 import { lendingTokens } from 'config/lending-tokens';
-import { tokenUtils } from 'utils/token-utils';
 import { useLendingPool } from './hooks/useLendingPool';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 import { Button } from 'components/Buttons/Button';
 import { TokenApprovalFlow } from 'components/TokenApprovalFlow';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { LendingAmountField } from './components/LendingAmountField';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { useBalanceToUsd } from 'hooks/useBalanceToUsd';
-import { USD_TOKEN } from 'utils/constants';
 import { Text } from 'components/Text';
 import { transactionController } from 'controllers/TransactionController';
 import { hexlify } from 'ethers/lib/utils';
@@ -32,6 +28,8 @@ import { LendingTokenFlags } from 'models/lending-token';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
 import Logger from 'utils/Logger';
+import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
+import { getUsdAsset } from 'utils/asset-utils';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 
@@ -58,17 +56,12 @@ export const LendingDeposit: React.FC<Props> = ({
   }, [navigation, lendingToken.supplyToken.symbol]);
 
   const { value: pool, loading, execute } = useLendingPool(lendingToken);
-  const { value: balance } = useAssetBalance(
-    lendingToken.supplyToken,
-    owner,
-    chainId,
-  );
-  const sendOneUSD = useBalanceToUsd(
-    chainId,
+  const { value: balance } = useAssetBalance(lendingToken.supplyToken, owner);
+  const { weiValue: sendOneUSD } = useAssetUsdBalance(
     lendingToken.supplyToken,
     parseUnits('1', lendingToken.supplyToken.decimals).toString(),
   );
-  const usdToken = tokenUtils.getTokenById(USD_TOKEN);
+  const usdToken = getUsdAsset(chainId);
   const rewardsEnabled = lendingToken.hasFlag(
     LendingTokenFlags.REWARDS_ENABLED,
   );
@@ -81,7 +74,7 @@ export const LendingDeposit: React.FC<Props> = ({
     }
     return formatUnits(
       parseUnits(amount, lendingToken.supplyToken.decimals)
-        .mul(parseUnits(sendOneUSD, usdToken.decimals))
+        .mul(sendOneUSD)
         .div(parseUnits('1', usdToken.decimals)),
       usdToken.decimals,
     );
@@ -103,8 +96,7 @@ export const LendingDeposit: React.FC<Props> = ({
   const handleDeposit = useCallback(async () => {
     setSubmitting(true);
     try {
-      const native = tokenUtils.getNativeToken(chainId);
-      const isNative = lendingToken.loanTokenId === native.id;
+      const isNative = lendingToken.supplyToken.native;
       const weiAmount = parseUnits(amount, lendingToken.supplyToken.decimals);
       const data = isNative
         ? encodeFunctionData('mintWithBTC(address,bool)(uint256)', [
@@ -132,11 +124,10 @@ export const LendingDeposit: React.FC<Props> = ({
     }
   }, [
     amount,
-    chainId,
     lendingToken.loanTokenAddress,
-    lendingToken.loanTokenId,
     lendingToken.supplyToken.decimals,
     lendingToken.supplyToken.id,
+    lendingToken.supplyToken.native,
     owner,
     receiveLoanToken,
     rewardsEnabled,
