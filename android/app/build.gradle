@@ -82,6 +82,8 @@ project.ext.react = [
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
+apply from: "../../node_modules/react-native/react.gradle"
+apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
 
 /**
  * Set this to true to create two separate APKs instead of one:
@@ -164,6 +166,7 @@ android {
     }
     buildTypes {
         debug {
+            resValue "string", "CodePushDeploymentKey", '""'
             signingConfig signingConfigs.debug
             if (nativeArchitectures) {
                 ndk {
@@ -171,7 +174,12 @@ android {
                 }
             }
         }
+        releaseStaging {
+            resValue "string", "CodePushDeploymentKey", '"JAPSC6x_3dlu_G3SgzxkY_6hGpIzQyZ6LiYwW"'
+            matchingFallbacks = ['release']
+        }
         release {
+            resValue "string", "CodePushDeploymentKey", '"ZIR18BOfIOb3sSUkSrMSjdAZHXyFc9rHSZ5_-"'
             // As per https://reactnative.dev/docs/signed-apk-android
             // Secrets are put to ~/.gradle/gradle.properties
             if (project.hasProperty('SW_UPLOAD_STORE_FILE')) {

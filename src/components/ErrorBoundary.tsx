@@ -1,6 +1,6 @@
-import { captureException } from '@sentry/react-native';
 import React, { Component, ReactNode } from 'react';
 import { Text, View } from 'react-native';
+import Logger from 'utils/Logger';
 
 interface Props {
   children: ReactNode;
@@ -21,8 +21,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error) {
-    console.error(error);
-    captureException(error);
+    Logger.error(error);
   }
 
   public render() {
