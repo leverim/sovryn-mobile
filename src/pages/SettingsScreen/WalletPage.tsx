@@ -87,7 +87,7 @@ export const WalletPage: React.FC<Props> = ({
           <NavItem title="Rename Wallet" onPress={onRenameWallet} />
           {account.type === AccountType.MNEMONIC && (
             <NavItem
-              title="Change derivation path"
+              title="Derivation path"
               value={`${account.dPath}/${account.index}`}
               onPress={unlockAndNavigate('settings.wallet.derivation')}
             />

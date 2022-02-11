@@ -4,7 +4,7 @@ import { ChainId } from 'types/network';
 import { PriceOracleResult } from 'controllers/price-oracles/price-oracle-interface';
 
 // prices[chainId][oracleData[]] = balance;
-type Prices = Partial<Record<ChainId, PriceOracleResult[]>>;
+export type Prices = Partial<Record<ChainId, PriceOracleResult[]>>;
 
 type UsdPriceContextState = {
   prices: Prices;

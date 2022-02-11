@@ -2,7 +2,10 @@ import { AppContext } from 'context/AppContext';
 import { BalanceContext } from 'context/BalanceContext';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
+import { set } from 'lodash';
 import { useCallback, useContext, useRef } from 'react';
+import { cache } from 'utils/cache';
+import { STORAGE_CACHE_BALANCES } from 'utils/constants';
 import { getAllBalances } from 'utils/interactions/price';
 import Logger from 'utils/Logger';
 
@@ -23,10 +26,15 @@ export function useAccountBalances(owner: string) {
     try {
       startBalances();
       for (const chainId of chainIds) {
-        await getAllBalances(chainId, owner)
+        getAllBalances(chainId, owner)
           .then(response => {
             if (isMounted()) {
               setBalances(chainId, owner, response);
+              const cached = cache.get(STORAGE_CACHE_BALANCES, {});
+              cache.set(
+                STORAGE_CACHE_BALANCES,
+                set(cached, [chainId, owner], response),
+              );
             }
           })
           .catch(e => Logger.error(e, 'getAllBalances'));

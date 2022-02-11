@@ -22,6 +22,8 @@ import { Asset } from 'models/asset';
 import { listAssetsForChains } from 'utils/asset-utils';
 import { AppContext } from 'context/AppContext';
 import { toChecksumAddress } from 'utils/rsk';
+import { getNetworkByChainId } from 'utils/network-utils';
+import { DarkTheme } from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
 
@@ -53,6 +55,11 @@ export const ReceiveAsset: React.FC<Props> = ({
   const tokens = useMemo(() => listAssetsForChains(chainIds), [chainIds]);
   const onTokenChange = useCallback((asset: Asset) => setToken(asset), []);
 
+  const network = useMemo(
+    () => getNetworkByChainId(token.chainId),
+    [token.chainId],
+  );
+
   return (
     <SafeAreaPage>
       <ScrollView style={styles.container}>
@@ -61,6 +68,7 @@ export const ReceiveAsset: React.FC<Props> = ({
             token={token}
             onPress={() => setOpen(prev => !prev)}
           />
+          <Text style={styles.networkName}>Network: {network.name}</Text>
           <View style={[styles.qrWrapper, dark && styles.qrWrapperDark]}>
             <QRCode
               value={address.toLowerCase()}
@@ -71,7 +79,7 @@ export const ReceiveAsset: React.FC<Props> = ({
           </View>
           <View style={styles.addressContainer}>
             <Text style={styles.address}>
-              {prettifyTx(toChecksumAddress(address, token.chainId), 16, 16)}
+              {toChecksumAddress(address, token.chainId)}
             </Text>
           </View>
           <Button onPress={onCopyToClipboard} title="Copy" />
@@ -106,17 +114,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
+  networkName: {
     fontWeight: 'bold',
-    fontSize: 18,
-    marginBottom: 24,
+    fontSize: 12,
+    marginBottom: 4,
+    marginTop: 8,
   },
   addressContainer: {
-    paddingTop: 36,
+    marginTop: 12,
     padding: 12,
+    backgroundColor: DarkTheme.colors.border,
+    borderRadius: 8,
   },
   address: {
-    fontSize: 16,
+    fontSize: 12,
   },
   noteContainer: {
     marginTop: 24,
@@ -126,7 +137,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   qrWrapper: {
-    marginTop: 24,
+    marginTop: 8,
     padding: 8,
     backgroundColor: 'white',
   },

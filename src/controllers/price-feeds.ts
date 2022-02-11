@@ -1,4 +1,5 @@
 import { BigNumber } from 'ethers';
+import { get, set } from 'lodash';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
 import { findAsset } from 'utils/asset-utils';
@@ -10,11 +11,11 @@ import {
 import sovrynAmmOracle from './price-oracles/sovryn-amm-oracle';
 import sovrynLoanOracle from './price-oracles/sovryn-loan-oracle';
 import { cache } from 'utils/cache';
-import { get, set } from 'lodash';
+import { STORAGE_CACHE_PRICES } from 'utils/constants';
 
 class PriceFeeds {
   private items: Partial<Record<ChainId, PriceOracleResult[]>> = cache.get(
-    'prices',
+    STORAGE_CACHE_PRICES,
     {} as any,
   );
 
@@ -42,7 +43,7 @@ class PriceFeeds {
         [...get(this.items, [chainId], []), ...value],
       );
     }
-    await cache.set('prices', this.items);
+    await cache.set(STORAGE_CACHE_PRICES, this.items);
     return this.items;
   }
 

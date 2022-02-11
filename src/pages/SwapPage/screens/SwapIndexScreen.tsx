@@ -111,13 +111,10 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     [sendTokenId, tokens],
   );
 
-  const { value: sendOneUSD } = useAssetUsdBalance(
-    sendToken,
-    parseUnits('1', sendToken.decimals).toString(),
-  );
+  const { value: sendOneUSD } = useAssetUsdBalance(sendToken, sendToken.ONE);
   const { value: receiveOneUSD } = useAssetUsdBalance(
     receiveToken,
-    parseUnits('1', sendToken.decimals).toString(),
+    receiveToken.ONE,
   );
 
   const { value: sellPrice, loading: sellPriceLoading } =

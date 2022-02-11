@@ -1,13 +1,16 @@
+import { useCallback, useContext, useRef, useState } from 'react';
+import { set } from 'lodash';
 import { lendingTokens } from 'config/lending-tokens';
 import { AppContext } from 'context/AppContext';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
-import { useCallback, useContext, useRef, useState } from 'react';
 import { TokenId } from 'types/asset';
+import { cache } from 'utils/cache';
+import { STORAGE_CACHE_LOAN_POOLS } from 'utils/constants';
 import { getLoanTokenInfo, LoanTokenInfo } from 'utils/interactions/loan-token';
 import Logger from 'utils/Logger';
 
-const interval = 30 * 1000; // 60 seconds
+const interval = 60 * 1000; // 60 seconds
 
 export function useGlobalLoan(owner: string) {
   const isMounted = useIsMounted();
@@ -43,6 +46,11 @@ export function useGlobalLoan(owner: string) {
           }, {} as Record<TokenId, LoanTokenInfo>);
           setLoanPools(chainId, owner, items);
           setValue(items);
+          const cached = cache.get(STORAGE_CACHE_LOAN_POOLS, {});
+          cache.set(
+            STORAGE_CACHE_LOAN_POOLS,
+            set(cached, [chainId, owner], items),
+          );
         }
       });
     } catch (e) {

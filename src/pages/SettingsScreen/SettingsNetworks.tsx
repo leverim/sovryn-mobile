@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useMemo } from 'react';
 import { ScrollView, Switch } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
@@ -7,10 +7,10 @@ import { NavGroup } from 'components/NavGroup/NavGroup';
 import { NavItem } from 'components/NavGroup/NavItem';
 import { SettingsStackProps } from 'routers/settings.routes';
 import { globalStyles } from 'global.styles';
-import { networks } from 'config/networks';
 import { ChainId } from 'types/network';
 import { AppContext } from 'context/AppContext';
 import { clone, remove, uniq } from 'lodash';
+import { listMainnetNetworks, listTestnetNetworks } from 'utils/network-utils';
 
 type Props = NativeStackScreenProps<SettingsStackProps, 'settings.networks'>;
 
@@ -18,10 +18,14 @@ export const SettingsNetworks: React.FC<Props> = () => {
   const { isTestnet, setNetwork, chainIds, setChainIds } =
     useContext(AppContext);
 
-  const handleNetworkChange = useCallback(
-    () => setNetwork(!isTestnet),
-    [setNetwork, isTestnet],
-  );
+  const handleNetworkChange = useCallback(() => {
+    setNetwork(!isTestnet);
+    setChainIds(
+      (isTestnet ? listMainnetNetworks() : listTestnetNetworks()).map(
+        item => item.chainId,
+      ),
+    );
+  }, [isTestnet, setChainIds, setNetwork]);
 
   const networkEnabled = useCallback(
     (chainId: ChainId) => chainIds.includes(chainId),
@@ -36,27 +40,24 @@ export const SettingsNetworks: React.FC<Props> = () => {
       } else {
         remove(ids, item => item === chainId);
       }
-      console.log('ids', ids);
       setChainIds(ids);
     },
     [chainIds, setChainIds],
   );
 
+  const networks = useMemo(
+    () => (isTestnet ? listTestnetNetworks() : listMainnetNetworks()),
+    [isTestnet],
+  );
+
   return (
     <SafeAreaPage>
       <ScrollView style={globalStyles.page}>
-        <Text style={globalStyles.title}>Sovryn Protocol</Text>
+        <Text style={globalStyles.title}>Networks</Text>
 
         <NavGroup>
           <NavItem
-            title="Mainnet"
-            hideArrow
-            value={
-              <Switch value={!isTestnet} onValueChange={handleNetworkChange} />
-            }
-          />
-          <NavItem
-            title="Testnet"
+            title="Use testnet networks"
             hideArrow
             value={
               <Switch value={isTestnet} onValueChange={handleNetworkChange} />
@@ -64,7 +65,6 @@ export const SettingsNetworks: React.FC<Props> = () => {
           />
         </NavGroup>
 
-        <Text style={globalStyles.title}>Track Tokens</Text>
         <NavGroup>
           {networks.map(item => (
             <NavItem

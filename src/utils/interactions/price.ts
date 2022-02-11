@@ -1,26 +1,14 @@
 import { AssetType } from 'models/asset';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
-import { getUsdAsset, listAssetsForChain } from 'utils/asset-utils';
-import { cache } from 'utils/cache';
+import { listAssetsForChain } from 'utils/asset-utils';
 import { aggregateCall, CallData } from 'utils/contract-utils';
-import { currentChainId } from 'utils/helpers';
 import { getNetworks } from 'utils/network-utils';
-import { getSwapExpectedReturn } from '.';
 
-export const getUsdPrice = (
-  amount: string,
-  tokenId: TokenId,
-  chainId: ChainId = currentChainId(),
-) => {
-  return getSwapExpectedReturn(
-    tokenId,
-    getUsdAsset(chainId).id,
-    amount,
-    chainId,
-  );
-};
-
+/**
+ * @deprecated
+ * @todo move to balance controller
+ **/
 export const getAllBalances = (chainId: ChainId, owner: string) => {
   const { multicallContract } = getNetworks().find(
     item => item.chainId === chainId,
@@ -44,15 +32,5 @@ export const getAllBalances = (chainId: ChainId, owner: string) => {
           parser: response => response[0].toString(),
         } as CallData),
     ),
-  ).then(async ({ returnData }) => {
-    await cache.set(`balances_${chainId}_${owner.toLowerCase()}`, returnData);
-    return returnData;
-  });
-};
-
-export const getCachedBalances = (chainId: ChainId, owner: string) => {
-  return cache.get<Record<TokenId, string>>(
-    `balances_${chainId}_${owner?.toLowerCase()}`,
-    {} as Record<TokenId, string>,
-  );
+  ).then(async ({ returnData }) => returnData);
 };

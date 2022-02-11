@@ -32,8 +32,9 @@ import { getNativeAsset, listAssetsForChains } from 'utils/asset-utils';
 import { AssetAmountField } from 'components/AssetAmountField';
 import { AppContext } from 'context/AppContext';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
-import { parseUnits } from 'utils/helpers';
+import { commifyDecimals, parseUnits } from 'utils/helpers';
 import { useIsMounted } from 'hooks/useIsMounted';
+import { Text } from 'components/Text';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.send'>;
 
@@ -281,6 +282,10 @@ export const SendAsset: React.FC<Props> = ({
                   fee={fee}
                 />
               </View>
+
+              <Text>
+                Transaction fee: {commifyDecimals(fee)} {token.symbol}
+              </Text>
 
               {balanceError === null ? (
                 <ReadWalletAwareWrapper>

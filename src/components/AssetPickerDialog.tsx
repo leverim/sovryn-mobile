@@ -136,7 +136,7 @@ const Item: React.FC<ItemProps> = ({ token, active, onSelect }) => {
         </Text>
         {usdBalance !== null && (
           <Text style={styles.balanceText}>
-            ${formatAndCommify(usdBalance, usdToken.decimals)}
+            ${formatAndCommify(usdBalance, usdToken.decimals, 2)}
           </Text>
         )}
       </View>
@@ -224,6 +224,8 @@ const styles = StyleSheet.create({
   },
   balanceText: {
     color: 'gray',
+    textAlign: 'right',
+    fontSize: 12,
   },
   searchInput: {
     marginBottom: 12,

@@ -9,13 +9,15 @@ import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
 import { accounts, AccountType, BaseAccount } from 'utils/accounts';
 import { cache } from 'utils/cache';
-import { DEFAULT_DERIVATION_PATH, STORAGE_IS_TESTNET } from 'utils/constants';
+import {
+  DEFAULT_DERIVATION_PATH,
+  STORAGE_CACHE_BALANCES,
+  STORAGE_CACHE_PRICES,
+  STORAGE_IS_TESTNET,
+} from 'utils/constants';
 import { LoanTokenInfo } from 'utils/interactions/loan-token';
-import { getCachedBalances } from 'utils/interactions/price';
-import { getNetworks } from 'utils/network-utils';
 import { settings } from 'utils/settings';
 import { clearStorage } from 'utils/storage';
-import { wallet } from 'utils/wallet';
 import { BalanceContext } from './BalanceContext';
 import { UsdPriceContext } from './UsdPriceContext';
 import { enabledChainIds, setEnabledChainIds } from 'utils/helpers';
@@ -29,7 +31,6 @@ export type LoanPools = Partial<
 type AppContextState = {
   accountList: BaseAccount[];
   accountSelected: number;
-  address: string | null;
   loading: boolean;
   loanPools: LoanPools;
   isTestnet: boolean;
@@ -73,7 +74,7 @@ export enum APP_ACTION {
 }
 
 type Action =
-  | { type: APP_ACTION.SIGN_IN; value: string | null }
+  | { type: APP_ACTION.SIGN_IN }
   | { type: APP_ACTION.SIGN_OUT }
   | { type: APP_ACTION.SET_ACCOUNT_LIST; value: BaseAccount[] }
   | { type: APP_ACTION.SET_ACCOUNT; value: number }
@@ -99,9 +100,9 @@ type Action =
 export const AppContext = React.createContext<AppContextType>({
   accountList: [],
   accountSelected: 0,
-  address: null,
   loading: true,
   isTestnet: false,
+  chainIds: [],
 } as unknown as AppContextType);
 
 export const AppProvider: React.FC = ({ children }) => {
@@ -114,13 +115,11 @@ export const AppProvider: React.FC = ({ children }) => {
         case APP_ACTION.SIGN_IN:
           return {
             ...prevState,
-            address: action.value,
             loading: false,
           };
         case APP_ACTION.SIGN_OUT:
           return {
             ...prevState,
-            address: null,
             loading: false,
           };
         case APP_ACTION.SET_ACCOUNT_LIST:
@@ -165,7 +164,6 @@ export const AppProvider: React.FC = ({ children }) => {
     {
       accountList: [],
       accountSelected: 0,
-      address: null,
       loading: true,
       isTestnet: false,
       connectionType: NetInfoStateType.unknown,
@@ -178,7 +176,7 @@ export const AppProvider: React.FC = ({ children }) => {
   const actions: AppContextActions = React.useMemo(
     () => ({
       signIn: async () => {
-        dispatch({ type: APP_ACTION.SIGN_IN, value: wallet.address || null });
+        dispatch({ type: APP_ACTION.SIGN_IN });
       },
       createWallet: async (
         name: string,
@@ -191,7 +189,7 @@ export const AppProvider: React.FC = ({ children }) => {
           dPath: DEFAULT_DERIVATION_PATH,
           index: 0,
         });
-        dispatch({ type: APP_ACTION.SIGN_IN, value: wallet.address || null });
+        dispatch({ type: APP_ACTION.SIGN_IN });
       },
       setAccountList: (items: BaseAccount[]) => {
         dispatch({ type: APP_ACTION.SET_ACCOUNT_LIST, value: items });
@@ -234,19 +232,8 @@ export const AppProvider: React.FC = ({ children }) => {
           value: enabledChainIds(),
         });
 
-        const cachedBalances = getNetworks().reduce((p, c) => {
-          p[c.chainId] = accounts.list.reduce((pa, ca) => {
-            pa[ca.address.toLowerCase()] = getCachedBalances(
-              c.chainId,
-              ca.address.toLowerCase(),
-            );
-            return pa;
-          }, {} as any);
-          return p;
-        }, {} as any);
-
-        initPrices(cache.get('prices', {}));
-        initBalances(cachedBalances);
+        initPrices(cache.get(STORAGE_CACHE_PRICES, {}));
+        initBalances(cache.get(STORAGE_CACHE_BALANCES, {}));
 
         dispatch({
           type: APP_ACTION.INIT_NETWORK,

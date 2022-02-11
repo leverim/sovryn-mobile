@@ -1,23 +1,78 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { NavItem, NavItemProps } from 'components/NavGroup/NavItem';
-import { useAssetBalance } from 'hooks/useAssetBalance';
-import { commifyDecimals, currentChainId, prettifyTx } from 'utils/helpers';
-import { getNativeAsset } from 'utils/asset-utils';
+import { prettifyTx } from 'utils/helpers';
+import { ChainId } from 'types/network';
+import { useDebouncedEffect } from 'hooks/useDebounceEffect';
+import { toChecksumAddress } from 'utils/rsk';
+import { Wallet } from 'ethers';
+import { makeWalletPrivateKey } from 'utils/wallet';
+import { AccountType } from 'utils/accounts';
+import Logger from 'utils/Logger';
 
-type Props = { address: string; index: number } & Partial<NavItemProps>;
+type Props = {
+  masterSeed: string;
+  derivationPath: string;
+  index: number;
+  chainId: ChainId;
+} & Partial<NavItemProps>;
 
 export const WalletAddressItem: React.FC<Props> = ({
-  address,
+  masterSeed,
+  derivationPath,
+  chainId,
   index,
   ...props
 }) => {
-  const coin = getNativeAsset(currentChainId());
-  const { value } = useAssetBalance(coin, address);
-  return (
-    <NavItem
-      {...props}
-      title={`#${index}. ${prettifyTx(address, 8, 8)}`}
-      value={`${commifyDecimals(value)} ${coin.symbol}`}
-    />
+  const [loading, setLoading] = useState(false);
+  const [address, setAddress] = useState<string>();
+
+  // generating address from master seed blocks other scripts, so we set loading state
+  // as soon as possible and debouncing actual generation.
+  // this make sure that view is rerendered with loading state visible
+  useEffect(() => {
+    setLoading(true);
+  }, [masterSeed, derivationPath, chainId, index]);
+
+  useDebouncedEffect(
+    () => {
+      setLoading(true);
+      new Promise<string>((resolve, reject) => {
+        try {
+          const checksumedAddress = toChecksumAddress(
+            new Wallet(
+              makeWalletPrivateKey(
+                AccountType.MNEMONIC,
+                masterSeed,
+                derivationPath,
+                index,
+              ),
+            ).address,
+            chainId,
+          );
+          resolve(checksumedAddress);
+        } catch (e) {
+          reject(e);
+        }
+      })
+        .then(result => {
+          setAddress(result);
+          setLoading(false);
+        })
+        .catch(Logger.error);
+    },
+    300,
+    [masterSeed, derivationPath, chainId, index],
   );
+
+  const renderAddress = useMemo(() => {
+    if (loading) {
+      return 'generating, please wait...';
+    }
+    if (!address) {
+      return 'failed to generate!';
+    }
+    return prettifyTx(address, 8, 8);
+  }, [loading, address]);
+
+  return <NavItem {...props} title={`#${index}. ${renderAddress}`} />;
 };

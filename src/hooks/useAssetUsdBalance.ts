@@ -4,13 +4,14 @@ import { getSwappableToken } from 'config/swapables';
 import { formatUnits, parseUnits } from 'utils/helpers';
 import { useCachedUsdPrice } from './app-context/useCachedUsdPrice';
 import { Asset } from 'models/asset';
-import { getUsdAsset } from 'utils/asset-utils';
+import { findAsset, getUsdAsset } from 'utils/asset-utils';
 
 export function useAssetUsdBalance(asset: Asset, amount: string) {
   const xusdPrice = useCachedUsdPrice(
     asset.chainId,
-    asset.native ? getSwappableToken(asset.id, asset.chainId) : asset.id,
-    getUsdAsset(asset.chainId)?.id,
+    asset.native
+      ? findAsset(asset.chainId, getSwappableToken(asset.id, asset.chainId))
+      : asset,
   );
   // todo: use correct chain id
   const xusdToken = getUsdAsset(30);

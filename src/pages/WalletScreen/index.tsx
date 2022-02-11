@@ -16,6 +16,16 @@ export const WalletScreen: React.FC = () => {
 
   const tokens = useMemo(() => listAssetsForChains(chainIds), [chainIds]);
 
+  const nativeTokens = useMemo(
+    () => tokens.filter(item => item.native),
+    [tokens],
+  );
+
+  const erc20Tokens = useMemo(
+    () => tokens.filter(item => item.erc20),
+    [tokens],
+  );
+
   const account = useCurrentAccount();
 
   const [asset, setAsset] = useState<Asset>();
@@ -30,7 +40,16 @@ export const WalletScreen: React.FC = () => {
         )}
         <View style={styles.balanceContainer}>
           <NavGroup>
-            {tokens.map(item => (
+            {nativeTokens.map(item => (
+              <AssetItem
+                key={item.id}
+                asset={item}
+                onPress={() => setAsset(item)}
+              />
+            ))}
+          </NavGroup>
+          <NavGroup>
+            {erc20Tokens.map(item => (
               <AssetItem
                 key={item.id}
                 asset={item}

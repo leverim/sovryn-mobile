@@ -14,18 +14,20 @@ import { SplashScreen } from 'pages/SplashScreen';
 import { WelcomeFlow } from 'pages/WelcomeFlow';
 import { SignedInScreens } from 'pages/SignedInScreens';
 import { useGlobalUsdPrices } from 'hooks/app-context/useGlobalUsdPrices';
-import { currentChainId } from 'utils/helpers';
 import { useAccountBalances } from 'hooks/app-context/useAccountBalances';
 import { useGlobalLoan } from 'hooks/app-context/useGlobalLoan';
+import { useWalletAddress } from 'hooks/useWalletAddress';
 
 const Stack = createNativeStackNavigator();
 
 export const MainScreen: React.FC = () => {
-  const { address, loading } = useContext(AppContext);
+  const { loading } = useContext(AppContext);
 
-  useGlobalUsdPrices(currentChainId());
-  useAccountBalances(address!);
-  useGlobalLoan(address!);
+  const address = useWalletAddress();
+
+  useGlobalUsdPrices();
+  useAccountBalances(address);
+  useGlobalLoan(address);
 
   const isDark = useIsDarkTheme();
   const theme = useMemo(() => (isDark ? DarkTheme : DefaultTheme), [isDark]);

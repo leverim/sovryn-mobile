@@ -25,8 +25,17 @@ import { TokenId } from 'types/asset';
 import { parseUnits } from 'ethers/lib/utils';
 import { getSwappableToken } from 'config/swapables';
 import { BalanceContext } from 'context/BalanceContext';
-import { getNativeAsset, getUsdAsset } from 'utils/asset-utils';
+import {
+  getNativeAsset,
+  getUsdAsset,
+  listAssetsForChains,
+} from 'utils/asset-utils';
 import { UsdPriceContext } from 'context/UsdPriceContext';
+import { AppContext } from 'context/AppContext';
+import { useAssetBalance } from 'hooks/useAssetBalance';
+import { get } from 'lodash';
+import { useWalletAddress } from 'hooks/useWalletAddress';
+import { getCachedUsdPrice } from 'hooks/app-context/useCachedUsdPrice';
 
 type AccountBannerProps = {
   account: BaseAccount;
@@ -42,8 +51,10 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
   const chainId = currentChainId();
   const coin = getNativeAsset(chainId);
   const usd = getUsdAsset(chainId);
+  const { chainIds } = useContext(AppContext);
   const { prices } = useContext(UsdPriceContext);
   const { balances } = useContext(BalanceContext);
+  const owner = useWalletAddress()?.toLowerCase();
 
   const [pressed, setPressed] = useState(false);
 
@@ -57,38 +68,20 @@ export const AccountBanner: React.FC<AccountBannerProps> = ({
     [account.address],
   );
 
-  const oneUsd = parseUnits('1', usd.decimals);
-
-  const getUsdPrice = useCallback(
-    (tokenId: TokenId) => {
-      const token = getSwappableToken(tokenId, chainId);
-      if (token === usd.id) {
-        return parseUnits('1', usd.decimals);
-      }
-      return (
-        prices[chainId]?.find(item => item.tokenId === token)?.price || '0'
-      );
-    },
-    [chainId, prices, usd.decimals, usd.id],
-  );
-
   const balance = useMemo(() => {
-    const _balances = Object.entries(
-      balances[chainId]?.[account.address.toLowerCase()] || {},
-    ).map(([tokenId, amount]) => ({ tokenId, amount }));
-
-    return _balances
-      .reduce(
-        (p, c) =>
-          p.add(
-            BigNumber.from(c.amount)
-              .mul(getUsdPrice(c.tokenId as TokenId))
-              .div(oneUsd),
-          ),
-        BigNumber.from('0'),
-      )
-      .toString();
-  }, [balances, chainId, account.address, getUsdPrice, oneUsd]);
+    const _tokens = listAssetsForChains(chainIds);
+    return _tokens.reduce((p, asset) => {
+      const _balance = get(balances, [asset.chainId, owner, asset.id], '0');
+      const _price = getCachedUsdPrice(prices, asset.chainId, asset);
+      if (_price === null) {
+        return p;
+      }
+      return p.add(
+        BigNumber.from(_balance).mul(_price.price).div(_price.precision),
+      );
+    }, BigNumber.from('0'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify([balances, prices, chainIds]), owner]);
 
   return (
     <View style={styles.container}>

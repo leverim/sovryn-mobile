@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { SettingsStackProps } from 'routers/settings.routes';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -18,6 +18,7 @@ import {
   RSK_DERIVATION_PATH,
   RSK_TESTNET_DERIVATION_PATH,
 } from 'utils/constants';
+import { Button } from 'components/Buttons/Button';
 
 type Props = NativeStackScreenProps<
   SettingsStackProps,
@@ -34,16 +35,14 @@ const dPaths = [
 
 export const WalletDerivationPath: React.FC<Props> = ({
   route: { params },
+  navigation,
 }) => {
   const chainId = currentChainId();
 
   const { account, password } = params;
 
   const [derivationPath, setDerivationPath] = useState<string>(account.dPath!);
-  const [selectedWallet, setSelectedWallet] = useState<{
-    index: number;
-    address: string;
-  }>({ index: account.index!, address: account.address! });
+  const [selectedWallet, setSelectedWallet] = useState<number>(account.index!);
   const [masterSeed, setMasterSeed] = useState<string>();
   const [page, setPage] = useState<number>(1);
 
@@ -61,41 +60,36 @@ export const WalletDerivationPath: React.FC<Props> = ({
     if (!masterSeed) {
       return [];
     }
-    return [...Array(PER_PAGE)]
-      .map((_, _index) => page * PER_PAGE - PER_PAGE + _index)
-      .map(item => ({
-        index: item,
-        address: toChecksumAddress(
-          new Wallet(
-            makeWalletPrivateKey(
-              AccountType.MNEMONIC,
-              masterSeed,
-              derivationPath,
-              item,
-            ),
-          ).address,
-          chainId,
-        ),
-      }));
-  }, [masterSeed, page, derivationPath, chainId]);
+    return [...Array(PER_PAGE)].map(
+      (_, _index) => page * PER_PAGE - PER_PAGE + _index,
+    );
+  }, [masterSeed, page]);
 
   const handleChange = useCallback(() => {
     accounts.update(params.index, {
-      index: selectedWallet.index,
+      index: selectedWallet,
       address: toChecksumAddress(
         new Wallet(
           makeWalletPrivateKey(
             AccountType.MNEMONIC,
             masterSeed!,
             derivationPath,
-            selectedWallet.index,
+            selectedWallet,
           ),
         ).address,
         chainId,
       ),
       dPath: derivationPath,
     });
-  }, [chainId, derivationPath, masterSeed, params.index, selectedWallet.index]);
+    navigation.navigate('settings.wallet', { index: params.index });
+  }, [
+    chainId,
+    derivationPath,
+    masterSeed,
+    navigation,
+    params.index,
+    selectedWallet,
+  ]);
 
   if (!masterSeed) {
     return <></>;
@@ -119,33 +113,63 @@ export const WalletDerivationPath: React.FC<Props> = ({
         <NavGroup>
           {wallets.map(item => (
             <WalletAddressItem
-              key={item.index}
-              index={item.index}
-              address={item.address}
+              key={item}
+              index={item}
+              masterSeed={masterSeed}
+              derivationPath={derivationPath}
+              chainId={chainId}
               onPress={() => setSelectedWallet(item)}
-              danger={item.index === selectedWallet.index}
+              danger={item === selectedWallet}
             />
           ))}
         </NavGroup>
 
-        <View>
-          <NavGroup>
-            {page > 1 && (
-              <NavItem
-                title="Previuos Page"
-                onPress={() => setPage(page - 1)}
-              />
-            )}
-            <NavItem title="Next Page" onPress={() => setPage(page + 1)} />
-          </NavGroup>
+        <View style={styles.paginator}>
+          <View style={styles.buttonView}>
+            <Button
+              title="Previuos"
+              onPress={() => setPage(page - 1)}
+              disabled={!(page > 1)}
+              style={[styles.button, !(page > 1) && styles.buttonDisabled]}
+              primary
+            />
+          </View>
+          <View style={styles.buttonView}>
+            <Button
+              title="Next"
+              onPress={() => setPage(page + 1)}
+              primary
+              style={styles.button}
+            />
+          </View>
         </View>
 
-        <NavGroup>
-          <NavItem title="Save" onPress={handleChange} />
-        </NavGroup>
+        <Button title="Apply Changes" onPress={handleChange} primary />
 
         <View style={globalStyles.spacer} />
       </ScrollView>
     </SafeAreaPage>
   );
 };
+
+const styles = StyleSheet.create({
+  paginator: {
+    marginBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flex: 1,
+    marginHorizontal: -6,
+  },
+  buttonView: {
+    flex: 1,
+    paddingHorizontal: 6,
+  },
+  button: {
+    paddingHorizontal: 3,
+    opacity: 0.7,
+  },
+  buttonDisabled: {
+    opacity: 0.4,
+  },
+});

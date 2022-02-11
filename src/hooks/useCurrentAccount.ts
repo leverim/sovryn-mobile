@@ -6,6 +6,7 @@ export function useCurrentAccount(): BaseAccount {
   const { accountList, accountSelected } = useContext(AppContext);
   return useMemo(
     () => accountList[accountSelected],
-    [accountList, accountSelected],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(accountList), accountSelected],
   );
 }

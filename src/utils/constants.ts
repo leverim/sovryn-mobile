@@ -34,3 +34,7 @@ export const STORAGE_CACHE = `${prefix}cache`;
 
 export const STORAGE_CACHE_ENABLED_CHAINS = `${prefix}chainsEnabled`;
 export const STORAGE_CACHE_SOVRYN_CHAIN = `${prefix}sovrynChain`;
+
+export const STORAGE_CACHE_BALANCES = `${prefix}balances`;
+export const STORAGE_CACHE_PRICES = `${prefix}prices`;
+export const STORAGE_CACHE_LOAN_POOLS = `${prefix}loanPools`;

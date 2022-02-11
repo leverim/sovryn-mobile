@@ -26,6 +26,7 @@ import Logger from 'utils/Logger';
 import { LendingDepositData } from './LendingDepositData';
 import { LendingWithdrawData } from './LendingWithdrawData';
 import { findAssetByAddress, getNativeAsset } from 'utils/asset-utils';
+import { getNetworkByChainId } from 'utils/network-utils';
 
 export type DataModalProps = {
   loading: boolean;
@@ -258,6 +259,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     return undefined;
   }, [error, simulatorError]);
 
+  const network = getNetworkByChainId(request?.chainId as ChainId);
+
   return (
     <BottomModal visible={visible}>
       <ModalContent style={[styles.modal, dark && styles.modalDark]}>
@@ -272,6 +275,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             onLoaderFunction={onLoaderFunctionReceiver}
           />
 
+          <Item title="Network:" content={<Text>{network.name}</Text>} />
           <Item
             title="Transaction fee:"
             content={

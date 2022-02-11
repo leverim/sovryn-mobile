@@ -15,7 +15,7 @@ export const assets = checkAssets([
     constants.AddressZero,
     18,
     'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/rbtc.svg',
-    '',
+    'Native Coin of RSK network.',
     AssetType.NATIVE,
   ),
   new Asset(
@@ -26,7 +26,7 @@ export const assets = checkAssets([
     constants.AddressZero,
     18,
     'https://cryptologos.cc/logos/ethereum-eth-logo.png',
-    '',
+    'Native Coin of Ethereum network.',
     AssetType.NATIVE,
   ),
   new Asset(
@@ -37,7 +37,7 @@ export const assets = checkAssets([
     constants.AddressZero,
     18,
     'https://cryptologos.cc/logos/binance-coin-bnb-logo.png',
-    '',
+    'Native Coin of Binance Smart Chain network.',
     AssetType.NATIVE,
   ),
   new Asset(
@@ -48,7 +48,7 @@ export const assets = checkAssets([
     '0xEFc78fc7d48b64958315949279Ba181c2114ABBd',
     18,
     require('assets/tokens/sov.png'),
-    '',
+    'Native ERC20 for Sovryn Protocol.',
     AssetType.ERC20,
   ),
   new Asset(
@@ -59,7 +59,7 @@ export const assets = checkAssets([
     '0xbdab72602e9ad40fc6a6852caf43258113b8f7a5',
     18,
     require('assets/tokens/sov.png'),
-    '',
+    'SOV token bridged to Ethereum network. Can be bridged back to SOV 1:1.',
     AssetType.ERC20,
   ),
   new Asset(
@@ -81,7 +81,7 @@ export const assets = checkAssets([
     '0x542fDA317318eBF1d3DEAf76E0b632741A7e677d',
     18,
     'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/rbtc.svg',
-    '',
+    'RBTC wrapped to ERC20 token. Can be unwrapped to RBTC 1:1.',
     AssetType.ERC20,
   ),
   new Asset(

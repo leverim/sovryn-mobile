@@ -1,15 +1,15 @@
+import { useCallback, useContext, useRef, useState } from 'react';
+import { intersection } from 'lodash';
 import { AppContext } from 'context/AppContext';
 import { priceFeeds } from 'controllers/price-feeds';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
-import { useCallback, useContext, useRef, useState } from 'react';
-import { ChainId } from 'types/network';
 import Logger from 'utils/Logger';
 import { UsdPriceContext } from 'context/UsdPriceContext';
 
 const interval = 210 * 1000; // 3 minutes and 30 seconds
 
-export function useGlobalUsdPrices(chainId: ChainId) {
+export function useGlobalUsdPrices() {
   const isMounted = useIsMounted();
   const { chainIds } = useContext(AppContext);
   const { execute: startPrices, initPrices } = useContext(UsdPriceContext);
@@ -31,11 +31,12 @@ export function useGlobalUsdPrices(chainId: ChainId) {
   }, [startPrices, chainIds, isMounted, initPrices]);
 
   const executeInterval = useCallback(async () => {
-    if ([30, 31].includes(chainId)) {
+    if (intersection(chainIds, [30, 31]).length > 0) {
       await execute();
       intervalRef.current = setTimeout(executeInterval, interval);
     }
-  }, [execute, chainId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [execute, JSON.stringify(chainIds)]);
 
   useDebouncedEffect(
     () => {

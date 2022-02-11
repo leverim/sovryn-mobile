@@ -53,17 +53,17 @@ export const AssetItem: React.FC<AssetItemProps> = ({
         <AssetLogo source={asset.icon} />
       </View>
       <View style={styles.contentHolder}>
-        <View>
-          <Text>{asset.name}</Text>
-          <Text>
-            {formatAndCommify(tokenBalance, asset.decimals)} {asset.symbol}
-          </Text>
-        </View>
-        <View style={styles.rightContainer}>
+        <View style={styles.nameAndUsdHolder}>
+          <Text style={styles.assetNameText}>{asset.name}</Text>
           {usdBalance !== null && (
-            <Text>${formatAndCommify(usdBalance, asset.decimals)}</Text>
+            <Text style={styles.assetUsdBalanceText}>
+              ${formatAndCommify(usdBalance, asset.decimals, 2)}
+            </Text>
           )}
         </View>
+        <Text style={styles.assetBalanceText}>
+          {formatAndCommify(tokenBalance, asset.decimals)} {asset.symbol}
+        </Text>
       </View>
     </Pressable>
   );
@@ -106,9 +106,28 @@ const styles = StyleSheet.create({
     width: 42,
   },
   contentHolder: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    flex: 1,
+    width: '100%',
+  },
+  nameAndUsdHolder: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    flex: 1,
+    width: '100%',
+  },
+  assetNameText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  assetBalanceText: {
+    fontSize: 12,
+    fontWeight: '300',
+    marginTop: 4,
+  },
+  assetUsdBalanceText: {
+    fontSize: 12,
+    fontWeight: '300',
   },
 });

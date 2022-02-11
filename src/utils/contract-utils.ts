@@ -224,7 +224,8 @@ export async function tryAggregateCall<
           return decodeParameters(returnTypes, data);
         } catch (e) {
           console.error(
-            'decodeParameters::',
+            'decodeParameters:!',
+            chainId,
             method,
             types,
             returnTypes,
