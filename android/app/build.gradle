@@ -180,7 +180,7 @@ android {
             }
         }
         releaseStaging {
-            resValue "string", "CodePushDeploymentKey", '"OZnyqRGPthQF4KPdUi7Y7BUkGTi7yxISCnDUM"'
+            resValue "string", "CodePushDeploymentKey", '"zBnalbPiRg13inXGQfttvDKhRA6DwvSJzFEtv"'
             if (project.hasProperty('SW_UPLOAD_STORE_FILE')) {
                 signingConfig signingConfigs.releaseStaging
             }
