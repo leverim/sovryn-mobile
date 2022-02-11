@@ -2,8 +2,6 @@ import React, { useMemo } from 'react';
 import { Image, ImageStyle, StyleSheet, View, ViewStyle } from 'react-native';
 import { SvgUri } from 'react-native-svg';
 
-import { prepareImageSource } from 'utils/helpers';
-
 type Props = {
   source: string;
   size?: number;
@@ -17,9 +15,17 @@ export const AssetLogo: React.FC<Props> = ({
   style = {},
   imageStyle = {},
 }) => {
-  const imageSource = prepareImageSource(source);
-
   const renderImage = useMemo(() => {
+    // local image retrieved by require()
+    if (typeof source === 'number') {
+      return (
+        <Image
+          source={source}
+          style={[styles.image, { width: size, height: size }, imageStyle]}
+        />
+      );
+    }
+
     if (source.toLowerCase().endsWith('.svg')) {
       return (
         <SvgUri
@@ -30,23 +36,20 @@ export const AssetLogo: React.FC<Props> = ({
         />
       );
     }
+
     return (
-      <>
-        {imageSource && (
-          <Image
-            source={imageSource}
-            style={[styles.image, { width: size, height: size }, imageStyle]}
-          />
-        )}
-      </>
+      <Image
+        source={{ uri: source }}
+        style={[styles.image, { width: size, height: size }, imageStyle]}
+      />
     );
-  }, [imageSource, imageStyle, size, source]);
+  }, [imageStyle, size, source]);
 
   return (
     <View
       style={[
         styles.container,
-        !imageSource && styles.containerEmpty,
+        !source && styles.containerEmpty,
         { width: size, height: size },
         style,
       ]}>

@@ -6,10 +6,10 @@ import {
 import { Pressable, StyleSheet, View } from 'react-native';
 import { commifyDecimals, floorDecimals, px } from 'utils/helpers';
 import { Text } from 'components/Text';
-import { Token } from 'types/token';
+import { Asset } from 'models/asset';
 
 type LendingAmountFieldProps = {
-  token: Token;
+  token: Asset;
   price?: string;
   balance?: string;
 } & AmountFieldBaseProps;

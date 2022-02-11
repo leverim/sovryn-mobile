@@ -1,14 +1,14 @@
 import React from 'react';
 import { Text } from 'components/Text';
-import { tokenUtils } from 'utils/token-utils';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { ChainId } from 'types/network';
 import { DataModalProps } from './ConfirmationModal';
 import { AddressBadge } from 'components/AddressBadge';
 import { Item } from './Item';
+import { getNativeAsset } from 'utils/asset-utils';
 
 export const SendCoinData: React.FC<DataModalProps> = ({ request }) => {
-  const coin = tokenUtils.getNativeToken(request.chainId! as ChainId);
+  const coin = getNativeAsset(request.chainId! as ChainId);
   return (
     <>
       <Item

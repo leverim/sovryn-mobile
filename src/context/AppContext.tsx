@@ -1,23 +1,28 @@
+import React, { useContext, useEffect, useMemo } from 'react';
+import { set } from 'lodash';
+import NetInfo, {
+  NetInfoState,
+  NetInfoStateType,
+} from '@react-native-community/netinfo';
 import { passcode } from 'controllers/PassCodeController';
-import React, { useEffect, useMemo } from 'react';
 import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { accounts, AccountType, BaseAccount } from 'utils/accounts';
 import { cache } from 'utils/cache';
-import { DEFAULT_DERIVATION_PATH, USD_TOKEN } from 'utils/constants';
+import {
+  DEFAULT_DERIVATION_PATH,
+  STORAGE_CACHE_BALANCES,
+  STORAGE_CACHE_PRICES,
+  STORAGE_IS_TESTNET,
+} from 'utils/constants';
 import { LoanTokenInfo } from 'utils/interactions/loan-token';
-import { getCachedBalances, getCachedPrices } from 'utils/interactions/price';
-import { getNetworks } from 'utils/network-utils';
 import { settings } from 'utils/settings';
 import { clearStorage } from 'utils/storage';
-import { wallet } from 'utils/wallet';
+import { BalanceContext } from './BalanceContext';
+import { UsdPriceContext } from './UsdPriceContext';
+import { enabledChainIds, setEnabledChainIds } from 'utils/helpers';
+import Logger from 'utils/Logger';
 
-// prices[chainId][tokenId] = price;
-type Prices = Partial<Record<ChainId, Record<TokenId, string>>>;
-// balances[chainId][address][tokenId] = balance;
-type Balances = Partial<
-  Record<ChainId, Record<string, Record<TokenId, string>>>
->;
 // loanPools[chainId][address][tokenId] = info;
 export type LoanPools = Partial<
   Record<ChainId, Record<string, Record<TokenId, LoanTokenInfo>>>
@@ -26,11 +31,12 @@ export type LoanPools = Partial<
 type AppContextState = {
   accountList: BaseAccount[];
   accountSelected: number;
-  address: string | null;
   loading: boolean;
-  prices: Prices;
-  balances: Balances;
   loanPools: LoanPools;
+  isTestnet: boolean;
+  connectionType: NetInfoStateType;
+  isConnected: boolean | null;
+  chainIds: ChainId[];
 };
 
 type AppContextActions = {
@@ -44,17 +50,13 @@ type AppContextActions = {
   ) => Promise<void>;
   setAccountList: (accounts: BaseAccount[]) => void;
   setActiveAccount: (index: number) => void;
-  setPrices: (chainId: ChainId, prices: Record<TokenId, string>) => void;
-  setBalances: (
-    chainId: ChainId,
-    address: string,
-    balances: Record<TokenId, string>,
-  ) => void;
   setLoanPools: (
     chainId: ChainId,
     address: string,
     loanPools: Record<TokenId, LoanTokenInfo>,
   ) => void;
+  setNetwork: (isTestnet: boolean) => void;
+  setChainIds: (chainIds: ChainId[]) => void;
 };
 
 type AppContextType = AppContextState & AppContextActions;
@@ -64,30 +66,18 @@ export enum APP_ACTION {
   SIGN_OUT,
   SET_ACCOUNT_LIST,
   SET_ACCOUNT,
-  SET_PRICES,
-  SET_BALANCES,
   SET_LOAN_POOLS,
-  INIT_PRICES,
-  INIT_BALANCES,
+  INIT_NETWORK,
+  SET_NETWORK,
+  SET_CONNECTION_TYPE,
+  SET_CHAIN_IDS,
 }
 
 type Action =
-  | { type: APP_ACTION.SIGN_IN; value: string | null }
+  | { type: APP_ACTION.SIGN_IN }
   | { type: APP_ACTION.SIGN_OUT }
   | { type: APP_ACTION.SET_ACCOUNT_LIST; value: BaseAccount[] }
   | { type: APP_ACTION.SET_ACCOUNT; value: number }
-  | {
-      type: APP_ACTION.SET_PRICES;
-      value: { chainId: ChainId; prices: Record<TokenId, string> };
-    }
-  | {
-      type: APP_ACTION.SET_BALANCES;
-      value: {
-        chainId: ChainId;
-        address: string;
-        balances: Record<TokenId, string>;
-      };
-    }
   | {
       type: APP_ACTION.SET_LOAN_POOLS;
       value: {
@@ -97,37 +87,39 @@ type Action =
       };
     }
   | {
-      type: APP_ACTION.INIT_PRICES;
-      value: Prices;
+      type: APP_ACTION.SET_NETWORK;
+      value: boolean;
     }
   | {
-      type: APP_ACTION.INIT_BALANCES;
-      value: Balances;
-    };
+      type: APP_ACTION.INIT_NETWORK;
+      value: boolean;
+    }
+  | { type: APP_ACTION.SET_CONNECTION_TYPE; value: NetInfoState }
+  | { type: APP_ACTION.SET_CHAIN_IDS; value: ChainId[] };
 
 export const AppContext = React.createContext<AppContextType>({
   accountList: [],
   accountSelected: 0,
-  address: null,
   loading: true,
-  prices: {} as Prices,
-  balances: {} as Balances,
+  isTestnet: false,
+  chainIds: [],
 } as unknown as AppContextType);
 
 export const AppProvider: React.FC = ({ children }) => {
+  const { initBalances } = useContext(BalanceContext);
+  const { initPrices } = useContext(UsdPriceContext);
+
   const [state, dispatch] = React.useReducer(
     (prevState: AppContextState, action: Action) => {
       switch (action.type) {
         case APP_ACTION.SIGN_IN:
           return {
             ...prevState,
-            address: action.value,
             loading: false,
           };
         case APP_ACTION.SIGN_OUT:
           return {
             ...prevState,
-            address: null,
             loading: false,
           };
         case APP_ACTION.SET_ACCOUNT_LIST:
@@ -140,57 +132,51 @@ export const AppProvider: React.FC = ({ children }) => {
             ...prevState,
             accountSelected: action.value,
           };
-        case APP_ACTION.SET_PRICES:
-          return {
-            ...prevState,
-            prices: {
-              ...prevState.prices,
-              [action.value.chainId]: action.value.prices,
-            },
-          };
-        case APP_ACTION.SET_BALANCES:
-          return {
-            ...prevState,
-            balances: {
-              ...prevState.prices,
-              [action.value.chainId]: {
-                ...prevState.prices[action.value.chainId],
-                [action.value.address]: action.value.balances,
-              },
-            } as any,
-          };
         case APP_ACTION.SET_LOAN_POOLS:
           return {
             ...prevState,
-            loanPools: {
-              ...prevState.prices,
-              [action.value.chainId]: {
-                ...prevState.prices[action.value.chainId],
-                [action.value.address]: action.value.loanPools,
-              },
-            } as any,
+            loanPools: set(
+              prevState.loanPools,
+              [action.value.chainId, action.value.address],
+              action.value.loanPools,
+            ),
           };
-        case APP_ACTION.INIT_PRICES:
-          return { ...prevState, prices: action.value };
-        case APP_ACTION.INIT_BALANCES:
-          return { ...prevState, balances: action.value };
+        case APP_ACTION.INIT_NETWORK:
+          cache.set(STORAGE_IS_TESTNET, action.value ? '1' : '0');
+          return { ...prevState, isTestnet: action.value };
+        case APP_ACTION.SET_NETWORK:
+          cache.set(STORAGE_IS_TESTNET, action.value ? '1' : '0');
+          return { ...prevState, isTestnet: action.value };
+        case APP_ACTION.SET_CONNECTION_TYPE:
+          return {
+            ...prevState,
+            connectionType: action.value.type,
+            isConnected: action.value.isConnected,
+          };
+        case APP_ACTION.SET_CHAIN_IDS:
+          setEnabledChainIds(action.value).catch(Logger.error);
+          return {
+            ...prevState,
+            chainIds: action.value,
+          };
       }
     },
     {
       accountList: [],
       accountSelected: 0,
-      address: null,
       loading: true,
-      prices: {} as Prices,
-      balances: {} as Balances,
+      isTestnet: false,
+      connectionType: NetInfoStateType.unknown,
+      isConnected: false,
       loanPools: {} as LoanPools,
+      chainIds: [],
     },
   );
 
   const actions: AppContextActions = React.useMemo(
     () => ({
       signIn: async () => {
-        dispatch({ type: APP_ACTION.SIGN_IN, value: wallet.address || null });
+        dispatch({ type: APP_ACTION.SIGN_IN });
       },
       createWallet: async (
         name: string,
@@ -203,7 +189,7 @@ export const AppProvider: React.FC = ({ children }) => {
           dPath: DEFAULT_DERIVATION_PATH,
           index: 0,
         });
-        dispatch({ type: APP_ACTION.SIGN_IN, value: wallet.address || null });
+        dispatch({ type: APP_ACTION.SIGN_IN });
       },
       setAccountList: (items: BaseAccount[]) => {
         dispatch({ type: APP_ACTION.SET_ACCOUNT_LIST, value: items });
@@ -213,23 +199,10 @@ export const AppProvider: React.FC = ({ children }) => {
       },
       signOut: async () => {
         // todo disable function if it's not development build.
+        await passcode.resetPassword();
         await accounts.delete();
         await clearStorage();
-        passcode.resetPassword();
         dispatch({ type: APP_ACTION.SIGN_OUT });
-      },
-      setPrices: (chainId: ChainId, prices: Record<TokenId, string>) => {
-        dispatch({ type: APP_ACTION.SET_PRICES, value: { chainId, prices } });
-      },
-      setBalances: (
-        chainId: ChainId,
-        address: string,
-        balances: Record<TokenId, string>,
-      ) => {
-        dispatch({
-          type: APP_ACTION.SET_BALANCES,
-          value: { chainId, address, balances },
-        });
       },
       setLoanPools: (
         chainId: ChainId,
@@ -241,6 +214,12 @@ export const AppProvider: React.FC = ({ children }) => {
           value: { chainId, address, loanPools },
         });
       },
+      setNetwork: (isTestnet: boolean) =>
+        dispatch({ type: APP_ACTION.SET_NETWORK, value: isTestnet }),
+      initNetwork: (isTestnet: boolean) =>
+        dispatch({ type: APP_ACTION.INIT_NETWORK, value: isTestnet }),
+      setChainIds: (chainIds: ChainId[]) =>
+        dispatch({ type: APP_ACTION.SET_CHAIN_IDS, value: chainIds }),
     }),
     [],
   );
@@ -248,29 +227,23 @@ export const AppProvider: React.FC = ({ children }) => {
   useEffect(() => {
     Promise.all([cache.load(), settings.load(), accounts.load()]).finally(
       () => {
-        const cachedPrices = getNetworks().reduce((p, c) => {
-          p[c.chainId] = getCachedPrices(c.chainId, USD_TOKEN);
-          return p;
-        }, {} as Prices);
+        dispatch({
+          type: APP_ACTION.SET_CHAIN_IDS,
+          value: enabledChainIds(),
+        });
 
-        const cachedBalances = getNetworks().reduce((p, c) => {
-          p[c.chainId] = accounts.list.reduce((pa, ca) => {
-            pa[ca.address.toLowerCase()] = getCachedBalances(
-              c.chainId,
-              ca.address.toLowerCase(),
-            );
-            return pa;
-          }, {} as any);
-          return p;
-        }, {} as Balances);
+        initPrices(cache.get(STORAGE_CACHE_PRICES, {}));
+        initBalances(cache.get(STORAGE_CACHE_BALANCES, {}));
 
-        dispatch({ type: APP_ACTION.INIT_PRICES, value: cachedPrices });
-        dispatch({ type: APP_ACTION.INIT_BALANCES, value: cachedBalances });
+        dispatch({
+          type: APP_ACTION.INIT_NETWORK,
+          value: cache.get(STORAGE_IS_TESTNET) === '1',
+        });
 
         actions.signIn().finally(() => {});
       },
     );
-  }, [actions]);
+  }, [actions, initBalances, initPrices]);
 
   useEffect(() => {
     accounts.on('loaded', actions.setAccountList);
@@ -280,6 +253,13 @@ export const AppProvider: React.FC = ({ children }) => {
       accounts.off('selected', actions.setActiveAccount);
     };
   }, [actions]);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(value => {
+      dispatch({ type: APP_ACTION.SET_CONNECTION_TYPE, value });
+    });
+    return unsubscribe();
+  }, []);
 
   const value = useMemo(() => ({ ...state, ...actions }), [state, actions]);
 

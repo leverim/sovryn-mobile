@@ -11,20 +11,19 @@ import {
   parseUnits,
 } from 'utils/helpers';
 import { lendingTokens } from 'config/lending-tokens';
-import { tokenUtils } from 'utils/token-utils';
 import { useLendingPool } from './hooks/useLendingPool';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 import { Button } from 'components/Buttons/Button';
 import { LendingAmountField } from './components/LendingAmountField';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { useBalanceToUsd } from 'hooks/useBalanceToUsd';
-import { USD_TOKEN } from 'utils/constants';
 import { Text } from 'components/Text';
 import { transactionController } from 'controllers/TransactionController';
 import { encodeFunctionData } from 'utils/contract-utils';
 import { LendingTokenFlags } from 'models/lending-token';
 import { BigNumber } from 'ethers';
 import { RefreshControl } from 'react-native';
+import { getSovAsset, getUsdAsset } from 'utils/asset-utils';
+import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 
@@ -49,13 +48,12 @@ export const LendingWithdraw: React.FC<Props> = ({
   }, [navigation, lendingToken.supplyToken.symbol]);
 
   const { value: pool, loading, execute } = useLendingPool(lendingToken);
-  const sendOneUSD = useBalanceToUsd(
-    chainId,
+  const { value: sendOneUSD } = useAssetUsdBalance(
     lendingToken.supplyToken,
     parseUnits('1', lendingToken.supplyToken.decimals).toString(),
   );
-  const usdToken = tokenUtils.getTokenById(USD_TOKEN);
-  const rewardsToken = tokenUtils.getTokenById('sov');
+  const usdToken = getUsdAsset(chainId);
+  const rewardsToken = getSovAsset(chainId);
   const rewardsEnabled = lendingToken.hasFlag(
     LendingTokenFlags.REWARDS_ENABLED,
   );
@@ -126,18 +124,19 @@ export const LendingWithdraw: React.FC<Props> = ({
   const handleWithdraw = useCallback(async () => {
     setSubmitting(true);
     try {
-      const native = tokenUtils.getNativeToken(chainId);
-      const isNative = lendingToken.loanTokenId === native.id;
       const tx = await transactionController.request({
         to: lendingToken.loanTokenAddress,
         value: 0,
         data: encodeFunctionData(
-          `${isNative ? 'burnToBTC' : 'burn'}(address,uint256,bool)(uint256)`,
+          `${
+            lendingToken.supplyToken.native ? 'burnToBTC' : 'burn'
+          }(address,uint256,bool)(uint256)`,
           [owner, loanTokenAmount, rewardsEnabled],
         ),
         customData: {
           receiveAmount: parseUnits(amount, lendingToken.supplyToken.decimals),
         },
+        chainId,
       });
       setSubmitting(false);
       tx.wait().finally(execute);
@@ -145,14 +144,14 @@ export const LendingWithdraw: React.FC<Props> = ({
       setSubmitting(false);
     }
   }, [
-    chainId,
-    lendingToken.loanTokenId,
     lendingToken.loanTokenAddress,
+    lendingToken.supplyToken.native,
     lendingToken.supplyToken.decimals,
     owner,
     loanTokenAmount,
     rewardsEnabled,
     amount,
+    chainId,
     execute,
   ]);
 

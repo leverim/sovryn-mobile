@@ -2,8 +2,12 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 import AsyncStorage from '@react-native-community/async-storage';
 
 export const clearStorage = async () => {
-  await EncryptedStorage.clear();
-  await AsyncStorage.clear();
+  try {
+    await EncryptedStorage.clear();
+    await AsyncStorage.clear();
+  } catch (error) {
+    console.error('error when clearing storages:', error);
+  }
 };
 
 export const storeItem = (key: string, value: string) =>

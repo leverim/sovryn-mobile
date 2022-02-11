@@ -11,6 +11,7 @@ export class RpcEngine {
     ) as Network;
     this.provider = new FallbackProvider(
       network.rpc.map(url => getDefaultProvider(url)),
+      1,
     );
   }
 }

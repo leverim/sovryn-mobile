@@ -1,14 +1,13 @@
 import React, { useMemo } from 'react';
-import { View } from 'react-native';
 import { Text } from 'components/Text';
 import { decodeParameters } from 'utils/contract-utils';
-import { tokenUtils } from 'utils/token-utils';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { ChainId } from 'types/network';
 import { DataModalProps } from './ConfirmationModal';
 import { AddressBadge } from 'components/AddressBadge';
 import { Item } from './Item';
 import { Description } from './Description';
+import { findAssetByAddress } from 'utils/asset-utils';
 
 export const ApproveTokenData: React.FC<DataModalProps> = ({ request }) => {
   const [spender, amount] = useMemo(() => {
@@ -18,10 +17,7 @@ export const ApproveTokenData: React.FC<DataModalProps> = ({ request }) => {
     );
   }, [request.data]);
 
-  const token = tokenUtils.getTokenByAddress(
-    request.to!,
-    request.chainId! as ChainId,
-  );
+  const token = findAssetByAddress(request.chainId as ChainId, request.to!);
 
   const description = useMemo(() => {
     return (

@@ -1,19 +1,24 @@
+import { useCallback, useContext, useRef, useState } from 'react';
+import { set } from 'lodash';
 import { lendingTokens } from 'config/lending-tokens';
 import { AppContext } from 'context/AppContext';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
-import { useCallback, useContext, useRef, useState } from 'react';
-import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
+import { cache } from 'utils/cache';
+import { STORAGE_CACHE_LOAN_POOLS } from 'utils/constants';
 import { getLoanTokenInfo, LoanTokenInfo } from 'utils/interactions/loan-token';
 import Logger from 'utils/Logger';
 
-const interval = 30 * 1000; // 60 seconds
+const interval = 60 * 1000; // 60 seconds
 
-export function useGlobalLoan(chainId: ChainId, owner: string) {
+export function useGlobalLoan(owner: string) {
   const isMounted = useIsMounted();
   owner = owner?.toLowerCase();
-  const { loanPools, setLoanPools } = useContext(AppContext);
+  const { isTestnet, loanPools, setLoanPools } = useContext(AppContext);
+
+  const chainId = isTestnet ? 31 : 30;
+
   const [value, setValue] = useState<Partial<Record<TokenId, LoanTokenInfo>>>(
     loanPools[chainId]?.[owner] || {},
   );
@@ -41,6 +46,11 @@ export function useGlobalLoan(chainId: ChainId, owner: string) {
           }, {} as Record<TokenId, LoanTokenInfo>);
           setLoanPools(chainId, owner, items);
           setValue(items);
+          const cached = cache.get(STORAGE_CACHE_LOAN_POOLS, {});
+          cache.set(
+            STORAGE_CACHE_LOAN_POOLS,
+            set(cached, [chainId, owner], items),
+          );
         }
       });
     } catch (e) {

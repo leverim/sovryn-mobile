@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import { STORAGE_CACHE } from './constants';
 import { getItem, storeItem } from './storage';
 
 class CacheManager extends EventEmitter {
@@ -21,17 +22,17 @@ class CacheManager extends EventEmitter {
     return _default as T;
   }
   public async load() {
-    this._items = await getItem('cache').then(response => {
+    this._items = await getItem(STORAGE_CACHE).then(response => {
       try {
         return JSON.parse(response || '{}');
       } catch (error) {
-        return [];
+        return {};
       }
     });
     this.onUpdated();
   }
   protected async save() {
-    await storeItem('cache', JSON.stringify(this._items));
+    await storeItem(STORAGE_CACHE, JSON.stringify(this._items));
   }
   protected async onUpdated() {
     this.emit('updated', this._items);

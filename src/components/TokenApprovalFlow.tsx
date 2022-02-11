@@ -4,11 +4,11 @@ import { useWalletAddress } from 'hooks/useWalletAddress';
 import React, { useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { ChainId } from 'types/network';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
+import { findAsset, getNativeAsset } from 'utils/asset-utils';
 import { encodeFunctionData } from 'utils/contract-utils';
 import { currentChainId, parseUnits } from 'utils/helpers';
 import { erc20 } from 'utils/interactions';
-import { tokenUtils } from 'utils/token-utils';
 import { Button } from './Buttons/Button';
 
 type TokenApprovalFlowProps = {
@@ -32,12 +32,8 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
   disabled,
 }) => {
   const owner = useWalletAddress().toLowerCase();
-  const token = useMemo(() => tokenUtils.getTokenById(tokenId), [tokenId]);
-  const native = useMemo(() => tokenUtils.getNativeToken(chainId), [chainId]);
-  const tokenAddress = useMemo(
-    () => tokenUtils.getTokenAddressForChainId(token, chainId),
-    [token, chainId],
-  );
+  const token = useMemo(() => findAsset(chainId, tokenId), [chainId, tokenId]);
+  const native = useMemo(() => getNativeAsset(chainId), [chainId]);
 
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState(false);
@@ -48,7 +44,7 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
       if (token.id !== native.id) {
         afterApprove ? setApproving(true) : setLoading(true);
         erc20
-          .getAllowance(chainId, tokenAddress, owner, spender)
+          .getAllowance(chainId, token.address, owner, spender)
           .then(response => {
             setAllowance(response.toString());
             afterApprove ? setApproving(false) : setLoading(false);
@@ -59,7 +55,7 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
         afterApprove ? setApproving(false) : setLoading(false);
       }
     },
-    [chainId, native.id, owner, spender, token.id, tokenAddress],
+    [chainId, native.id, owner, spender, token.address, token.id],
   );
 
   useDebouncedEffect(
@@ -82,7 +78,7 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
     setApproving(true);
     try {
       const tx = await transactionController.request({
-        to: tokenAddress,
+        to: token.address,
         value: 0,
         data: encodeFunctionData('approve(address,uint256)', [
           spender,
@@ -107,11 +103,11 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
       setApproving(false);
     }
   }, [
-    tokenAddress,
-    spender,
-    requiredAmount,
+    token.address,
     token.decimals,
     token.id,
+    spender,
+    requiredAmount,
     description,
     getAllowance,
   ]);

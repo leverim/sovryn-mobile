@@ -1,14 +1,15 @@
-import { useMemo } from 'react';
-import { currentChainId } from 'utils/helpers';
+import { AppContext } from 'context/AppContext';
+import { useContext, useMemo } from 'react';
 import { toChecksumAddress } from 'utils/rsk';
 import { useCurrentAccount } from './useCurrentAccount';
 
 export function useWalletAddress(): string {
-  const { address } = useCurrentAccount();
+  const { isTestnet } = useContext(AppContext);
+  const account = useCurrentAccount();
   return useMemo(() => {
-    if (address) {
-      return toChecksumAddress(address, currentChainId());
+    if (account?.address) {
+      return toChecksumAddress(account?.address, isTestnet ? 31 : 30);
     }
     return null as unknown as string;
-  }, [address]);
+  }, [account, isTestnet]);
 }

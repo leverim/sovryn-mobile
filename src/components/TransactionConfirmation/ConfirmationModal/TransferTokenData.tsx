@@ -2,12 +2,12 @@ import React, { useMemo } from 'react';
 import { View } from 'react-native';
 import { Text } from 'components/Text';
 import { decodeParameters } from 'utils/contract-utils';
-import { tokenUtils } from 'utils/token-utils';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { ChainId } from 'types/network';
 import { DataModalProps } from './ConfirmationModal';
 import { AddressBadge } from 'components/AddressBadge';
 import { Item } from './Item';
+import { findAssetByAddress, getNativeAsset } from 'utils/asset-utils';
 
 export const TransferTokenData: React.FC<DataModalProps> = ({ request }) => {
   const [receiver, amount] = useMemo(() => {
@@ -17,11 +17,8 @@ export const TransferTokenData: React.FC<DataModalProps> = ({ request }) => {
     );
   }, [request.data]);
 
-  const coin = tokenUtils.getNativeToken(request.chainId! as ChainId);
-  const token = tokenUtils.getTokenByAddress(
-    request.to!,
-    request.chainId! as ChainId,
-  );
+  const coin = getNativeAsset(request.chainId! as ChainId);
+  const token = findAssetByAddress(request.chainId! as ChainId, request.to!);
 
   const nativeValue = useMemo(
     () => formatUnits(request.value, coin.decimals),

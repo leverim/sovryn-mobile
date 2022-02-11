@@ -12,7 +12,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { VestingConfig } from 'models/vesting-config';
-import { TokenId } from 'types/token';
+import { TokenId } from 'types/asset';
 import { AssetLogo } from 'components/AssetLogo';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { WithdrawVestingModal } from './components/VestedAssets/WithdrawVestingModal';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SettingsScreen } from 'pages/SettingsScreen';
+import { SettingsScreen } from 'pages/SettingsScreen/SettingsIndex';
 import { WalletListPage } from 'pages/SettingsScreen/WalletListPage';
 import { AccountCreate } from 'pages/SettingsScreen/AccountCreate';
 import { SettingsNetworks } from 'pages/SettingsScreen/SettingsNetworks';
@@ -35,7 +35,7 @@ export type SettingsStackProps = {
 
 const Stack = createNativeStackNavigator<SettingsStackProps>();
 
-export const SettingsPage: React.FC = () => {
+export const SettingsRoutes: React.FC = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen

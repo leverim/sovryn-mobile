@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from 'react';
-import { SettingsStackProps } from 'pages/MainScreen/SettingsPage';
+import { SettingsStackProps } from 'routers/settings.routes';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { PassCodeSetup } from 'components/PassCode/PassCodeSetup';
 import { useFocusEffect } from '@react-navigation/native';
