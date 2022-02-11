@@ -31,6 +31,7 @@ export function useGetSwapExpectedReturn(
 
       setLoading(true);
       callToContract(
+        chainId,
         'sovrynProtocol',
         'getSwapExpectedReturn(address,address,uint256)(uint256)',
         [

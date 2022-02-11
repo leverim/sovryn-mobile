@@ -28,7 +28,7 @@ export const contractExists = (contractName: ContractName, chainId: number) => {
 
 export const getContractAddress = (
   contractName: ContractName,
-  chainId: number = currentChainId(),
+  chainId: number,
 ) => {
   const contract = contractUtils.getContractByName(contractName);
   if (!contractUtils.contractHasChainId(contract, chainId as ChainId)) {

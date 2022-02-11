@@ -78,12 +78,12 @@ export const prefixHex = (value: string) =>
   isHexString(value) ? value : `0x${value}`;
 
 export async function callToContract<T = Record<string | number, any>>(
+  chainId: ChainId,
   contractName: ContractName,
   methodAndTypes: string,
   args: ReadonlyArray<any>,
   request?: Deferrable<TransactionRequest>,
 ): Promise<T> {
-  const chainId = currentChainId();
   const to = getContractAddress(contractName, chainId);
   return contractCall(chainId, to, methodAndTypes, args, request);
 }
@@ -144,6 +144,8 @@ export async function aggregateCall<
         } catch (e) {
           console.error(
             'decodeParameters::',
+            chainId,
+            item.address,
             method,
             types,
             returnTypes,

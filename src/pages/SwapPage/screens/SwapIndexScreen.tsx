@@ -1,10 +1,16 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import {
   calculateChange,
   commifyDecimals,
-  currentChainId,
   formatUnits,
   getContractAddress,
   noop,
@@ -42,21 +48,23 @@ import {
 } from 'utils/asset-utils';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { ChainId } from 'types/network';
+import { AppContext } from 'context/AppContext';
+import { Asset } from 'models/asset';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
 export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
-  const chainId = currentChainId();
+  const { isTestnet } = useContext(AppContext);
+  const chainId = isTestnet ? 31 : 30;
 
   const owner = useWalletAddress().toLowerCase();
   const [submitting, setSubmitting] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  const tokens: TokenId[] = useMemo(() => {
+  const tokens: Asset[] = useMemo(() => {
     return listAssetsForChain(chainId)
       .filter(item => swapables[chainId]?.includes(item.id as TokenId))
-      .filter(item => wrapSwapables[chainId]![1] !== item.id) // exclude wrapped native token
-      .map(item => item.id as TokenId);
+      .filter(item => wrapSwapables[chainId]![1] !== item.id); // exclude wrapped native token;
   }, [chainId]);
 
   useLayoutEffect(() => {
@@ -76,63 +84,58 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   const usdToken = getUsdAsset(chainId);
   const nativeToken = getNativeAsset(chainId);
 
-  const [sendTokenId, setSendTokenId] = useState(tokens[0]);
-  const [receiveTokenId, setReceiveTokenId] = useState(tokens[1]);
+  const [sendToken, setSendToken] = useState(tokens[0]);
+  const [receiveToken, setReceiveToken] = useState(tokens[1]);
+
+  useEffect(() => {
+    setSendToken(tokens[0]);
+    setReceiveToken(tokens[1]);
+  }, [tokens]);
 
   const [sendAmount, setSendAmount] = useState('');
 
-  const sendToken = useMemo(
-    () => findAsset(chainId, sendTokenId),
-    [chainId, sendTokenId],
-  );
-
-  const receiveToken = useMemo(
-    () => findAsset(chainId, receiveTokenId),
-    [chainId, receiveTokenId],
-  );
-
-  const handleSetSendTokenId = useCallback(
-    (tokenId: TokenId) => {
-      if (tokenId === receiveTokenId) {
-        setReceiveTokenId(tokens.filter(item => item !== tokenId)[0]);
+  const handleSetSendToken = useCallback(
+    (token: Asset) => {
+      if (token.id === receiveToken.id) {
+        setReceiveToken(tokens.filter(item => item.id !== token.id)[0]);
       }
-      setSendTokenId(tokenId);
+      setSendToken(token);
     },
-    [receiveTokenId, tokens],
+    [receiveToken, tokens],
   );
 
-  const handleSetReceiveTokenId = useCallback(
-    (tokenId: TokenId) => {
-      if (tokenId === sendTokenId) {
-        setSendTokenId(tokens.filter(item => item !== tokenId)[0]);
+  const handleSetReceiveToken = useCallback(
+    (token: Asset) => {
+      if (token.id === sendToken.id) {
+        setSendToken(tokens.filter(item => item.id !== token.id)[0]);
       }
-      setReceiveTokenId(tokenId);
+      setReceiveToken(token);
     },
-    [sendTokenId, tokens],
+    [sendToken, tokens],
   );
 
-  const { value: sendOneUSD } = useAssetUsdBalance(sendToken, sendToken.ONE);
+  const { value: sendOneUSD } = useAssetUsdBalance(sendToken, sendToken?.ONE);
   const { value: receiveOneUSD } = useAssetUsdBalance(
     receiveToken,
-    receiveToken.ONE,
+    receiveToken?.ONE,
   );
 
   const { value: sellPrice, loading: sellPriceLoading } =
-    useGetSwapExpectedReturn(chainId, sendTokenId, receiveTokenId, '1');
+    useGetSwapExpectedReturn(chainId, sendToken.id, receiveToken.id, '1');
 
   const { value: receiveAmount, loading } = useGetSwapExpectedReturn(
     chainId,
-    sendTokenId,
-    receiveTokenId,
+    sendToken.id,
+    receiveToken.id,
     sendAmount,
     false,
   );
 
   const handleSwapAssets = useCallback(() => {
-    setSendTokenId(receiveTokenId);
-    setReceiveTokenId(sendTokenId);
+    setSendToken(receiveToken);
+    setReceiveToken(sendToken);
     setSendAmount(receiveAmount);
-  }, [receiveAmount, receiveTokenId, sendTokenId]);
+  }, [receiveAmount, receiveToken, sendToken]);
 
   const sendUSD = useMemo(() => {
     if (sendOneUSD === null || numberIsEmpty(sendAmount)) {
@@ -175,7 +178,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     slippage,
   );
 
-  const useBtcProxy = [sendTokenId, receiveTokenId].includes(
+  const useBtcProxy = [sendToken.id, receiveToken.id].includes(
     nativeToken.id as TokenId,
   );
   const contractAddress = getContractAddress(
@@ -200,6 +203,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     );
 
     const path = await callToContract(
+      chainId,
       'swapNetwork',
       'conversionPath(address,address)(address[])',
       [_sendToken.address, _receiveToken.address],
@@ -270,7 +274,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
             amount={sendAmount}
             onAmountChanged={setSendAmount}
             token={sendToken}
-            onTokenChanged={handleSetSendTokenId}
+            onTokenChanged={handleSetSendToken}
             price={sendUSD}
             balance={sendBalance.value}
             tokens={tokens}
@@ -281,7 +285,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
               amount={receiveAmount}
               onAmountChanged={noop}
               token={receiveToken}
-              onTokenChanged={handleSetReceiveTokenId}
+              onTokenChanged={handleSetReceiveToken}
               inputProps={{ editable: false }}
               debounceDelay={0}
               containerStyle={styles.fullWidth}
@@ -303,7 +307,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
         ) : (
           <ReadWalletAwareWrapper>
             <TokenApprovalFlow
-              tokenId={sendTokenId}
+              tokenId={sendToken.id}
               spender={contractAddress}
               loading={loading || submitting}
               disabled={loading || submitting}

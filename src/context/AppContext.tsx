@@ -199,9 +199,9 @@ export const AppProvider: React.FC = ({ children }) => {
       },
       signOut: async () => {
         // todo disable function if it's not development build.
+        await passcode.resetPassword();
         await accounts.delete();
         await clearStorage();
-        passcode.resetPassword();
         dispatch({ type: APP_ACTION.SIGN_OUT });
       },
       setLoanPools: (

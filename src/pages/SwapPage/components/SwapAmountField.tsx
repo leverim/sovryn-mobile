@@ -4,29 +4,22 @@ import {
   AmountFieldBaseProps,
 } from 'components/AmountFieldBase';
 import { Pressable, StyleSheet, View } from 'react-native';
-import {
-  commifyDecimals,
-  currentChainId,
-  floorDecimals,
-  px,
-} from 'utils/helpers';
+import { commifyDecimals, floorDecimals, px } from 'utils/helpers';
 import { Text } from 'components/Text';
-import { TokenId } from 'types/asset';
 import { TokenPickerButton } from './TokenPickerButton';
-import { AssetPickerModal } from 'components/AssetPickerModal';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { ChainId } from 'types/network';
 import { Asset } from 'models/asset';
-import { findAsset } from 'utils/asset-utils';
+import { AssetPickerDialog } from 'components/AssetPickerDialog';
 
 type SwapAmountFieldProps = {
   token: Asset;
-  onTokenChanged: (tokenId: TokenId) => void;
+  onTokenChanged: (token: Asset) => void;
   price?: string;
   difference?: number;
   chainId?: ChainId;
   balance?: string;
-  tokens: TokenId[];
+  tokens: Asset[];
 } & AmountFieldBaseProps;
 
 export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
@@ -37,7 +30,6 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
   price,
   difference,
   balance,
-  chainId = currentChainId(),
   tokens: items,
   ...props
 }) => {
@@ -55,7 +47,7 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
 
   useDebouncedEffect(
     () => {
-      onTokenChanged(_token?.id as TokenId);
+      onTokenChanged(_token!);
     },
     300,
     [_token, onTokenChanged],
@@ -66,10 +58,7 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
     setToken(token);
   }, [token]);
 
-  const onTokenChange = useCallback(
-    (tokenId: TokenId) => setToken(findAsset(chainId, tokenId)),
-    [chainId],
-  );
+  const onTokenChange = useCallback((asset: Asset) => setToken(asset), []);
 
   return (
     <>
@@ -110,9 +99,9 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
           </View>
         }
       />
-      <AssetPickerModal
+      <AssetPickerDialog
         open={open}
-        value={_token?.id as TokenId}
+        value={_token}
         items={items}
         onChange={onTokenChange}
         onClose={() => setOpen(false)}
