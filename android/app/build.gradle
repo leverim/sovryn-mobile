@@ -82,6 +82,7 @@ project.ext.react = [
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
+apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
 
 /**
  * Set this to true to create two separate APKs instead of one:
@@ -137,8 +138,8 @@ android {
         applicationId "com.defray.sovryn"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
-        versionName "0.5"
+        versionCode 5
+        versionName "0.6"
     }
     splits {
         abi {
@@ -155,6 +156,12 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        releaseStaging {
+            storeFile file(SW_UPLOAD_STORE_FILE)
+            storePassword SW_UPLOAD_STORE_PASSWORD
+            keyAlias SW_UPLOAD_KEY_ALIAS
+            keyPassword SW_UPLOAD_KEY_PASSWORD
+        }
         release {
             storeFile file(SW_UPLOAD_STORE_FILE)
             storePassword SW_UPLOAD_STORE_PASSWORD
@@ -164,6 +171,7 @@ android {
     }
     buildTypes {
         debug {
+            resValue "string", "CodePushDeploymentKey", '""'
             signingConfig signingConfigs.debug
             if (nativeArchitectures) {
                 ndk {
@@ -171,7 +179,15 @@ android {
                 }
             }
         }
+        releaseStaging {
+            resValue "string", "CodePushDeploymentKey", '"zBnalbPiRg13inXGQfttvDKhRA6DwvSJzFEtv"'
+            if (project.hasProperty('SW_UPLOAD_STORE_FILE')) {
+                signingConfig signingConfigs.releaseStaging
+            }
+            matchingFallbacks = ['release']
+        }
         release {
+            resValue "string", "CodePushDeploymentKey", '"rs1jtRMrm6I9xwpNKDds0olwYfM__VmGdXV8o"'
             // As per https://reactnative.dev/docs/signed-apk-android
             // Secrets are put to ~/.gradle/gradle.properties
             if (project.hasProperty('SW_UPLOAD_STORE_FILE')) {

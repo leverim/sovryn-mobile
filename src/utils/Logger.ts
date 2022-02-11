@@ -1,6 +1,5 @@
 'use strict';
 
-// import { addBreadcrumb, captureException, captureMessage, withScope } from '@sentry/react-native';
 import DefaultPreference from 'react-native-default-preference';
 import { METRICS_OPT_IN, AGREED, DEBUG } from 'utils/constants';
 
