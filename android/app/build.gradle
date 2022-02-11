@@ -82,7 +82,6 @@ project.ext.react = [
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
-apply from: "../../node_modules/react-native/react.gradle"
 apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
 
 /**
@@ -139,8 +138,8 @@ android {
         applicationId "com.defray.sovryn"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 5
-        versionName "0.6"
+        versionCode 4
+        versionName "0.5"
     }
     splits {
         abi {
@@ -156,6 +155,12 @@ android {
             storePassword 'android'
             keyAlias 'androiddebugkey'
             keyPassword 'android'
+        }
+        releaseStaging {
+            storeFile file(SW_UPLOAD_STORE_FILE)
+            storePassword SW_UPLOAD_STORE_PASSWORD
+            keyAlias SW_UPLOAD_KEY_ALIAS
+            keyPassword SW_UPLOAD_KEY_PASSWORD
         }
         release {
             storeFile file(SW_UPLOAD_STORE_FILE)
@@ -175,11 +180,14 @@ android {
             }
         }
         releaseStaging {
-            resValue "string", "CodePushDeploymentKey", '"JAPSC6x_3dlu_G3SgzxkY_6hGpIzQyZ6LiYwW"'
+            resValue "string", "CodePushDeploymentKey", '"OZnyqRGPthQF4KPdUi7Y7BUkGTi7yxISCnDUM"'
+            if (project.hasProperty('SW_UPLOAD_STORE_FILE')) {
+                signingConfig signingConfigs.releaseStaging
+            }
             matchingFallbacks = ['release']
         }
         release {
-            resValue "string", "CodePushDeploymentKey", '"ZIR18BOfIOb3sSUkSrMSjdAZHXyFc9rHSZ5_-"'
+            resValue "string", "CodePushDeploymentKey", '"rs1jtRMrm6I9xwpNKDds0olwYfM__VmGdXV8o"'
             // As per https://reactnative.dev/docs/signed-apk-android
             // Secrets are put to ~/.gradle/gradle.properties
             if (project.hasProperty('SW_UPLOAD_STORE_FILE')) {
