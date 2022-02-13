@@ -14,46 +14,42 @@ type LendingAmountFieldProps = {
   balance?: string;
 } & AmountFieldBaseProps;
 
-export const LendingAmountField: React.FC<LendingAmountFieldProps> = ({
-  amount,
-  onAmountChanged,
-  price,
-  balance,
-  ...props
-}) => {
-  const handleBalancePress = useCallback(
-    () => onAmountChanged(floorDecimals(balance || '0', 8)),
-    [onAmountChanged, balance],
-  );
+export const LendingAmountField: React.FC<LendingAmountFieldProps> = React.memo(
+  ({ amount, onAmountChanged, price, balance, ...props }) => {
+    const handleBalancePress = useCallback(
+      () => onAmountChanged(floorDecimals(balance || '0', 8)),
+      [onAmountChanged, balance],
+    );
 
-  return (
-    <>
-      <AmountFieldBase
-        {...props}
-        amount={amount}
-        onAmountChanged={onAmountChanged}
-        bottomElement={
-          <View style={styles.footerContainer}>
-            <View style={styles.priceView}>
-              {price !== undefined && (
-                <Text style={styles.priceText}>
-                  ${commifyDecimals(price, 2)}
+    return (
+      <>
+        <AmountFieldBase
+          {...props}
+          amount={amount}
+          onAmountChanged={onAmountChanged}
+          bottomElement={
+            <View style={styles.footerContainer}>
+              <View style={styles.priceView}>
+                {price !== undefined && (
+                  <Text style={styles.priceText}>
+                    ${commifyDecimals(price, 2)}
+                  </Text>
+                )}
+              </View>
+              <Pressable
+                onPress={handleBalancePress}
+                style={styles.balancePressable}>
+                <Text style={styles.balanceText}>
+                  Balance: {commifyDecimals(balance)}
                 </Text>
-              )}
+              </Pressable>
             </View>
-            <Pressable
-              onPress={handleBalancePress}
-              style={styles.balancePressable}>
-              <Text style={styles.balanceText}>
-                Balance: {commifyDecimals(balance)}
-              </Text>
-            </Pressable>
-          </View>
-        }
-      />
-    </>
-  );
-};
+          }
+        />
+      </>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   footerContainer: {

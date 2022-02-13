@@ -21,59 +21,54 @@ type NavItemProps = {
   value?: string | number;
 };
 
-export const WalletListItem: React.FC<NavItemProps> = ({
-  account,
-  onPress,
-  isFirst,
-  isLast,
-  hideArrow = false,
-  value,
-}) => {
-  const [pressedIn, setPressedIn] = useState(false);
+export const WalletListItem: React.FC<NavItemProps> = React.memo(
+  ({ account, onPress, isFirst, isLast, hideArrow = false, value }) => {
+    const [pressedIn, setPressedIn] = useState(false);
 
-  const chainId = currentChainId();
+    const chainId = currentChainId();
 
-  const handlePress = useCallback(
-    (status: boolean) => () => setPressedIn(status),
-    [],
-  );
+    const handlePress = useCallback(
+      (status: boolean) => () => setPressedIn(status),
+      [],
+    );
 
-  return (
-    <Pressable
-      style={[
-        styles.container,
-        pressedIn && styles.pressed,
-        isFirst && styles.isFirst,
-        isLast && styles.isLast,
-        !isLast && styles.hasBottomBorder,
-      ]}
-      onPress={onPress}
-      onPressIn={handlePress(true)}
-      onPressOut={handlePress(false)}>
-      <View>
-        <View style={styles.walletHolder}>
-          <Text>{account.name}</Text>
-          {account.type === AccountType.PUBLIC_ADDRESS && (
-            <View style={styles.readOnlyBadge}>
-              <Text style={styles.readOnlyText}>Read only</Text>
-            </View>
+    return (
+      <Pressable
+        style={[
+          styles.container,
+          pressedIn && styles.pressed,
+          isFirst && styles.isFirst,
+          isLast && styles.isLast,
+          !isLast && styles.hasBottomBorder,
+        ]}
+        onPress={onPress}
+        onPressIn={handlePress(true)}
+        onPressOut={handlePress(false)}>
+        <View>
+          <View style={styles.walletHolder}>
+            <Text>{account.name}</Text>
+            {account.type === AccountType.PUBLIC_ADDRESS && (
+              <View style={styles.readOnlyBadge}>
+                <Text style={styles.readOnlyText}>Read only</Text>
+              </View>
+            )}
+          </View>
+          <Text style={styles.addressText}>
+            {toChecksumAddress(account.address, chainId)}
+          </Text>
+        </View>
+        <View style={styles.rightContainer}>
+          {value && <Text style={styles.rightContainerText}>{value}</Text>}
+          {!hideArrow && (
+            <ChevronRight
+              fill={pressedIn ? DarkTheme.colors.card : DarkTheme.colors.border}
+            />
           )}
         </View>
-        <Text style={styles.addressText}>
-          {toChecksumAddress(account.address, chainId)}
-        </Text>
-      </View>
-      <View style={styles.rightContainer}>
-        {value && <Text style={styles.rightContainerText}>{value}</Text>}
-        {!hideArrow && (
-          <ChevronRight
-            fill={pressedIn ? DarkTheme.colors.card : DarkTheme.colors.border}
-          />
-        )}
-      </View>
-    </Pressable>
-  );
-};
+      </Pressable>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   container: {

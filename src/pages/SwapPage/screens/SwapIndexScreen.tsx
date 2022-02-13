@@ -50,6 +50,7 @@ import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { ChainId } from 'types/network';
 import { AppContext } from 'context/AppContext';
 import { Asset } from 'models/asset';
+import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
@@ -240,6 +241,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
         setSubmitting(false);
       });
   }, [
+    chainId,
     contractAddress,
     minReturn,
     owner,
@@ -342,6 +344,8 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
           )}
         </View>
+
+        <PendingTransactions />
       </View>
       <SwapSettingsModal
         open={showSettings}

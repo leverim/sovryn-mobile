@@ -3,7 +3,7 @@ import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
 import { findAsset, getNativeAsset } from 'utils/asset-utils';
 import { aggregateCall, contractCall } from 'utils/contract-utils';
-import { getContractAddress, parseUnits } from 'utils/helpers';
+import { getContractAddress } from 'utils/helpers';
 import { IPriceOracle, PriceOracleResult } from './price-oracle-interface';
 
 const targetTokenId: Partial<Record<ChainId, TokenId>> = {
@@ -23,15 +23,11 @@ class SovrynAmmOracle implements IPriceOracle {
       chainId,
       getContractAddress('sovrynProtocol', chainId),
       'getSwapExpectedReturn(address,address,uint256)(uint256)',
-      [
-        sourceToken.address,
-        targetToken.address,
-        parseUnits('1', targetToken.decimals).toString(),
-      ],
+      [sourceToken.address, targetToken.address, sourceToken.ONE],
     ).then(response => ({
       tokenId: sourceTokenId,
       price: response[0].toString(),
-      precision: parseUnits('1', targetToken.decimals).toString(),
+      precision: targetToken.ONE,
     }));
   }
 
@@ -39,7 +35,7 @@ class SovrynAmmOracle implements IPriceOracle {
     const sovrynProtocolAddress = getContractAddress('sovrynProtocol', chainId);
     const targetToken = findAsset(chainId, targetTokenId[chainId]!);
     const targetAddress = targetToken.address;
-    const amountOne = parseUnits('1', targetToken.decimals).toString();
+    const amountOne = targetToken.ONE;
 
     const items =
       swapables[chainId]?.filter(

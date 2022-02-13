@@ -34,8 +34,8 @@ export const networks = checkNetworks([
     name: 'RSK Testnet',
     rpc: [
       // `https://rsk.getblock.io/testnet/?api_key=${GETBLOCK_API_KEY}`,
-      'https://public-node.testnet.rsk.co',
       'https://testnet.sovryn.app/rpc',
+      'https://public-node.testnet.rsk.co',
     ],
     explorer: ['https://explorer.testnet.rsk.co'],
     multicallContract: '0x9e469e1fc7fb4c5d17897b68eaf1afc9df39f103',

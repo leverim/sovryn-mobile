@@ -20,7 +20,7 @@ export function useGlobalLoan(owner: string) {
   const chainId = isTestnet ? 31 : 30;
 
   const [value, setValue] = useState<Partial<Record<TokenId, LoanTokenInfo>>>(
-    loanPools[chainId]?.[owner] || {},
+    loanPools?.[chainId]?.[owner] || {},
   );
   const intervalRef = useRef<NodeJS.Timeout>();
 

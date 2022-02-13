@@ -14,121 +14,121 @@ type PassCodeKeyboardProps = {
 
 const KEYBOARD_KEYS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
 
-export const PassCodeKeyboard: React.FC<PassCodeKeyboardProps> = ({
-  onPasscodeVerified,
-}) => {
-  const { signOut } = useContext(AppContext);
+export const PassCodeKeyboard: React.FC<PassCodeKeyboardProps> = React.memo(
+  ({ onPasscodeVerified }) => {
+    const { signOut } = useContext(AppContext);
 
-  const [loading, setLoading] = useState(false);
-  const [code, setCode] = useState('');
-  const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [code, setCode] = useState('');
+    const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(false);
 
-  const handleKeyPress = useCallback(
-    (key: number) => () => {
-      if (!loading) {
-        setCode(prevCode =>
-          prevCode.length < PASSCODE_LENGTH ? `${prevCode}${key}` : prevCode,
-        );
+    const handleKeyPress = useCallback(
+      (key: number) => () => {
+        if (!loading) {
+          setCode(prevCode =>
+            prevCode.length < PASSCODE_LENGTH ? `${prevCode}${key}` : prevCode,
+          );
+        }
+      },
+      [loading],
+    );
+
+    const handleDeletePress = useCallback(() => setCode(''), []);
+
+    const onBiometricsPress = useCallback(async () => {
+      try {
+        const password = await passcode.unlock();
+        setCode(password ? password : '');
+      } catch (error) {
+        setCode('');
+        console.error(error);
       }
-    },
-    [loading],
-  );
+    }, []);
 
-  const handleDeletePress = useCallback(() => setCode(''), []);
+    useEffect(() => {
+      passcode.supportedBiometrics().then(supported => {
+        setIsBiometricsEnabled(!!supported);
+        if (supported) {
+          onBiometricsPress();
+        }
+      });
+    }, [onBiometricsPress]);
 
-  const onBiometricsPress = useCallback(async () => {
-    try {
-      const password = await passcode.unlock();
-      setCode(password ? password : '');
-    } catch (error) {
-      setCode('');
-      console.error(error);
-    }
-  }, []);
-
-  useEffect(() => {
-    passcode.supportedBiometrics().then(supported => {
-      setIsBiometricsEnabled(!!supported);
-      if (supported) {
-        onBiometricsPress();
+    const verifyPasscode = useCallback(async () => {
+      setLoading(true);
+      const verify = await passcode.verify(code);
+      passcode.setUnlocked(true);
+      if (verify) {
+        if (onPasscodeVerified) {
+          onPasscodeVerified(code);
+        }
+      } else {
+        setCode('');
+        Alert.alert('Access denied.');
       }
-    });
-  }, [onBiometricsPress]);
+    }, [code, onPasscodeVerified]);
 
-  const verifyPasscode = useCallback(async () => {
-    setLoading(true);
-    const verify = await passcode.verify(code);
-    passcode.setUnlocked(true);
-    if (verify) {
-      if (onPasscodeVerified) {
-        onPasscodeVerified(code);
+    useEffect(() => {
+      if (code.length === PASSCODE_LENGTH) {
+        verifyPasscode();
       }
-    } else {
-      setCode('');
-      Alert.alert('Access denied.');
-    }
-  }, [code, onPasscodeVerified]);
+      return () => setLoading(false);
+    }, [code, verifyPasscode]);
 
-  useEffect(() => {
-    if (code.length === PASSCODE_LENGTH) {
-      verifyPasscode();
-    }
-    return () => setLoading(false);
-  }, [code, verifyPasscode]);
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.iconWrapper}>
-        <LockIcon fill="white" width={48} height={48} />
-      </View>
-      <Text style={styles.titleText}>Enter Sovryn Wallet Passcode</Text>
-      <View style={styles.bulletWrapper}>
-        {[...Array(PASSCODE_LENGTH)].map((_, item) => (
-          <View
-            key={item}
-            style={[
-              styles.bullet,
-              item + 1 <= code.length && styles.bulltetActive,
-            ]}
-          />
-        ))}
-      </View>
-      <View style={styles.keyboardContainer}>
-        {KEYBOARD_KEYS.map(item => (
-          <Pressable
-            key={item}
-            onPress={handleKeyPress(item)}
-            style={styles.keyboardButton}>
-            <View style={styles.keyboardButtonView}>
-              <Text style={styles.keyboardButtonText}>{item}</Text>
-            </View>
+    return (
+      <View style={styles.container}>
+        <View style={styles.iconWrapper}>
+          <LockIcon fill="white" width={48} height={48} />
+        </View>
+        <Text style={styles.titleText}>Enter Sovryn Wallet Passcode</Text>
+        <View style={styles.bulletWrapper}>
+          {[...Array(PASSCODE_LENGTH)].map((_, item) => (
+            <View
+              key={item}
+              style={[
+                styles.bullet,
+                item + 1 <= code.length && styles.bulltetActive,
+              ]}
+            />
+          ))}
+        </View>
+        <View style={styles.keyboardContainer}>
+          {KEYBOARD_KEYS.map(item => (
+            <Pressable
+              key={item}
+              onPress={handleKeyPress(item)}
+              style={styles.keyboardButton}>
+              <View style={styles.keyboardButtonView}>
+                <Text style={styles.keyboardButtonText}>{item}</Text>
+              </View>
+            </Pressable>
+          ))}
+        </View>
+        <View style={styles.footerContainer}>
+          {__DEV__ ? (
+            <Pressable onPress={signOut} style={styles.resetButton}>
+              <Text>Reset</Text>
+            </Pressable>
+          ) : (
+            <View />
+          )}
+          {isBiometricsEnabled ? (
+            <Pressable
+              onPress={onBiometricsPress}
+              style={styles.biometricsButton}>
+              <BiometricsIcon fill="white" width={36} height={36} />
+            </Pressable>
+          ) : (
+            <View />
+          )}
+          <Pressable onPress={handleDeletePress} style={styles.deleteButton}>
+            <Text>Delete</Text>
           </Pressable>
-        ))}
+        </View>
       </View>
-      <View style={styles.footerContainer}>
-        {__DEV__ ? (
-          <Pressable onPress={signOut} style={styles.resetButton}>
-            <Text>Reset</Text>
-          </Pressable>
-        ) : (
-          <View />
-        )}
-        {isBiometricsEnabled ? (
-          <Pressable
-            onPress={onBiometricsPress}
-            style={styles.biometricsButton}>
-            <BiometricsIcon fill="white" width={36} height={36} />
-          </Pressable>
-        ) : (
-          <View />
-        )}
-        <Pressable onPress={handleDeletePress} style={styles.deleteButton}>
-          <Text>Delete</Text>
-        </Pressable>
-      </View>
-    </View>
-  );
-};
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   container: {

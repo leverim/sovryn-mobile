@@ -1,3 +1,4 @@
+import './wdyr';
 import './shim';
 import 'global.shims';
 import 'react-native-get-random-values';

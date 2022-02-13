@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   TransactionRequest,
   TransactionResponse,
@@ -7,11 +13,10 @@ import { transactionController } from 'controllers/TransactionController';
 import { passcode } from 'controllers/PassCodeController';
 import { wallet } from 'utils/wallet';
 import { currentChainId } from 'utils/helpers';
-import { getProvider } from 'utils/RpcEngine';
 import { ChainId } from 'types/network';
 import { ConfirmationModal } from './ConfirmationModal/ConfirmationModal';
 import { TransactionModal } from './TransactionModal';
-import { notifications, TxNotificationStatus } from 'controllers/notifications';
+import { TransactionContext } from 'store/transactions';
 
 type TransactionConfirmationProps = {};
 
@@ -24,6 +29,9 @@ enum Step {
 export const TransactionConfirmation: React.FC<
   TransactionConfirmationProps
 > = () => {
+  const {
+    actions: { addTransaction },
+  } = useContext(TransactionContext);
   const [loading, setLoading] = useState(false);
   const [request, setRequest] = useState<TransactionRequest>();
   const [step, setStep] = useState<Step>(Step.REQUEST);
@@ -72,41 +80,17 @@ export const TransactionConfirmation: React.FC<
     }
 
     try {
-      const signedTransaction = await wallet.signTransaction(
-        request!,
-        password,
-      );
-
-      console.log('tx signed', signedTransaction);
       const chainId = (request?.chainId || currentChainId()) as ChainId;
 
-      const tx = await getProvider(chainId).sendTransaction(signedTransaction);
-      responseRef.current = tx;
+      const tx = await wallet.sendTransaction(chainId, request!, password);
+
+      addTransaction(tx!);
+
+      responseRef.current = tx!;
 
       setStep(Step.RESPONSE);
       ref.current?.resolve(tx);
       ref.current = undefined;
-
-      await notifications.sendTx(chainId, tx.hash);
-
-      tx.wait(1)
-        .then(receipt => {
-          if (receipt) {
-            notifications.sendTx(
-              chainId,
-              receipt.transactionHash,
-              TxNotificationStatus.CONFIRMED,
-            );
-          }
-        })
-        .catch(_error => {
-          console.warn('tx error', _error);
-          notifications.sendTx(
-            chainId,
-            tx.hash,
-            _error.code || TxNotificationStatus.CALL_EXCEPTION,
-          );
-        });
     } catch (err: any) {
       console.log('signature error', err);
       if (err?.body) {
@@ -122,7 +106,7 @@ export const TransactionConfirmation: React.FC<
     } finally {
       setLoading(false);
     }
-  }, [request]);
+  }, [addTransaction, request]);
 
   const onCloseResponseModal = useCallback(async () => {
     setStep(Step.NONE);
@@ -155,8 +139,7 @@ export const TransactionConfirmation: React.FC<
       <TransactionModal
         visible={step === Step.RESPONSE}
         onClose={onCloseResponseModal}
-        request={request}
-        response={responseRef.current}
+        hash={responseRef.current?.hash}
       />
     </>
   );

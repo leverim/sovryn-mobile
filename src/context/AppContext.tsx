@@ -13,6 +13,7 @@ import {
   DEFAULT_DERIVATION_PATH,
   STORAGE_CACHE_BALANCES,
   STORAGE_CACHE_PRICES,
+  STORAGE_CACHE_TRANSACTIONS,
   STORAGE_IS_TESTNET,
 } from 'utils/constants';
 import { LoanTokenInfo } from 'utils/interactions/loan-token';
@@ -22,6 +23,8 @@ import { BalanceContext } from './BalanceContext';
 import { UsdPriceContext } from './UsdPriceContext';
 import { enabledChainIds, setEnabledChainIds } from 'utils/helpers';
 import Logger from 'utils/Logger';
+import { TransactionContext } from 'store/transactions';
+import { TransactionHistoryItem } from 'store/transactions/types';
 
 // loanPools[chainId][address][tokenId] = info;
 export type LoanPools = Partial<
@@ -105,9 +108,10 @@ export const AppContext = React.createContext<AppContextType>({
   chainIds: [],
 } as unknown as AppContextType);
 
-export const AppProvider: React.FC = ({ children }) => {
+export const AppProvider: React.FC = React.memo(({ children }) => {
   const { initBalances } = useContext(BalanceContext);
   const { initPrices } = useContext(UsdPriceContext);
+  const { actions: txActions } = useContext(TransactionContext);
 
   const [state, dispatch] = React.useReducer(
     (prevState: AppContextState, action: Action) => {
@@ -234,6 +238,9 @@ export const AppProvider: React.FC = ({ children }) => {
 
         initPrices(cache.get(STORAGE_CACHE_PRICES, {}));
         initBalances(cache.get(STORAGE_CACHE_BALANCES, {}));
+        txActions.initTransactions(
+          cache.get<TransactionHistoryItem[]>(STORAGE_CACHE_TRANSACTIONS, []),
+        );
 
         dispatch({
           type: APP_ACTION.INIT_NETWORK,
@@ -243,7 +250,8 @@ export const AppProvider: React.FC = ({ children }) => {
         actions.signIn().finally(() => {});
       },
     );
-  }, [actions, initBalances, initPrices]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     accounts.on('loaded', actions.setAccountList);
@@ -264,4 +272,4 @@ export const AppProvider: React.FC = ({ children }) => {
   const value = useMemo(() => ({ ...state, ...actions }), [state, actions]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
-};
+});

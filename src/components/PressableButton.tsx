@@ -14,29 +14,31 @@ type PressableButtonProps = {
   loading?: boolean;
 } & PressableProps;
 
-export const PressableButton: React.FC<PressableButtonProps> = ({
-  title,
-  ...props
-}) => {
-  return (
-    <Pressable
-      {...props}
-      style={[
-        styles.container,
-        (props.disabled || props.loading) && styles.containerDisabled,
-        props.style as any,
-      ]}>
-      <View>
-        <Text style={styles.text}>{title}</Text>
-      </View>
-      {props.loading && (
-        <View style={styles.spinnderContainer}>
-          <ActivityIndicator size="small" color={DefaultTheme.colors.primary} />
+export const PressableButton: React.FC<PressableButtonProps> = React.memo(
+  ({ title, ...props }) => {
+    return (
+      <Pressable
+        {...props}
+        style={[
+          styles.container,
+          (props.disabled || props.loading) && styles.containerDisabled,
+          props.style as any,
+        ]}>
+        <View>
+          <Text style={styles.text}>{title}</Text>
         </View>
-      )}
-    </Pressable>
-  );
-};
+        {props.loading && (
+          <View style={styles.spinnderContainer}>
+            <ActivityIndicator
+              size="small"
+              color={DefaultTheme.colors.primary}
+            />
+          </View>
+        )}
+      </Pressable>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   container: {

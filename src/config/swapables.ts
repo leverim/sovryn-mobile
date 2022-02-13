@@ -21,7 +21,7 @@ export const swapables: Partial<Record<ChainId, TokenId[]>> = {
     'teths',
     'tfish',
     'tmynt',
-    'tdoc',
+    // 'tdoc',
     'trusdt',
     'txusd',
     'tbnbs',

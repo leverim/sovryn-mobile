@@ -13,7 +13,8 @@ import { formatAndCommify } from 'utils/helpers';
 import { VestedAssets } from './VestedAssets/VestedAssets';
 import { TokenId } from 'types/asset';
 import { Button } from 'components/Buttons/Button';
-import { getNetworkByChainId, getNetworks } from 'utils/network-utils';
+import { getNetworkByChainId } from 'utils/network-utils';
+import { useHandleBackButton } from 'hooks/useHandleBackButton';
 
 type AssetModalProps = {
   asset: Asset;
@@ -21,6 +22,7 @@ type AssetModalProps = {
 };
 
 export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
+  useHandleBackButton(onClose);
   return (
     <BottomModal visible={!!asset} onSwipeOut={onClose} swipeThreshold={50}>
       {!!asset && <AssetModalContent asset={asset} onClose={onClose} />}

@@ -30,6 +30,7 @@ import { useIsMounted } from 'hooks/useIsMounted';
 import Logger from 'utils/Logger';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { getUsdAsset } from 'utils/asset-utils';
+import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 
@@ -232,6 +233,7 @@ export const LendingDeposit: React.FC<Props> = ({
           </TokenApprovalFlow>
         )}
       </ReadWalletAwareWrapper>
+      <PendingTransactions />
     </SafeAreaPage>
   );
 };

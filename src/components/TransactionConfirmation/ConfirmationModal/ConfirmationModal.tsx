@@ -27,6 +27,11 @@ import { LendingDepositData } from './LendingDepositData';
 import { LendingWithdrawData } from './LendingWithdrawData';
 import { findAssetByAddress, getNativeAsset } from 'utils/asset-utils';
 import { getNetworkByChainId } from 'utils/network-utils';
+import {
+  getSignatureFromData,
+  getTxTitle,
+  getTxType,
+} from 'utils/transaction-helpers';
 
 export type DataModalProps = {
   loading: boolean;
@@ -66,55 +71,20 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   );
 
   const signature = useMemo(
-    () => request?.data?.toString().substring(0, 10) || '0x',
+    () => getSignatureFromData(request?.data!),
     [request?.data],
   );
 
   const type = useMemo(() => {
     const _signature = (request?.customData?.type ||
       signature) as TransactionType;
-    return Object.values(TransactionType).includes(_signature)
-      ? _signature
-      : TransactionType.UNKNOWN;
+    return getTxType(_signature);
   }, [request?.customData?.type, signature]);
 
-  useEffect(() => {
-    Logger.log('request signature:', type, signature);
-  }, [signature, type]);
-
-  const renderTitle = useMemo(() => {
-    switch (type) {
-      default:
-        return 'Contract Execution';
-      case TransactionType.SEND_COIN:
-        return `Send ${
-          getNativeAsset((request?.chainId || currentChainId()) as ChainId)
-            ?.symbol || 'Coin'
-        }
-          `;
-      case TransactionType.APPROVE_TOKEN:
-        return `Approve ${
-          findAssetByAddress(request?.chainId as ChainId, request?.to!)
-            ?.symbol || 'Token'
-        }`;
-      case TransactionType.TRANSFER_TOKEN:
-        return `Transfer ${
-          findAssetByAddress(request?.chainId as ChainId, request?.to!)
-            ?.symbol || 'Token'
-        }`;
-      case TransactionType.VESTING_WITHDRAW_TOKENS:
-        return 'Withdraw Tokens';
-      case TransactionType.SWAP_NETWORK_SWAP:
-      case TransactionType.WRBTC_PROXY_SWAP:
-        return 'Swap Tokens';
-      case TransactionType.LENDING_DEPOSIT:
-      case TransactionType.LENDING_DEPOSIT_NATIVE:
-        return 'Deposit to Lending Pool';
-      case TransactionType.LENDING_WITHDRAW:
-      case TransactionType.LENDING_WITHDRAW_NATIVE:
-        return 'Withdraw from Lending Pool';
-    }
-  }, [type, request]);
+  const renderTitle = useMemo(
+    () => getTxTitle(type, request!),
+    [type, request],
+  );
 
   const RenderContent = useMemo(() => {
     switch (type) {

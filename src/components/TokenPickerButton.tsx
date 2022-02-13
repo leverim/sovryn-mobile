@@ -10,24 +10,23 @@ type TokenPickerButtonProps = {
   onPress?: (event: GestureResponderEvent) => void;
 };
 
-export const TokenPickerButton: React.FC<TokenPickerButtonProps> = ({
-  token,
-  onPress,
-}) => {
-  return (
-    <Pressable onPress={onPress} style={styles.container}>
-      {token !== undefined ? (
-        <>
-          <AssetLogo source={token.icon} size={18} />
-          <Text style={styles.symbol}>{token.symbol}</Text>
-          <DownIcon fill="white" />
-        </>
-      ) : (
-        <Text>Select</Text>
-      )}
-    </Pressable>
-  );
-};
+export const TokenPickerButton: React.FC<TokenPickerButtonProps> = React.memo(
+  ({ token, onPress }) => {
+    return (
+      <Pressable onPress={onPress} style={styles.container}>
+        {token !== undefined ? (
+          <>
+            <AssetLogo source={token.icon} size={18} />
+            <Text style={styles.symbol}>{token.symbol}</Text>
+            <DownIcon fill="white" />
+          </>
+        ) : (
+          <Text>Select</Text>
+        )}
+      </Pressable>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   container: {

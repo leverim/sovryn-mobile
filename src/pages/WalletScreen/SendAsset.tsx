@@ -21,7 +21,7 @@ import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { AddressField } from 'components/AddressField';
 import { getProvider } from 'utils/RpcEngine';
 import { encodeFunctionData } from 'utils/contract-utils';
-import { utils, constants } from 'ethers/lib.esm';
+import { utils, constants, VoidSigner, BigNumber } from 'ethers/lib.esm';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { transactionController } from 'controllers/TransactionController';
@@ -32,9 +32,13 @@ import { getNativeAsset, listAssetsForChains } from 'utils/asset-utils';
 import { AssetAmountField } from 'components/AssetAmountField';
 import { AppContext } from 'context/AppContext';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
-import { commifyDecimals, parseUnits } from 'utils/helpers';
+import { commifyDecimals, formatAndCommify, parseUnits } from 'utils/helpers';
 import { useIsMounted } from 'hooks/useIsMounted';
 import { Text } from 'components/Text';
+import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
+import { wallet } from 'utils/wallet';
+import { TransactionRequest } from '@ethersproject/abstract-provider';
+import { formatUnits } from 'ethers/lib/utils';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.send'>;
 
@@ -48,12 +52,11 @@ export const SendAsset: React.FC<Props> = ({
   const [receiver, setReceiver] = useState('');
   const [amount, setAmount] = useState('');
   const [token, setToken] = useState(params.token);
-  const [nonce, setNonce] = useState('0');
-  const [data, setData] = useState('0x');
-  const [gas, setGas] = useState('21000');
-  const [gasPrice, setGasPrice] = useState('0.06');
 
   const [loading, setLoading] = useState(false);
+  const [populating, setPopulating] = useState(false);
+
+  const [populated, setPopulated] = useState<TransactionRequest>();
 
   useEffect(() => {
     setToken(params.token);
@@ -77,91 +80,46 @@ export const SendAsset: React.FC<Props> = ({
 
   const owner = useWalletAddress().toLowerCase();
 
-  useDebouncedEffect(
-    () => {
-      getProvider(token.chainId)
-        .getTransactionCount(owner)
-        .then(response => {
-          if (isMounted()) {
-            setNonce(response.toString());
-          }
-        });
-    },
-    300,
-    [owner, token.chainId, isMounted],
-  );
-
   const handleReceiverChange = useCallback(
     (address: string) => setReceiver(address),
     [],
   );
 
-  useDebouncedEffect(
-    () => {
-      getProvider(token.chainId)
-        .getGasPrice()
-        .then(response => {
-          if (isMounted()) {
-            setGasPrice((response.toNumber() / 1e9).toString());
-          }
-        });
-    },
-    300,
-    [token.chainId, isMounted],
-  );
-
-  useDebouncedEffect(
-    () => {
-      if (!token.native) {
-        setData(
-          encodeFunctionData('transfer(address,uint256)', [
+  const transaction: TransactionRequest = useMemo(
+    () => ({
+      to,
+      value: token.native ? utils.parseUnits(amount || '0', token.decimals) : 0,
+      data: token.native
+        ? '0x'
+        : encodeFunctionData('transfer(address,uint256)', [
             (receiver || constants.AddressZero).toLowerCase(),
             utils.parseUnits(amount || '0', token.decimals).toString(),
           ]),
-        );
-      }
-    },
-    300,
-    [receiver, amount, token],
+    }),
+    [amount, receiver, to, token.decimals, token.native],
   );
 
   useDebouncedEffect(
     () => {
-      getProvider(token.chainId)
-        .estimateGas({
-          to,
-          from: owner,
-          value: token.native
-            ? utils.parseUnits(amount || '0', token.decimals)
-            : 0,
-          nonce,
-          data,
-          gasPrice: (Number(gasPrice) * 1e9).toString(),
-        })
-        .then(response => response.toNumber())
-        .then(response => {
+      setPopulating(true);
+      new VoidSigner(owner, getProvider(token.chainId))
+        .populateTransaction(transaction)
+        .then(setPopulated)
+        .finally(() => {
           if (isMounted()) {
-            setGas(!response ? '21000' : (response * 1.01).toFixed(0));
+            setPopulating(false);
           }
         });
     },
-    300,
-    [token, gasPrice, data, nonce, to, amount, owner, isMounted],
+    100,
+    [owner, transaction, token.chainId],
   );
 
   const submit = useCallback(async () => {
     setLoading(true);
     try {
       await transactionController.request({
-        to,
-        chainId: token.chainId,
-        value: utils.hexlify(
-          token.native ? utils.parseUnits(amount || '0', token.decimals) : 0,
-        ),
-        nonce: utils.hexlify(Number(nonce || 0)),
-        data,
-        gasPrice: utils.hexlify(Number(gasPrice || 0) * 1e9),
-        gasLimit: utils.hexlify(Number(gas || 0)),
+        ...transaction,
         customData: {
           tokenId: token.id,
         },
@@ -173,33 +131,12 @@ export const SendAsset: React.FC<Props> = ({
         setLoading(false);
       }
     }
-  }, [
-    to,
-    token.chainId,
-    token.native,
-    token.decimals,
-    token.id,
-    amount,
-    nonce,
-    data,
-    gasPrice,
-    gas,
-    isMounted,
-  ]);
+  }, [transaction, token.id, isMounted]);
 
   const fee = useMemo(
-    () => ((Number(gasPrice || 0) * Number(gas || 0)) / 1e8).toFixed(8),
-    [gasPrice, gas],
-  );
-
-  const isTxValid = useMemo(
     () =>
-      receiver !== '' &&
-      amount !== '' &&
-      gas !== '' &&
-      gasPrice !== '' &&
-      receiver !== constants.AddressZero,
-    [receiver, amount, gas, gasPrice],
+      BigNumber.from(populated?.gasPrice || 0).mul(populated?.gasLimit || '0'),
+    [populated?.gasLimit, populated?.gasPrice],
   );
 
   const nativeToken = useMemo(
@@ -220,7 +157,7 @@ export const SendAsset: React.FC<Props> = ({
       nativeBalance || '0',
       nativeToken.decimals,
     );
-    const _fee = utils.parseUnits(fee || '0', nativeToken.decimals);
+    const _fee = fee;
 
     if (token.native) {
       const _amount = _fee.add(
@@ -279,27 +216,32 @@ export const SendAsset: React.FC<Props> = ({
                   balance={balance.value!}
                   price={usd.value!}
                   tokens={tokens}
-                  fee={fee}
+                  fee={formatUnits(fee, token.decimals)}
                 />
               </View>
-
-              <Text>
-                Transaction fee: {commifyDecimals(fee)} {token.symbol}
-              </Text>
 
               {balanceError === null ? (
                 <ReadWalletAwareWrapper>
                   <Button
                     title={`Send ${token.symbol}`}
                     onPress={submit}
-                    disabled={!isTxValid || loading}
-                    loading={loading}
+                    disabled={loading || populating}
+                    loading={loading || populating}
                     primary
                   />
                 </ReadWalletAwareWrapper>
               ) : (
                 <Button title={balanceError} disabled primary />
               )}
+
+              {fee.toString() !== '0' && (
+                <Text>
+                  Transaction fee: {formatAndCommify(fee, token.decimals)}{' '}
+                  {token.symbol}
+                </Text>
+              )}
+
+              <PendingTransactions />
             </View>
           </TouchableWithoutFeedback>
         </KeyboardAvoidingView>

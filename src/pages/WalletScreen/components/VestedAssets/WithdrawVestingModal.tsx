@@ -17,6 +17,7 @@ import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 import { transactionController } from 'controllers/TransactionController';
 import { encodeFunctionData } from 'utils/contract-utils';
 import { useWalletAddress } from 'hooks/useWalletAddress';
+import { useHandleBackButton } from 'hooks/useHandleBackButton';
 
 export type DataModalProps = {
   loading: boolean;
@@ -37,6 +38,7 @@ export const WithdrawVestingModal: React.FC<WithdrawVestingModalProps> = ({
   data,
   onClose,
 }) => {
+  useHandleBackButton(onClose);
   const dark = useIsDarkTheme();
 
   const owner = useWalletAddress();
