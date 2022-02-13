@@ -3,7 +3,7 @@ import { lendingTokens } from 'config/lending-tokens';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
 import { aggregateCall, CallData } from 'utils/contract-utils';
-import { getContractAddress, parseUnits } from 'utils/helpers';
+import { getContractAddress } from 'utils/helpers';
 import { IPriceOracle, PriceOracleResult } from './price-oracle-interface';
 import { getSwappableToken, swapables } from 'config/swapables';
 import { findAsset } from 'utils/asset-utils';
@@ -43,17 +43,13 @@ class SovrynLoanOracle implements IPriceOracle {
       calls.push({
         address: getContractAddress('sovrynProtocol', chainId),
         fnName: 'getSwapExpectedReturn(address,address,uint256)(uint256)',
-        args: [
-          swapp.address,
-          targetToken.address,
-          parseUnits('1', targetToken.decimals).toString(),
-        ],
+        args: [swapp.address, targetToken.address, swapp.ONE],
         key: 'getSwapExpectedReturn',
         parser: response => response[0],
       });
     }
 
-    const amountOne = parseUnits('1', targetToken.decimals).toString();
+    const amountOne = targetToken.ONE;
 
     return aggregateCall<
       Record<'tokenPrice' | 'getSwapExpectedReturn', BigNumber>

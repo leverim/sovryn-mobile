@@ -13,66 +13,64 @@ import { AssetLogo } from 'components/AssetLogo';
 import { findAsset } from 'utils/asset-utils';
 import { currentChainId } from 'utils/helpers';
 
-export const AssetPicker: React.FC<AssetPickerModalProps> = ({
-  value,
-  items,
-  onChange,
-}) => {
-  const dark = useIsDarkTheme();
+export const AssetPicker: React.FC<AssetPickerModalProps> = React.memo(
+  ({ value, items, onChange }) => {
+    const dark = useIsDarkTheme();
 
-  const [open, setOpen] = useState(false);
-  const [_value, setValue] = useState<TokenId | undefined>(value);
+    const [open, setOpen] = useState(false);
+    const [_value, setValue] = useState<TokenId | undefined>(value);
 
-  const onSelectItem = useCallback(
-    (item: TokenId) => {
-      setValue(item);
-      setOpen(false);
-      if (onChange) {
-        onChange(item);
-      }
-    },
-    [onChange],
-  );
+    const onSelectItem = useCallback(
+      (item: TokenId) => {
+        setValue(item);
+        setOpen(false);
+        if (onChange) {
+          onChange(item);
+        }
+      },
+      [onChange],
+    );
 
-  useEffect(() => {
-    setValue(value);
-  }, [value]);
+    useEffect(() => {
+      setValue(value);
+    }, [value]);
 
-  const selected = useMemo(() => {
-    return findAsset(currentChainId(), items.find(item => item === _value)!);
-  }, [items, _value]);
+    const selected = useMemo(() => {
+      return findAsset(currentChainId(), items.find(item => item === _value)!);
+    }, [items, _value]);
 
-  return (
-    <View style={styles.container}>
-      <Pressable
-        onPress={() => setOpen(prev => !prev)}
-        style={styles.inputContainer}>
-        <View style={styles.assetPlaceholderWrapper}>
-          {selected !== undefined ? (
-            <>
-              <View style={styles.assetIconWrapper}>
-                <AssetLogo source={selected.icon} size={24} />
-              </View>
-              <Text>{selected.symbol}</Text>
-            </>
-          ) : (
-            <Text>Select item...</Text>
-          )}
-        </View>
-        <View>
-          <DownIcon fill={dark ? 'white' : 'black'} />
-        </View>
-      </Pressable>
-      <AssetPickerModal
-        open={open}
-        value={_value}
-        items={items}
-        onChange={onSelectItem}
-        onClose={() => setOpen(false)}
-      />
-    </View>
-  );
-};
+    return (
+      <View style={styles.container}>
+        <Pressable
+          onPress={() => setOpen(prev => !prev)}
+          style={styles.inputContainer}>
+          <View style={styles.assetPlaceholderWrapper}>
+            {selected !== undefined ? (
+              <>
+                <View style={styles.assetIconWrapper}>
+                  <AssetLogo source={selected.icon} size={24} />
+                </View>
+                <Text>{selected.symbol}</Text>
+              </>
+            ) : (
+              <Text>Select item...</Text>
+            )}
+          </View>
+          <View>
+            <DownIcon fill={dark ? 'white' : 'black'} />
+          </View>
+        </Pressable>
+        <AssetPickerModal
+          open={open}
+          value={_value}
+          items={items}
+          onChange={onSelectItem}
+          onClose={() => setOpen(false)}
+        />
+      </View>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   container: {

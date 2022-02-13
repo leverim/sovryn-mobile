@@ -19,11 +19,9 @@ import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import CopyIcon from 'assets/copy-icon.svg';
 import SendIcon from 'assets/send-icon.svg';
 import ReceiveIcon from 'assets/receive-icon.svg';
+import HistoryIcon from 'assets/history-icon.svg';
 import { toChecksumAddress } from 'utils/rsk';
 import { BigNumber } from 'ethers';
-import { TokenId } from 'types/asset';
-import { parseUnits } from 'ethers/lib/utils';
-import { getSwappableToken } from 'config/swapables';
 import { BalanceContext } from 'context/BalanceContext';
 import {
   getNativeAsset,
@@ -32,7 +30,6 @@ import {
 } from 'utils/asset-utils';
 import { UsdPriceContext } from 'context/UsdPriceContext';
 import { AppContext } from 'context/AppContext';
-import { useAssetBalance } from 'hooks/useAssetBalance';
 import { get } from 'lodash';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { getCachedUsdPrice } from 'hooks/app-context/useCachedUsdPrice';
@@ -42,109 +39,122 @@ type AccountBannerProps = {
   showActions?: boolean;
 };
 
-export const AccountBanner: React.FC<AccountBannerProps> = ({
-  account,
-  showActions,
-}) => {
-  const navigation =
-    useNavigation<NavigationProp<WalletStackProps, 'wallet.details'>>();
-  const chainId = currentChainId();
-  const coin = getNativeAsset(chainId);
-  const usd = getUsdAsset(chainId);
-  const { chainIds } = useContext(AppContext);
-  const { prices } = useContext(UsdPriceContext);
-  const { balances } = useContext(BalanceContext);
-  const owner = useWalletAddress()?.toLowerCase();
+export const AccountBanner: React.FC<AccountBannerProps> = React.memo(
+  ({ account, showActions }) => {
+    const navigation =
+      useNavigation<NavigationProp<WalletStackProps, 'wallet.details'>>();
+    const chainId = currentChainId();
+    const coin = getNativeAsset(chainId);
+    const usd = getUsdAsset(chainId);
+    const { chainIds } = useContext(AppContext);
+    const { prices } = useContext(UsdPriceContext);
+    const { balances } = useContext(BalanceContext);
+    const owner = useWalletAddress()?.toLowerCase();
 
-  const [pressed, setPressed] = useState(false);
+    const [pressed, setPressed] = useState(false);
 
-  const handlePress = useCallback(
-    (status: boolean) => () => setPressed(status),
-    [],
-  );
+    const handlePress = useCallback(
+      (status: boolean) => () => setPressed(status),
+      [],
+    );
 
-  const handleAddressCopy = useCallback(
-    () => Clipboard.setString(account.address.toLowerCase()),
-    [account.address],
-  );
+    const handleAddressCopy = useCallback(
+      () => Clipboard.setString(account.address.toLowerCase()),
+      [account.address],
+    );
 
-  const balance = useMemo(() => {
-    const _tokens = listAssetsForChains(chainIds);
-    return _tokens.reduce((p, asset) => {
-      const _balance = get(balances, [asset.chainId, owner, asset.id], '0');
-      const _price = getCachedUsdPrice(prices, asset.chainId, asset);
-      if (_price === null) {
-        return p;
-      }
-      return p.add(
-        BigNumber.from(_balance).mul(_price.price).div(_price.precision),
-      );
-    }, BigNumber.from('0'));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify([balances, prices, chainIds]), owner]);
+    const balance = useMemo(() => {
+      const _tokens = listAssetsForChains(chainIds);
+      return _tokens.reduce((p, asset) => {
+        const _balance = get(balances, [asset.chainId, owner, asset.id], '0');
+        const _price = getCachedUsdPrice(prices, asset.chainId, asset);
+        if (_price === null) {
+          return p;
+        }
+        return p.add(
+          BigNumber.from(_balance).mul(_price.price).div(_price.precision),
+        );
+      }, BigNumber.from('0'));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify([balances, prices, chainIds]), owner]);
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.nameView}>
-        <Text style={styles.nameText}>{account.name}</Text>
-        <Pressable
-          style={[styles.addressHolder, pressed && styles.addressHolderPressed]}
-          onPress={handleAddressCopy}
-          onPressIn={handlePress(true)}
-          onPressOut={handlePress(false)}>
-          <Text style={styles.addressText}>
-            {prettifyTx(
-              toChecksumAddress(account.address || '', chainId),
-              14,
-              14,
-            )}
+    return (
+      <View style={styles.container}>
+        <View style={styles.nameView}>
+          <Text style={styles.nameText}>{account.name}</Text>
+          <Pressable
+            style={[
+              styles.addressHolder,
+              pressed && styles.addressHolderPressed,
+            ]}
+            onPress={handleAddressCopy}
+            onPressIn={handlePress(true)}
+            onPressOut={handlePress(false)}>
+            <Text style={styles.addressText}>
+              {prettifyTx(
+                toChecksumAddress(account.address || '', chainId),
+                14,
+                14,
+              )}
+            </Text>
+            <View style={styles.copyIconHolder}>
+              <CopyIcon fill="white" width={22} height={22} />
+            </View>
+          </Pressable>
+        </View>
+        <View>
+          <Text style={styles.balanceText}>
+            ${formatAndCommify(balance, usd.decimals, 4)}
           </Text>
-          <View style={styles.copyIconHolder}>
-            <CopyIcon fill="white" width={22} height={22} />
-          </View>
-        </Pressable>
-      </View>
-      <View>
-        <Text style={styles.balanceText}>
-          ${formatAndCommify(balance, usd.decimals, 4)}
-        </Text>
-      </View>
-      <View>
-        {showActions && (
-          <View style={styles.actions}>
-            {account.type !== AccountType.PUBLIC_ADDRESS ? (
+        </View>
+        <View>
+          {showActions && (
+            <View style={styles.actions}>
+              {account.type !== AccountType.PUBLIC_ADDRESS ? (
+                <Pressable
+                  style={styles.action}
+                  onPress={() =>
+                    navigation.navigate('wallet.send', { token: coin })
+                  }>
+                  <View style={styles.actionIcon}>
+                    <SendIcon fill="white" />
+                  </View>
+                  <Text style={styles.actionLabel}>Send</Text>
+                </Pressable>
+              ) : (
+                <View />
+              )}
+
               <Pressable
                 style={styles.action}
                 onPress={() =>
-                  navigation.navigate('wallet.send', { token: coin })
+                  navigation.navigate('wallet.receive', {
+                    token: coin,
+                  })
                 }>
                 <View style={styles.actionIcon}>
-                  <SendIcon fill="white" />
+                  <ReceiveIcon fill="white" />
                 </View>
-                <Text style={styles.actionLabel}>Send</Text>
+                <Text style={styles.actionLabel}>Receive</Text>
               </Pressable>
-            ) : (
-              <View />
-            )}
 
-            <Pressable
-              style={styles.action}
-              onPress={() =>
-                navigation.navigate('wallet.receive', {
-                  token: coin,
-                })
-              }>
-              <View style={styles.actionIcon}>
-                <ReceiveIcon fill="white" />
-              </View>
-              <Text style={styles.actionLabel}>Receive</Text>
-            </Pressable>
-          </View>
-        )}
+              {account.type !== AccountType.PUBLIC_ADDRESS && (
+                <Pressable
+                  style={styles.action}
+                  onPress={() => navigation.navigate('wallet.transactions')}>
+                  <View style={styles.actionIcon}>
+                    <HistoryIcon fill="white" />
+                  </View>
+                  <Text style={styles.actionLabel}>History</Text>
+                </Pressable>
+              )}
+            </View>
+          )}
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -192,6 +202,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    flex: 1,
   },
   actionIcon: {
     marginBottom: 12,

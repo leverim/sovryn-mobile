@@ -17,7 +17,7 @@ import { getProvider } from 'utils/RpcEngine';
 import { wallet } from 'utils/wallet';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { Item } from './Item';
-import { BigNumber } from 'ethers';
+import { BigNumber, Transaction } from 'ethers';
 import { ErrorHolder } from './ErrorHolder';
 import { isEqual } from 'lodash';
 import { VestingWithdrawTokensData } from './VestingWithdrawTokensData';
@@ -27,6 +27,12 @@ import { LendingDepositData } from './LendingDepositData';
 import { LendingWithdrawData } from './LendingWithdrawData';
 import { findAssetByAddress, getNativeAsset } from 'utils/asset-utils';
 import { getNetworkByChainId } from 'utils/network-utils';
+import {
+  getSignatureFromData,
+  getTxTitle,
+  getTxType,
+} from 'utils/transaction-helpers';
+import { useIsMounted } from 'hooks/useIsMounted';
 
 export type DataModalProps = {
   loading: boolean;
@@ -42,6 +48,7 @@ type ConfirmationModalProps = {
   error?: any;
   onConfirm: () => void;
   onReject: () => void;
+  // todo
   onRequestUpdated: (request: TransactionRequest) => void;
 };
 
@@ -50,7 +57,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   request,
   onReject,
   onConfirm,
-  onRequestUpdated,
   loading: transactionLoading,
   error,
 }) => {
@@ -58,7 +64,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const [dataLoading, setDataLoading] = useState(true);
   const [estimatedGasLimit, setEstimatedGasLimit] = useState(0);
   const [estimatedGasPrice, setEstimatedGasPrice] = useState(0);
-  const [estimatedNonce, setEstimatedNonce] = useState(0);
 
   const loading = useMemo(
     () => transactionLoading || dataLoading,
@@ -66,55 +71,20 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   );
 
   const signature = useMemo(
-    () => request?.data?.toString().substring(0, 10) || '0x',
+    () => getSignatureFromData(request?.data!),
     [request?.data],
   );
 
   const type = useMemo(() => {
     const _signature = (request?.customData?.type ||
       signature) as TransactionType;
-    return Object.values(TransactionType).includes(_signature)
-      ? _signature
-      : TransactionType.UNKNOWN;
+    return getTxType(_signature);
   }, [request?.customData?.type, signature]);
 
-  useEffect(() => {
-    Logger.log('request signature:', type, signature);
-  }, [signature, type]);
-
-  const renderTitle = useMemo(() => {
-    switch (type) {
-      default:
-        return 'Contract Execution';
-      case TransactionType.SEND_COIN:
-        return `Send ${
-          getNativeAsset((request?.chainId || currentChainId()) as ChainId)
-            ?.symbol || 'Coin'
-        }
-          `;
-      case TransactionType.APPROVE_TOKEN:
-        return `Approve ${
-          findAssetByAddress(request?.chainId as ChainId, request?.to!)
-            ?.symbol || 'Token'
-        }`;
-      case TransactionType.TRANSFER_TOKEN:
-        return `Transfer ${
-          findAssetByAddress(request?.chainId as ChainId, request?.to!)
-            ?.symbol || 'Token'
-        }`;
-      case TransactionType.VESTING_WITHDRAW_TOKENS:
-        return 'Withdraw Tokens';
-      case TransactionType.SWAP_NETWORK_SWAP:
-      case TransactionType.WRBTC_PROXY_SWAP:
-        return 'Swap Tokens';
-      case TransactionType.LENDING_DEPOSIT:
-      case TransactionType.LENDING_DEPOSIT_NATIVE:
-        return 'Deposit to Lending Pool';
-      case TransactionType.LENDING_WITHDRAW:
-      case TransactionType.LENDING_WITHDRAW_NATIVE:
-        return 'Withdraw from Lending Pool';
-    }
-  }, [type, request]);
+  const renderTitle = useMemo(
+    () => getTxTitle(type, request as any),
+    [type, request],
+  );
 
   const RenderContent = useMemo(() => {
     switch (type) {
@@ -161,11 +131,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       .then(response => response.toNumber())
       .then(setEstimatedGasPrice)
       .catch(console.warn);
-
-    getProvider(request?.chainId as ChainId)
-      .getTransactionCount(wallet.address?.toLowerCase()!)
-      .then(setEstimatedNonce)
-      .catch(console.warn);
   }, [request?.chainId]);
 
   const handleData = useCallback(async () => {
@@ -198,35 +163,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
     setDataLoading(false);
   }, [request]);
-
-  useDebouncedEffect(
-    () => {
-      const temp = { ...request };
-
-      if (!request?.gasLimit && estimatedGasLimit) {
-        temp.gasLimit = Number(estimatedGasLimit);
-      }
-
-      if (!request?.gasPrice && estimatedGasPrice) {
-        temp.gasPrice = Number(estimatedGasPrice);
-      }
-
-      if (!request?.nonce && estimatedNonce) {
-        temp.nonce = Number(estimatedNonce);
-      }
-
-      if (!isEqual(temp, request) && onRequestUpdated) {
-        onRequestUpdated(temp);
-      }
-    },
-    300,
-    [
-      request?.gasLimit,
-      request?.gasPrice,
-      estimatedGasLimit,
-      estimatedGasPrice,
-    ],
-  );
 
   useDebouncedEffect(
     () => {

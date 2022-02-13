@@ -8,6 +8,7 @@ import { PressableButton } from 'components/PressableButton';
 import { Text } from 'components/Text';
 import { RadioButton, RadioGroup } from 'components/RadioGroup';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useHandleBackButton } from 'hooks/useHandleBackButton';
 
 export type SwapSettingsModalProps = {
   open: boolean;
@@ -18,102 +19,100 @@ export type SwapSettingsModalProps = {
 
 const slippageAmounts = [0.1, 0.5, 1, 3];
 
-export const SwapSettingsModal: React.FC<SwapSettingsModalProps> = ({
-  open,
-  slippage,
-  onClose,
-  onSlippageChange,
-}) => {
-  const dark = useIsDarkTheme();
+export const SwapSettingsModal: React.FC<SwapSettingsModalProps> = React.memo(
+  ({ open, slippage, onClose, onSlippageChange }) => {
+    useHandleBackButton(onClose);
+    const dark = useIsDarkTheme();
 
-  const [_slippage, setSlippage] = useState<string | undefined>(slippage);
+    const [_slippage, setSlippage] = useState<string | undefined>(slippage);
 
-  const triggerClose = useCallback(() => {
-    if (onClose) {
-      onClose();
-    }
-  }, [onClose]);
-
-  const onChangeSlippage = useCallback(
-    (value: string) => {
-      setSlippage(value);
-      if (onSlippageChange) {
-        if (Number(value) < 0.1) {
-          value = '0.1';
-        }
-
-        if (Number(value) > 100) {
-          value = '100';
-        }
-
-        onSlippageChange(value);
+    const triggerClose = useCallback(() => {
+      if (onClose) {
+        onClose();
       }
-    },
-    [onSlippageChange],
-  );
+    }, [onClose]);
 
-  useEffect(() => {
-    setSlippage(slippage);
-  }, [slippage]);
+    const onChangeSlippage = useCallback(
+      (value: string) => {
+        setSlippage(value);
+        if (onSlippageChange) {
+          if (Number(value) < 0.1) {
+            value = '0.1';
+          }
 
-  const [slippageType, setSlippageType] = useState(
-    slippageAmounts.includes(Number(slippage)) ? slippage : 'custom',
-  );
+          if (Number(value) > 100) {
+            value = '100';
+          }
 
-  const handleSlippageChange = useCallback(
-    value => {
-      setSlippageType(value);
-      if (slippageAmounts.includes(Number(value))) {
-        onChangeSlippage(value);
-      }
-    },
-    [onChangeSlippage],
-  );
+          onSlippageChange(value);
+        }
+      },
+      [onSlippageChange],
+    );
 
-  const { bottom } = useSafeAreaInsets();
+    useEffect(() => {
+      setSlippage(slippage);
+    }, [slippage]);
 
-  return (
-    <BottomModal visible={open} onSwipeOut={triggerClose}>
-      <ModalContent style={[styles.modal, dark && styles.modalDark]}>
-        <View>
-          <Text style={styles.modalTitle}>Swap Settings</Text>
+    const [slippageType, setSlippageType] = useState(
+      slippageAmounts.includes(Number(slippage)) ? slippage : 'custom',
+    );
 
-          <Text style={styles.label}>Slippage tolerance:</Text>
-          <RadioGroup
-            defaultValue={slippageType}
-            onChange={handleSlippageChange}>
-            {slippageAmounts.map(value => (
-              <RadioButton key={value} value={value.toString()}>
-                <Text style={styles.buttonText}>{value}%</Text>
+    const handleSlippageChange = useCallback(
+      value => {
+        setSlippageType(value);
+        if (slippageAmounts.includes(Number(value))) {
+          onChangeSlippage(value);
+        }
+      },
+      [onChangeSlippage],
+    );
+
+    const { bottom } = useSafeAreaInsets();
+
+    return (
+      <BottomModal visible={open} onSwipeOut={triggerClose}>
+        <ModalContent style={[styles.modal, dark && styles.modalDark]}>
+          <View>
+            <Text style={styles.modalTitle}>Swap Settings</Text>
+
+            <Text style={styles.label}>Slippage tolerance:</Text>
+            <RadioGroup
+              defaultValue={slippageType}
+              onChange={handleSlippageChange}>
+              {slippageAmounts.map(value => (
+                <RadioButton key={value} value={value.toString()}>
+                  <Text style={styles.buttonText}>{value}%</Text>
+                </RadioButton>
+              ))}
+              <RadioButton value="custom">
+                <Text style={styles.buttonText}>Custom</Text>
               </RadioButton>
-            ))}
-            <RadioButton value="custom">
-              <Text style={styles.buttonText}>Custom</Text>
-            </RadioButton>
-          </RadioGroup>
+            </RadioGroup>
 
-          {slippageType === 'custom' && (
-            <AmountField
-              label="Slippage Tolerance"
-              value={_slippage}
-              onChangeText={onChangeSlippage}
+            {slippageType === 'custom' && (
+              <AmountField
+                label="Slippage Tolerance"
+                value={_slippage}
+                onChangeText={onChangeSlippage}
+              />
+            )}
+
+            <Text style={styles.slippageDescription}>
+              Slippage tolerance is a setting for the limit of price slippage
+              you are willing to accept.
+            </Text>
+            <PressableButton
+              onPress={triggerClose}
+              title="Close"
+              style={{ marginBottom: bottom }}
             />
-          )}
-
-          <Text style={styles.slippageDescription}>
-            Slippage tolerance is a setting for the limit of price slippage you
-            are willing to accept.
-          </Text>
-          <PressableButton
-            onPress={triggerClose}
-            title="Close"
-            style={{ marginBottom: bottom }}
-          />
-        </View>
-      </ModalContent>
-    </BottomModal>
-  );
-};
+          </View>
+        </ModalContent>
+      </BottomModal>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   modal: {

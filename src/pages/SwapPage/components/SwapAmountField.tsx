@@ -22,93 +22,95 @@ type SwapAmountFieldProps = {
   tokens: Asset[];
 } & AmountFieldBaseProps;
 
-export const SwapAmountField: React.FC<SwapAmountFieldProps> = ({
-  amount,
-  onAmountChanged,
-  token,
-  onTokenChanged,
-  price,
-  difference,
-  balance,
-  tokens: items,
-  ...props
-}) => {
-  const [open, setOpen] = useState(false);
-  const [_token, setToken] = useState<Asset | undefined>(token);
+export const SwapAmountField: React.FC<SwapAmountFieldProps> = React.memo(
+  ({
+    amount,
+    onAmountChanged,
+    token,
+    onTokenChanged,
+    price,
+    difference,
+    balance,
+    tokens: items,
+    ...props
+  }) => {
+    const [open, setOpen] = useState(false);
+    const [_token, setToken] = useState<Asset | undefined>(token);
 
-  const handleBalancePress = useCallback(
-    () => onAmountChanged(floorDecimals(balance || '0', 8)),
-    [onAmountChanged, balance],
-  );
+    const handleBalancePress = useCallback(
+      () => onAmountChanged(floorDecimals(balance || '0', 8)),
+      [onAmountChanged, balance],
+    );
 
-  const editable =
-    props?.inputProps?.editable === undefined ||
-    props?.inputProps?.editable === true;
+    const editable =
+      props?.inputProps?.editable === undefined ||
+      props?.inputProps?.editable === true;
 
-  useDebouncedEffect(
-    () => {
-      onTokenChanged(_token!);
-    },
-    300,
-    [_token, onTokenChanged],
-  );
+    useDebouncedEffect(
+      () => {
+        onTokenChanged(_token!);
+      },
+      300,
+      [_token, onTokenChanged],
+    );
 
-  // token was changed from outside
-  useEffect(() => {
-    setToken(token);
-  }, [token]);
+    // token was changed from outside
+    useEffect(() => {
+      setToken(token);
+    }, [token]);
 
-  const onTokenChange = useCallback((asset: Asset) => setToken(asset), []);
+    const onTokenChange = useCallback((asset: Asset) => setToken(asset), []);
 
-  return (
-    <>
-      <AmountFieldBase
-        {...props}
-        amount={amount}
-        onAmountChanged={onAmountChanged}
-        rightElement={
-          <TokenPickerButton
-            token={token}
-            onPress={() => setOpen(prev => !prev)}
-          />
-        }
-        bottomElement={
-          <View style={styles.footerContainer}>
-            <View style={styles.priceView}>
-              {price !== undefined && (
-                <>
-                  <Text style={styles.priceText}>
-                    ${commifyDecimals(price, 2)}
-                  </Text>
-                  {difference !== undefined && !isNaN(difference) && (
-                    <Text style={styles.differenceText}>
-                      ({commifyDecimals(difference, 2)}%)
+    return (
+      <>
+        <AmountFieldBase
+          {...props}
+          amount={amount}
+          onAmountChanged={onAmountChanged}
+          rightElement={
+            <TokenPickerButton
+              token={token}
+              onPress={() => setOpen(prev => !prev)}
+            />
+          }
+          bottomElement={
+            <View style={styles.footerContainer}>
+              <View style={styles.priceView}>
+                {price !== undefined && (
+                  <>
+                    <Text style={styles.priceText}>
+                      ${commifyDecimals(price, 2)}
                     </Text>
-                  )}
-                </>
-              )}
+                    {difference !== undefined && !isNaN(difference) && (
+                      <Text style={styles.differenceText}>
+                        ({commifyDecimals(difference, 2)}%)
+                      </Text>
+                    )}
+                  </>
+                )}
+              </View>
+              <Pressable
+                onPress={handleBalancePress}
+                disabled={!editable}
+                style={styles.balancePressable}>
+                <Text style={styles.balanceText}>
+                  Balance: {commifyDecimals(balance)}
+                </Text>
+              </Pressable>
             </View>
-            <Pressable
-              onPress={handleBalancePress}
-              disabled={!editable}
-              style={styles.balancePressable}>
-              <Text style={styles.balanceText}>
-                Balance: {commifyDecimals(balance)}
-              </Text>
-            </Pressable>
-          </View>
-        }
-      />
-      <AssetPickerDialog
-        open={open}
-        value={_token}
-        items={items}
-        onChange={onTokenChange}
-        onClose={() => setOpen(false)}
-      />
-    </>
-  );
-};
+          }
+        />
+        <AssetPickerDialog
+          open={open}
+          value={_token}
+          items={items}
+          onChange={onTokenChange}
+          onClose={() => setOpen(false)}
+        />
+      </>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   footerContainer: {

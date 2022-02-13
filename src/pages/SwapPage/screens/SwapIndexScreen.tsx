@@ -11,6 +11,7 @@ import { useWalletAddress } from 'hooks/useWalletAddress';
 import {
   calculateChange,
   commifyDecimals,
+  floorDecimals,
   formatUnits,
   getContractAddress,
   noop,
@@ -50,6 +51,7 @@ import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { ChainId } from 'types/network';
 import { AppContext } from 'context/AppContext';
 import { Asset } from 'models/asset';
+import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
@@ -240,6 +242,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
         setSubmitting(false);
       });
   }, [
+    chainId,
     contractAddress,
     minReturn,
     owner,
@@ -279,10 +282,13 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
             balance={sendBalance.value}
             tokens={tokens}
           />
-
           <View style={styles.receiverContainerView}>
             <SwapAmountField
-              amount={receiveAmount}
+              amount={
+                Number(receiveAmount) > 0
+                  ? floorDecimals(Number(receiveAmount), 8)
+                  : ''
+              }
               onAmountChanged={noop}
               token={receiveToken}
               onTokenChanged={handleSetReceiveToken}
@@ -342,6 +348,8 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
           )}
         </View>
+
+        <PendingTransactions />
       </View>
       <SwapSettingsModal
         open={showSettings}

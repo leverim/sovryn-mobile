@@ -11,7 +11,7 @@ import {
 } from 'ethers/lib/utils';
 import { getProvider } from 'utils/RpcEngine';
 import { getNetworks } from './network-utils';
-import { currentChainId, getContractAddress } from './helpers';
+import { getContractAddress } from './helpers';
 import { ContractName } from 'types/contract';
 import { ChainId, Network } from 'types/network';
 import Logger from './Logger';
@@ -201,9 +201,9 @@ export async function aggregateCall<
     })
     .catch(error => {
       Logger.log(
-        'aggr',
         chainId,
-        items.map(item => item.key),
+        network.multicallContract,
+        callData.map(item => [item.key, item.fnName, item.address, item.args]),
       );
       Logger.error(error, 'aggregator call');
       throw error;
@@ -271,15 +271,10 @@ export async function tryAggregateCall<
           returnData[key] = undefined;
         }
       });
-      console.log('response 3: ', chainId, returnData);
       return { returnData };
     })
     .catch(error => {
-      Logger.log(
-        'try aggr ',
-        chainId,
-        items.map(item => item.key),
-      );
+      Logger.log(chainId, network.multicallContract, data);
       Logger.error(error, 'aggregator call');
       throw error;
     });

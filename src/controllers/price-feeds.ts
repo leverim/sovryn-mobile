@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers';
-import { get, set } from 'lodash';
+import { clone, unionBy } from 'lodash';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
 import { findAsset } from 'utils/asset-utils';
@@ -13,36 +13,26 @@ import sovrynLoanOracle from './price-oracles/sovryn-loan-oracle';
 import { cache } from 'utils/cache';
 import { STORAGE_CACHE_PRICES } from 'utils/constants';
 
+type Items = Partial<Record<ChainId, PriceOracleResult[]>>;
+
 class PriceFeeds {
-  private items: Partial<Record<ChainId, PriceOracleResult[]>> = cache.get(
-    STORAGE_CACHE_PRICES,
-    {} as any,
-  );
+  private items: Items = cache.get(STORAGE_CACHE_PRICES, {} as any);
 
   constructor(
     protected oracles: Partial<Record<ChainId, IPriceOracle[]>> = {},
   ) {}
 
   public async getAll(chainIds: ChainId[]) {
-    const chains = chainIds
-      .map(chainId =>
-        (this.oracles[chainId] || []).map(item =>
-          item.getAll(chainId).then(result => ({ [chainId]: result })),
-        ),
-      )
-      .flat();
-
-    const result = await Promise.all(chains);
-
-    for (let item of result) {
-      const [_key, value] = Object.entries(item)[0];
-      const chainId = Number(_key) as ChainId;
-      this.items = set(
-        this.items,
-        [chainId],
-        [...get(this.items, [chainId], []), ...value],
-      );
+    const items: Items = clone(this.items);
+    for (const chainId of chainIds) {
+      let chainData: PriceOracleResult[] = items[chainId] || [];
+      for (const oracle of this.oracles[chainId] || []) {
+        const result = await oracle.getAll(chainId);
+        chainData = unionBy(result, chainData, 'tokenId');
+      }
+      items[chainId] = chainData;
     }
+    this.items = items;
     await cache.set(STORAGE_CACHE_PRICES, this.items);
     return this.items;
   }

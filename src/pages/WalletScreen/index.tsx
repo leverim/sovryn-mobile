@@ -10,6 +10,7 @@ import { AssetItem } from './components/AssetItem';
 import { NavGroup } from 'components/NavGroup/NavGroup';
 import { Asset } from 'models/asset';
 import { AssetModal } from './components/AssetModal';
+import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
 
 export const WalletScreen: React.FC = () => {
   const { chainIds } = useContext(AppContext);
@@ -39,6 +40,8 @@ export const WalletScreen: React.FC = () => {
           </View>
         )}
         <View style={styles.balanceContainer}>
+          <PendingTransactions marginTop={-24} />
+
           <NavGroup>
             {nativeTokens.map(item => (
               <AssetItem

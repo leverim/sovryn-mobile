@@ -18,6 +18,7 @@ import { useWalletAddress } from 'hooks/useWalletAddress';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { Text } from './Text';
 import { PressableButton } from './PressableButton';
+import { useHandleBackButton } from 'hooks/useHandleBackButton';
 
 export type AssetPickerDialogProps = {
   value?: Asset;
@@ -33,77 +34,81 @@ type AssetPickerExtraProps = {
 
 export const AssetPickerDialog: React.FC<
   AssetPickerDialogProps & AssetPickerExtraProps
-> = ({ value, items, onChange, open, onClose, title = 'Choose asset' }) => {
-  const dark = useIsDarkTheme();
+> = React.memo(
+  ({ value, items, onChange, open, onClose, title = 'Choose asset' }) => {
+    const dark = useIsDarkTheme();
 
-  const [_value, setValue] = useState<Asset | undefined>(value);
-  const [search, setSearch] = useState('');
+    const [_value, setValue] = useState<Asset | undefined>(value);
+    const [search, setSearch] = useState('');
 
-  const triggerClose = useCallback(() => {
-    if (onClose) {
-      onClose();
-    }
-  }, [onClose]);
-
-  const onSelectItem = useCallback(
-    (item: Asset) => {
-      setValue(item);
-      if (onChange) {
-        onChange(item);
+    const triggerClose = useCallback(() => {
+      if (onClose) {
+        onClose();
       }
-      triggerClose();
-    },
-    [onChange, triggerClose],
-  );
+    }, [onClose]);
 
-  useEffect(() => {
-    setValue(value);
-  }, [value]);
+    useHandleBackButton(triggerClose);
 
-  const tokens = useMemo(() => items.filter(item => !!item), [items]);
+    const onSelectItem = useCallback(
+      (item: Asset) => {
+        setValue(item);
+        if (onChange) {
+          onChange(item);
+        }
+        triggerClose();
+      },
+      [onChange, triggerClose],
+    );
 
-  const filteredItems = useMemo(() => {
-    if (search) {
-      return tokens.filter(
-        item =>
-          item.symbol.toLowerCase().includes(search.toLowerCase()) ||
-          item.name.toLowerCase().includes(search.toLowerCase()),
-      );
-    }
-    return tokens;
-  }, [search, tokens]);
+    useEffect(() => {
+      setValue(value);
+    }, [value]);
 
-  return (
-    <Modal animationType="slide" visible={open}>
-      <SafeAreaView style={[styles.modal, dark && styles.modalDark]}>
-        <View style={styles.modalBody}>
-          <Text style={styles.modalTitle}>{title}</Text>
-          <View style={styles.searchInput}>
-            <InputField
-              value={search}
-              onChangeText={setSearch}
-              placeholder="Search for asset..."
-            />
-          </View>
+    const tokens = useMemo(() => items.filter(item => !!item), [items]);
 
-          <ScrollView>
-            {filteredItems.map(item => (
-              <Item
-                key={item.id}
-                token={item}
-                active={
-                  item.id === _value?.id && item.chainId === _value?.chainId
-                }
-                onSelect={onSelectItem}
+    const filteredItems = useMemo(() => {
+      if (search) {
+        return tokens.filter(
+          item =>
+            item.symbol.toLowerCase().includes(search.toLowerCase()) ||
+            item.name.toLowerCase().includes(search.toLowerCase()),
+        );
+      }
+      return tokens;
+    }, [search, tokens]);
+
+    return (
+      <Modal animationType="slide" visible={open}>
+        <SafeAreaView style={[styles.modal, dark && styles.modalDark]}>
+          <View style={styles.modalBody}>
+            <Text style={styles.modalTitle}>{title}</Text>
+            <View style={styles.searchInput}>
+              <InputField
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Search for asset..."
               />
-            ))}
-          </ScrollView>
-          <PressableButton onPress={triggerClose} title="Close" />
-        </View>
-      </SafeAreaView>
-    </Modal>
-  );
-};
+            </View>
+
+            <ScrollView>
+              {filteredItems.map(item => (
+                <Item
+                  key={item.id}
+                  token={item}
+                  active={
+                    item.id === _value?.id && item.chainId === _value?.chainId
+                  }
+                  onSelect={onSelectItem}
+                />
+              ))}
+            </ScrollView>
+            <PressableButton onPress={triggerClose} title="Close" />
+          </View>
+        </SafeAreaView>
+      </Modal>
+    );
+  },
+);
 
 type ItemProps = {
   token: Asset;

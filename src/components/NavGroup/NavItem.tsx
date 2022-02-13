@@ -19,63 +19,57 @@ export type NavItemProps = {
   danger?: boolean;
 };
 
-export const NavItem: React.FC<NavItemProps> = ({
-  title,
-  onPress,
-  isFirst,
-  isLast,
-  hideArrow = false,
-  value,
-  danger,
-}) => {
-  const [pressedIn, setPressedIn] = useState(false);
+export const NavItem: React.FC<NavItemProps> = React.memo(
+  ({ title, onPress, isFirst, isLast, hideArrow = false, value, danger }) => {
+    const [pressedIn, setPressedIn] = useState(false);
 
-  const handlePress = useCallback(
-    (status: boolean) => () => setPressedIn(status),
-    [],
-  );
+    const handlePress = useCallback(
+      (status: boolean) => () => setPressedIn(status),
+      [],
+    );
 
-  const styles = useMemo(
-    () => (danger ? dangerStyles : defaultStyles),
-    [danger],
-  );
+    const styles = useMemo(
+      () => (danger ? dangerStyles : defaultStyles),
+      [danger],
+    );
 
-  const renderValue = useMemo(() => {
-    if (!value) {
-      return null;
-    }
-    if (typeof value === 'string' || typeof value === 'number') {
-      return <Text style={styles.rightContainerText}>{value}</Text>;
-    }
-    return value;
-  }, [value, styles]);
+    const renderValue = useMemo(() => {
+      if (!value) {
+        return null;
+      }
+      if (typeof value === 'string' || typeof value === 'number') {
+        return <Text style={styles.rightContainerText}>{value}</Text>;
+      }
+      return value;
+    }, [value, styles]);
 
-  return (
-    <Pressable
-      style={[
-        styles.container,
-        pressedIn && styles.pressed,
-        isFirst && styles.isFirst,
-        isLast && styles.isLast,
-        !isLast && styles.hasBottomBorder,
-      ]}
-      onPress={onPress}
-      onPressIn={handlePress(true)}
-      onPressOut={handlePress(false)}>
-      <View>
-        <Text>{title}</Text>
-      </View>
-      <View style={styles.rightContainer}>
-        {renderValue}
-        {!hideArrow && (
-          <ChevronRight
-            fill={pressedIn ? DarkTheme.colors.card : DarkTheme.colors.border}
-          />
-        )}
-      </View>
-    </Pressable>
-  );
-};
+    return (
+      <Pressable
+        style={[
+          styles.container,
+          pressedIn && styles.pressed,
+          isFirst && styles.isFirst,
+          isLast && styles.isLast,
+          !isLast && styles.hasBottomBorder,
+        ]}
+        onPress={onPress}
+        onPressIn={handlePress(true)}
+        onPressOut={handlePress(false)}>
+        <View>
+          <Text>{title}</Text>
+        </View>
+        <View style={styles.rightContainer}>
+          {renderValue}
+          {!hideArrow && (
+            <ChevronRight
+              fill={pressedIn ? DarkTheme.colors.card : DarkTheme.colors.border}
+            />
+          )}
+        </View>
+      </Pressable>
+    );
+  },
+);
 
 const defaultStyles = StyleSheet.create({
   container: {

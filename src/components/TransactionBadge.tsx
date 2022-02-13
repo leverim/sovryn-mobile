@@ -9,19 +9,18 @@ type TransactionBadgeProps = {
   chainId?: ChainId;
 };
 
-export const TransactionBadge: React.FC<TransactionBadgeProps> = ({
-  txHash,
-  chainId = currentChainId(),
-}) => {
-  return (
-    <View style={styles.container}>
-      <Pressable
-        onPress={() => Linking.openURL(getTxInExplorer(txHash, chainId))}>
-        <Text style={styles.text}>{prettifyTx(txHash)}</Text>
-      </Pressable>
-    </View>
-  );
-};
+export const TransactionBadge: React.FC<TransactionBadgeProps> = React.memo(
+  ({ txHash, chainId = currentChainId() }) => {
+    return (
+      <View style={styles.container}>
+        <Pressable
+          onPress={() => Linking.openURL(getTxInExplorer(txHash, chainId))}>
+          <Text style={styles.text}>{prettifyTx(txHash)}</Text>
+        </Pressable>
+      </View>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   container: {

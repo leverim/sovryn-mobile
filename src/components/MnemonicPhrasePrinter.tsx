@@ -10,31 +10,30 @@ type MnemonicPhrasePrinterProps = {
   text: string;
 };
 
-export const MnemonicPhrasePrinter: React.FC<MnemonicPhrasePrinterProps> = ({
-  text,
-}) => {
-  const words = useMemo(() => text.split(' '), [text]);
-  return (
-    <View>
-      <View style={styles.container}>
-        {words.map((word, index) => (
-          <View key={index} style={styles.item}>
-            <Text style={styles.number}>{index + 1}</Text>
-            <Text style={styles.word}>{word}</Text>
-          </View>
-        ))}
-      </View>
+export const MnemonicPhrasePrinter: React.FC<MnemonicPhrasePrinterProps> =
+  React.memo(({ text }) => {
+    const words = useMemo(() => text.split(' '), [text]);
+    return (
       <View>
-        <ButtonBase
-          onPress={() => Clipboard.setString(text)}
-          pressableStyle={styles.copy}>
-          <CopyIcon fill={DarkTheme.colors.primary} style={styles.copyIcon} />
-          <Text>Copy</Text>
-        </ButtonBase>
+        <View style={styles.container}>
+          {words.map((word, index) => (
+            <View key={index} style={styles.item}>
+              <Text style={styles.number}>{index + 1}</Text>
+              <Text style={styles.word}>{word}</Text>
+            </View>
+          ))}
+        </View>
+        <View>
+          <ButtonBase
+            onPress={() => Clipboard.setString(text)}
+            pressableStyle={styles.copy}>
+            <CopyIcon fill={DarkTheme.colors.primary} style={styles.copyIcon} />
+            <Text>Copy</Text>
+          </ButtonBase>
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  });
 
 const styles = StyleSheet.create({
   container: {

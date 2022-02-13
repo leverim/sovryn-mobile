@@ -24,6 +24,7 @@ import { BigNumber } from 'ethers';
 import { RefreshControl } from 'react-native';
 import { getSovAsset, getUsdAsset } from 'utils/asset-utils';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
+import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 
@@ -205,6 +206,7 @@ export const LendingWithdraw: React.FC<Props> = ({
           disabled={submitting || !!error}
         />
       </ReadWalletAwareWrapper>
+      <PendingTransactions />
     </SafeAreaPage>
   );
 };

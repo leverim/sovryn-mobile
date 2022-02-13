@@ -7,8 +7,9 @@ import { notifications } from 'controllers/notifications';
 import { useIsMounted } from 'hooks/useIsMounted';
 import { BalanceProvider } from 'context/BalanceContext';
 import { UsdPriceProvider } from 'context/UsdPriceContext';
+import { TransactionsProvider } from 'store/transactions';
 
-const App = () => {
+const App: React.FC = () => {
   const isMounted = useIsMounted();
 
   const [loading, setLoading] = useState(true);
@@ -45,16 +46,20 @@ const App = () => {
   return (
     <UsdPriceProvider>
       <BalanceProvider>
-        <AppProvider>
-          <MainScreen />
-        </AppProvider>
+        <TransactionsProvider>
+          <AppProvider>
+            <MainScreen />
+          </AppProvider>
+        </TransactionsProvider>
       </BalanceProvider>
     </UsdPriceProvider>
   );
 };
 
-export default codePush({
-  updateDialog: true,
-  checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
-  installMode: codePush.InstallMode.IMMEDIATE,
-})(App);
+export default __DEV__
+  ? App
+  : codePush({
+      updateDialog: true,
+      checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
+      installMode: codePush.InstallMode.IMMEDIATE,
+    })(App);

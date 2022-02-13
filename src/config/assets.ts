@@ -87,8 +87,8 @@ export const assets = checkAssets([
   new Asset(
     30,
     'bpro',
-    'BRPO',
-    'BRPO',
+    'BPRO',
+    'BPRO',
     '0x440cd83c160de5c96ddb20246815ea44c7abbca8',
     18,
     'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/bpro.svg',
@@ -308,8 +308,8 @@ export const assets = checkAssets([
   new Asset(
     31,
     'tbpro',
-    'tBRPO',
-    'BRPO',
+    'tBPRO',
+    'BPRO',
     '0x4dA7997A819bb46B6758b9102234c289Dd2ad3bf',
     18,
     'https://raw.githubusercontent.com/DistributedCollective/Sovryn-frontend/development/src/assets/images/tokens/bpro.svg',

@@ -11,6 +11,9 @@ import {
 } from './accounts';
 import { DEFAULT_DERIVATION_PATH } from './constants';
 import { Encryptor } from './encryptor';
+import { getProvider } from './RpcEngine';
+import { ChainId } from 'types/network';
+import { chain } from 'lodash';
 
 interface UserWallet {
   address: string;
@@ -77,23 +80,20 @@ class WalletManager {
     return [AccountType.PUBLIC_ADDRESS].includes(accounts.current.type);
   }
 
-  public async populateTransaction(
+  public async sendTransaction(
+    chainId: ChainId | number,
     transaction: TransactionRequest,
     password: string,
   ) {
-    return (
-      await this.unlockedWallet(accounts.selected, password)
-    ).populateTransaction(transaction);
-  }
-
-  public async signTransaction(
-    transaction: TransactionRequest,
-    password: string,
-  ): Promise<string> {
+    if (transaction.chainId === undefined) {
+      throw new Error('Transaction must have chain id set.');
+    }
     delete transaction.customData;
-    return (
-      await this.unlockedWallet(accounts.selected, password)
-    ).signTransaction(transaction);
+
+    const wallet = await this.unlockedWallet(accounts.selected, password);
+    const signer = wallet.connect(getProvider(chainId as ChainId));
+
+    return signer.sendTransaction(transaction);
   }
 
   public async signMessage(message: string, password: string): Promise<string> {
