@@ -32,7 +32,7 @@ List of planned and available features:
 - [x] Multiple wallet accounts
 - [x] Read-only accounts
 - [ ] Ledger using bluetooth
-- [ ] Transaction history
+- [x] Transaction history
 - [ ] Two-Way Fast-BTC
 - [ ] ETH & BSC bridge
 - [ ] In-app browser
