@@ -49,7 +49,7 @@ export const prettifyTx = (
   }
   const start = text.substr(0, startLength);
   const end = text.substr(-endLength);
-  return `${start} ··· ${end}`;
+  return `${start} ... ${end}`;
 };
 
 export const formatUnits = (

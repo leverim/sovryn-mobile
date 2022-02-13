@@ -17,7 +17,7 @@ import { getProvider } from 'utils/RpcEngine';
 import { wallet } from 'utils/wallet';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { Item } from './Item';
-import { BigNumber } from 'ethers';
+import { BigNumber, Transaction } from 'ethers';
 import { ErrorHolder } from './ErrorHolder';
 import { isEqual } from 'lodash';
 import { VestingWithdrawTokensData } from './VestingWithdrawTokensData';
@@ -32,6 +32,7 @@ import {
   getTxTitle,
   getTxType,
 } from 'utils/transaction-helpers';
+import { useIsMounted } from 'hooks/useIsMounted';
 
 export type DataModalProps = {
   loading: boolean;
@@ -47,6 +48,7 @@ type ConfirmationModalProps = {
   error?: any;
   onConfirm: () => void;
   onReject: () => void;
+  // todo
   onRequestUpdated: (request: TransactionRequest) => void;
 };
 
@@ -55,7 +57,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   request,
   onReject,
   onConfirm,
-  onRequestUpdated,
   loading: transactionLoading,
   error,
 }) => {
@@ -63,7 +64,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const [dataLoading, setDataLoading] = useState(true);
   const [estimatedGasLimit, setEstimatedGasLimit] = useState(0);
   const [estimatedGasPrice, setEstimatedGasPrice] = useState(0);
-  const [estimatedNonce, setEstimatedNonce] = useState(0);
 
   const loading = useMemo(
     () => transactionLoading || dataLoading,
@@ -82,7 +82,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   }, [request?.customData?.type, signature]);
 
   const renderTitle = useMemo(
-    () => getTxTitle(type, request!),
+    () => getTxTitle(type, request as any),
     [type, request],
   );
 
@@ -131,11 +131,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       .then(response => response.toNumber())
       .then(setEstimatedGasPrice)
       .catch(console.warn);
-
-    getProvider(request?.chainId as ChainId)
-      .getTransactionCount(wallet.address?.toLowerCase()!)
-      .then(setEstimatedNonce)
-      .catch(console.warn);
   }, [request?.chainId]);
 
   const handleData = useCallback(async () => {
@@ -168,35 +163,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
     setDataLoading(false);
   }, [request]);
-
-  useDebouncedEffect(
-    () => {
-      const temp = { ...request };
-
-      if (!request?.gasLimit && estimatedGasLimit) {
-        temp.gasLimit = Number(estimatedGasLimit);
-      }
-
-      if (!request?.gasPrice && estimatedGasPrice) {
-        temp.gasPrice = Number(estimatedGasPrice);
-      }
-
-      if (!request?.nonce && estimatedNonce) {
-        temp.nonce = Number(estimatedNonce);
-      }
-
-      if (!isEqual(temp, request) && onRequestUpdated) {
-        onRequestUpdated(temp);
-      }
-    },
-    300,
-    [
-      request?.gasLimit,
-      request?.gasPrice,
-      estimatedGasLimit,
-      estimatedGasPrice,
-    ],
-  );
 
   useDebouncedEffect(
     () => {

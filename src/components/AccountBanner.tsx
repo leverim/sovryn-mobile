@@ -19,11 +19,9 @@ import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import CopyIcon from 'assets/copy-icon.svg';
 import SendIcon from 'assets/send-icon.svg';
 import ReceiveIcon from 'assets/receive-icon.svg';
+import HistoryIcon from 'assets/history-icon.svg';
 import { toChecksumAddress } from 'utils/rsk';
 import { BigNumber } from 'ethers';
-import { TokenId } from 'types/asset';
-import { parseUnits } from 'ethers/lib/utils';
-import { getSwappableToken } from 'config/swapables';
 import { BalanceContext } from 'context/BalanceContext';
 import {
   getNativeAsset,
@@ -32,7 +30,6 @@ import {
 } from 'utils/asset-utils';
 import { UsdPriceContext } from 'context/UsdPriceContext';
 import { AppContext } from 'context/AppContext';
-import { useAssetBalance } from 'hooks/useAssetBalance';
 import { get } from 'lodash';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { getCachedUsdPrice } from 'hooks/app-context/useCachedUsdPrice';
@@ -140,6 +137,17 @@ export const AccountBanner: React.FC<AccountBannerProps> = React.memo(
                 </View>
                 <Text style={styles.actionLabel}>Receive</Text>
               </Pressable>
+
+              {account.type !== AccountType.PUBLIC_ADDRESS && (
+                <Pressable
+                  style={styles.action}
+                  onPress={() => navigation.navigate('wallet.transactions')}>
+                  <View style={styles.actionIcon}>
+                    <HistoryIcon fill="white" />
+                  </View>
+                  <Text style={styles.actionLabel}>History</Text>
+                </Pressable>
+              )}
             </View>
           )}
         </View>
@@ -194,6 +202,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    flex: 1,
   },
   actionIcon: {
     marginBottom: 12,

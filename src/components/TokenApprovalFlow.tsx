@@ -10,6 +10,7 @@ import { encodeFunctionData } from 'utils/contract-utils';
 import { currentChainId, parseUnits } from 'utils/helpers';
 import { erc20 } from 'utils/interactions';
 import { Button } from './Buttons/Button';
+import { useIsMounted } from 'hooks/useIsMounted';
 
 type TokenApprovalFlowProps = {
   tokenId: TokenId;
@@ -31,6 +32,7 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
   loading: parentLoading,
   disabled,
 }) => {
+  const isMounted = useIsMounted();
   const owner = useWalletAddress().toLowerCase();
   const token = useMemo(() => findAsset(chainId, tokenId), [chainId, tokenId]);
   const native = useMemo(() => getNativeAsset(chainId), [chainId]);
@@ -92,15 +94,22 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
       });
       await tx
         .wait()
-        .then(() => getAllowance(true))
-        .catch(e => {
-          console.warn(e);
-          getAllowance(true);
+        .then(() => {
+          if (isMounted()) {
+            getAllowance(true);
+          }
+        })
+        .catch(() => {
+          if (isMounted()) {
+            getAllowance(true);
+          }
         });
     } catch (_) {
       //
     } finally {
-      setApproving(false);
+      if (isMounted()) {
+        setApproving(false);
+      }
     }
   }, [
     token.address,
@@ -109,6 +118,7 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
     spender,
     requiredAmount,
     description,
+    isMounted,
     getAllowance,
   ]);
 

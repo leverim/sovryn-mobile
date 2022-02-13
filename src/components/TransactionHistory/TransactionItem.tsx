@@ -68,7 +68,9 @@ export const TransactionItem: React.FC<TransactionItemProps> = React.memo(
               {getTxTitle(getTxType(getSignatureFromData(tx.data)), tx)}
             </Text>
           </View>
-          <Text style={styles.hashText}>{prettifyTx(tx.hash, 12, 12)}</Text>
+          <Text style={styles.hashText}>
+            #{tx.nonce} · {prettifyTx(tx.hash, 12, 12)}
+          </Text>
         </View>
       </Pressable>
     );

@@ -1,7 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
+  NativeSyntheticEvent,
   StyleSheet,
   TextInput,
+  TextInputContentSizeChangeEventData,
   TextInputProps,
   View,
   ViewStyle,
@@ -18,6 +26,9 @@ export type AmountFieldBaseProps = {
   bottomElement?: React.ReactNode;
   containerStyle?: ViewStyle;
 };
+
+const DEFAULT_INPUT_TEXT_SIZE = 32;
+const SPACE_FOR_LETTER = 24;
 
 export const AmountFieldBase: React.FC<AmountFieldBaseProps> = ({
   amount,
@@ -53,19 +64,39 @@ export const AmountFieldBase: React.FC<AmountFieldBaseProps> = ({
     setAmount(amount);
   }, [amount]);
 
+  const inputRef = useRef<TextInput | null>(null);
+  const [inputWidth, setInputWidth] = useState(0);
+  const [fontSize, setFontSize] = useState(DEFAULT_INPUT_TEXT_SIZE);
+
+  useEffect(() => {
+    const width = (_amount?.length || 1) * SPACE_FOR_LETTER;
+    if (width > inputWidth) {
+      const percentage = inputWidth / width;
+      const scaledSize = Math.min(
+        DEFAULT_INPUT_TEXT_SIZE,
+        Math.max(DEFAULT_INPUT_TEXT_SIZE * percentage, 16),
+      );
+      setFontSize(scaledSize);
+    } else {
+      setFontSize(DEFAULT_INPUT_TEXT_SIZE);
+    }
+  }, [_amount, inputWidth]);
+
   return (
     <View style={[styles.container, containerStyle]}>
       <View style={styles.inputWrapperView}>
         <TextInput
+          ref={inputRef}
           value={_amount}
           onChangeText={setAmount}
           keyboardType="numeric"
           autoCapitalize="none"
           autoComplete="off"
           autoCorrect={false}
-          style={[styles.input, inputProps?.style]}
+          style={[styles.input, inputProps?.style, { fontSize }]}
           placeholderTextColor={'gray'}
           placeholder="0.0"
+          onLayout={event => setInputWidth(event.nativeEvent.layout.width)}
           {...inputProps}
         />
         {rightElement && (
@@ -101,6 +132,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     flexGrow: 1,
     color: 'white',
+    height: 64,
   },
   inputAddonView: {
     marginLeft: 12,

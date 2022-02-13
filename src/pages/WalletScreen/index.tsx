@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useState } from 'react';
-import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { AccountBanner } from 'components/AccountBanner';
 import { globalStyles } from 'global.styles';
@@ -10,7 +10,6 @@ import { AssetItem } from './components/AssetItem';
 import { NavGroup } from 'components/NavGroup/NavGroup';
 import { Asset } from 'models/asset';
 import { AssetModal } from './components/AssetModal';
-import { MainTabs } from './components/MainTabs';
 import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
 
 export const WalletScreen: React.FC = () => {
@@ -41,7 +40,7 @@ export const WalletScreen: React.FC = () => {
           </View>
         )}
         <View style={styles.balanceContainer}>
-          <PendingTransactions />
+          <PendingTransactions marginTop={-24} />
 
           <NavGroup>
             {nativeTokens.map(item => (

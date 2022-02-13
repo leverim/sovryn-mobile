@@ -2,6 +2,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -17,6 +18,8 @@ import { ChainId } from 'types/network';
 import { ConfirmationModal } from './ConfirmationModal/ConfirmationModal';
 import { TransactionModal } from './TransactionModal';
 import { TransactionContext } from 'store/transactions';
+import { useWalletAddress } from 'hooks/useWalletAddress';
+import { clone, sortBy } from 'lodash';
 
 type TransactionConfirmationProps = {};
 
@@ -30,6 +33,7 @@ export const TransactionConfirmation: React.FC<
   TransactionConfirmationProps
 > = () => {
   const {
+    state,
     actions: { addTransaction },
   } = useContext(TransactionContext);
   const [loading, setLoading] = useState(false);
@@ -39,6 +43,20 @@ export const TransactionConfirmation: React.FC<
   const responseRef = useRef<TransactionResponse>();
 
   const [error, setError] = useState<string>();
+
+  const owner = useWalletAddress()?.toLowerCase();
+  const lastNonce = useMemo(
+    () =>
+      sortBy(
+        clone(state.transactions).filter(
+          item => item.response.from.toLowerCase() === owner,
+        ),
+        [item => item.response.nonce],
+      )
+        .reverse()
+        .map(item => item.response.nonce)[0] || undefined,
+    [owner, state.transactions],
+  );
 
   useEffect(() => {
     const subscription = transactionController.hub.on(
@@ -82,6 +100,10 @@ export const TransactionConfirmation: React.FC<
     try {
       const chainId = (request?.chainId || currentChainId()) as ChainId;
 
+      if (request && request?.nonce === undefined && lastNonce !== undefined) {
+        request.nonce = lastNonce + 1;
+      }
+
       const tx = await wallet.sendTransaction(chainId, request!, password);
 
       addTransaction(tx!);
@@ -106,7 +128,7 @@ export const TransactionConfirmation: React.FC<
     } finally {
       setLoading(false);
     }
-  }, [addTransaction, request]);
+  }, [addTransaction, request, lastNonce]);
 
   const onCloseResponseModal = useCallback(async () => {
     setStep(Step.NONE);

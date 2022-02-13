@@ -11,6 +11,7 @@ import { useWalletAddress } from 'hooks/useWalletAddress';
 import {
   calculateChange,
   commifyDecimals,
+  floorDecimals,
   formatUnits,
   getContractAddress,
   noop,
@@ -281,10 +282,13 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
             balance={sendBalance.value}
             tokens={tokens}
           />
-
           <View style={styles.receiverContainerView}>
             <SwapAmountField
-              amount={receiveAmount}
+              amount={
+                Number(receiveAmount) > 0
+                  ? floorDecimals(Number(receiveAmount), 8)
+                  : ''
+              }
               onAmountChanged={noop}
               token={receiveToken}
               onTokenChanged={handleSetReceiveToken}

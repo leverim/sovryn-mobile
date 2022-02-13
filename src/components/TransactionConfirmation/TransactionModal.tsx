@@ -102,15 +102,6 @@ const TransactionModalContent: React.FC<TransactionModalContentProps> = ({
             </Text>
           }
         />
-        {receipt?.status === 1 && (
-          <Item title="Status:" content={<Text>Confirmed</Text>} />
-        )}
-        {receipt?.status === 0 && (
-          <Item title="Status:" content={<Text>Failed</Text>} />
-        )}
-        {(!response.confirmations || !receipt) && (
-          <Item title="Status:" content={<Text>Pending</Text>} />
-        )}
         <Item title="Nonce:" content={<Text>{response.nonce}</Text>} />
         <Item
           title="Fee:"

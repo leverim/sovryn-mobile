@@ -9,20 +9,25 @@ import { clone } from 'lodash';
 import { TransactionHistoryItem } from 'store/transactions/types';
 import { TransactionModal } from 'components/TransactionConfirmation/TransactionModal';
 
-export const PendingTransactions: React.FC = () => {
+type PendingTransactionsProps = {
+  marginTop?: number;
+};
+
+export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
+  marginTop = 24,
+}) => {
   const { state } = useContext(TransactionContext);
   const owner = useWalletAddress()?.toLowerCase();
 
   const items = useMemo(() => {
-    return (
-      clone(state.transactions)
-        //   .filter(
-        //     item =>
-        //       //   item.response.from.toLowerCase() === owner &&
-        //       !item.response.confirmations || !item.receipt,
-        //   )
-        .reverse()
-    );
+    return clone(state.transactions)
+      .filter(
+        item =>
+          (item.response.from.toLowerCase() === owner &&
+            !item.response.confirmations) ||
+          !item.receipt,
+      )
+      .reverse();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.transactions, owner]);
 
@@ -38,7 +43,7 @@ export const PendingTransactions: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { marginTop }]}>
       <Text style={styles.title}>Active transactions:</Text>
       <NavGroup>
         {items.map(item => (
@@ -58,7 +63,6 @@ export const PendingTransactions: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginTop: 24,
   },
   title: {
     fontSize: 16,

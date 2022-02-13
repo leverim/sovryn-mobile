@@ -32,11 +32,10 @@ import { getNativeAsset, listAssetsForChains } from 'utils/asset-utils';
 import { AssetAmountField } from 'components/AssetAmountField';
 import { AppContext } from 'context/AppContext';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
-import { commifyDecimals, formatAndCommify, parseUnits } from 'utils/helpers';
+import { formatAndCommify, parseUnits } from 'utils/helpers';
 import { useIsMounted } from 'hooks/useIsMounted';
 import { Text } from 'components/Text';
 import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
-import { wallet } from 'utils/wallet';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { formatUnits } from 'ethers/lib/utils';
 
