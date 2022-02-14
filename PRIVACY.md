@@ -16,7 +16,7 @@ The app does use third-party services that may collect information used to ident
 
 Link to the privacy policy of third-party service providers used by the app
 
-*   [Sentry](https://sentry.io/privacy/) - collects app crash data
+*   [Visual Studio App Center](https://docs.microsoft.com/en-us/appcenter/gdpr/) - collects app crash data
 
 **Log Data**
 
@@ -38,7 +38,7 @@ These Services do not address anyone under the age of 13. We do not knowingly co
 
 We may update our Privacy Policy from time to time. Thus, you are advised to review this page periodically for any changes. We will notify you of any changes by posting the new Privacy Policy on this page.
 
-This policy is effective as of 2022-02-01
+This policy is effective as of 2022-02-14
 
 **Contact Us**
 
