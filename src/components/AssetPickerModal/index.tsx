@@ -20,7 +20,6 @@ import { Asset } from 'models/asset';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
-import { useHandleBackButton } from 'hooks/useHandleBackButton';
 
 export type AssetPickerModalProps = {
   value?: TokenId;
@@ -49,7 +48,6 @@ export const AssetPickerModal: React.FC<
         onClose();
       }
     }, [onClose]);
-    useHandleBackButton(triggerClose);
 
     const onSelectItem = useCallback(
       (item: TokenId) => {
@@ -86,7 +84,7 @@ export const AssetPickerModal: React.FC<
     }, [search, tokens]);
 
     return (
-      <Modal animationType="slide" visible={open}>
+      <Modal animationType="slide" visible={open} onRequestClose={triggerClose}>
         <SafeAreaView style={[styles.modal, dark && styles.modalDark]}>
           <View style={styles.modalBody}>
             <Text style={styles.modalTitle}>{title}</Text>

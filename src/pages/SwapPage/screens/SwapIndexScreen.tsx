@@ -351,12 +351,14 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
 
         <PendingTransactions />
       </View>
-      <SwapSettingsModal
-        open={showSettings}
-        slippage={slippage}
-        onClose={() => setShowSettings(false)}
-        onSlippageChange={setSlippage}
-      />
+      {showSettings && (
+        <SwapSettingsModal
+          open={showSettings}
+          slippage={slippage}
+          onClose={() => setShowSettings(false)}
+          onSlippageChange={setSlippage}
+        />
+      )}
     </SafeAreaPage>
   );
 };

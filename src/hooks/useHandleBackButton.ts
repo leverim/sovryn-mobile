@@ -1,17 +1,16 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { BackHandler } from 'react-native';
 
 export function useHandleBackButton(callback: () => void) {
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      () => {
-        callback();
-        return true;
-      },
-    );
-    return () => {
-      backHandler.remove();
-    };
+  const handleBackPress = useCallback(() => {
+    callback();
+    return true;
   }, [callback]);
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+    };
+  }, [handleBackPress]);
 }
