@@ -14,6 +14,7 @@ import { useBiometryType } from 'hooks/useBiometryType';
 import { PassCodeSetupKeyboard } from './PassCodeSetup';
 import { PASSCODE_LENGTH } from 'utils/constants';
 import { useKeyboardHeight } from 'hooks/useKeyboardHeight';
+import { HandleBackPress } from 'components/HandleBackPress';
 
 type PasscodeConfirmation = {};
 
@@ -120,6 +121,7 @@ export const PasscodeConfirmation: React.FC<PasscodeConfirmation> = () => {
     <Modal
       visible={showKeypad}
       style={[styles.modal, { height: containerHeight }]}>
+      {showKeypad && <HandleBackPress onClose={onRejectPressed} />}
       <ModalContent style={[styles.modalContent, { height: containerHeight }]}>
         <View style={[styles.keyboardView, { height: containerHeight }]}>
           <View style={styles.innerContainer}>

@@ -33,6 +33,7 @@ import {
   getTxType,
 } from 'utils/transaction-helpers';
 import { useIsMounted } from 'hooks/useIsMounted';
+import { HandleBackPress } from 'components/HandleBackPress';
 
 export type DataModalProps = {
   loading: boolean;
@@ -199,6 +200,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   return (
     <BottomModal visible={visible}>
+      {visible && <HandleBackPress onClose={onReject} />}
       <ModalContent style={[styles.modal, dark && styles.modalDark]}>
         <View style={styles.title}>
           <Text style={styles.titleText}>{renderTitle}</Text>

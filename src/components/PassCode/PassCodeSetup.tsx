@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
-  Button,
   Dimensions,
   Pressable,
   StyleSheet,
@@ -18,6 +17,7 @@ import { DefaultTheme } from '@react-navigation/native';
 import { usePrettyBiometryName } from 'hooks/useBiometryType';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { useKeyboardHeight } from 'hooks/useKeyboardHeight';
+import { Button } from 'components/Buttons/Button';
 
 type PassCodeSetupProps = {
   onPasscodeConfirmed?: (code: string) => void;
