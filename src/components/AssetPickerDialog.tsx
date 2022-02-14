@@ -78,7 +78,7 @@ export const AssetPickerDialog: React.FC<
     }, [search, tokens]);
 
     return (
-      <Modal animationType="slide" visible={open}>
+      <Modal animationType="slide" visible={open} onRequestClose={triggerClose}>
         <SafeAreaView style={[styles.modal, dark && styles.modalDark]}>
           <View style={styles.modalBody}>
             <Text style={styles.modalTitle}>{title}</Text>
