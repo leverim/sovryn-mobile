@@ -22,7 +22,6 @@ type AssetModalProps = {
 };
 
 export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
-  useHandleBackButton(onClose);
   return (
     <BottomModal visible={!!asset} onSwipeOut={onClose} swipeThreshold={50}>
       {!!asset && <AssetModalContent asset={asset} onClose={onClose} />}
@@ -31,6 +30,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({ asset, onClose }) => {
 };
 
 const AssetModalContent: React.FC<AssetModalProps> = ({ asset, onClose }) => {
+  useHandleBackButton(onClose);
   const owner = useWalletAddress();
   const { weiValue: tokenBalance } = useAssetBalance(asset, owner);
   const {

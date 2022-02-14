@@ -47,8 +47,6 @@ export const AssetPickerDialog: React.FC<
       }
     }, [onClose]);
 
-    useHandleBackButton(triggerClose);
-
     const onSelectItem = useCallback(
       (item: Asset) => {
         setValue(item);
@@ -78,7 +76,7 @@ export const AssetPickerDialog: React.FC<
     }, [search, tokens]);
 
     return (
-      <Modal animationType="slide" visible={open} onRequestClose={triggerClose}>
+      <Modal animationType="slide" visible={open}>
         <SafeAreaView style={[styles.modal, dark && styles.modalDark]}>
           <View style={styles.modalBody}>
             <Text style={styles.modalTitle}>{title}</Text>
@@ -105,6 +103,7 @@ export const AssetPickerDialog: React.FC<
             <PressableButton onPress={triggerClose} title="Close" />
           </View>
         </SafeAreaView>
+        {open && <AssetPickerCloser onClose={triggerClose} />}
       </Modal>
     );
   },
@@ -147,6 +146,11 @@ const Item: React.FC<ItemProps> = ({ token, active, onSelect }) => {
       </View>
     </Pressable>
   );
+};
+
+const AssetPickerCloser: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  useHandleBackButton(onClose);
+  return <></>;
 };
 
 const styles = StyleSheet.create({
