@@ -18,7 +18,6 @@ import { useWalletAddress } from 'hooks/useWalletAddress';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { Text } from './Text';
 import { PressableButton } from './PressableButton';
-import { useHandleBackButton } from 'hooks/useHandleBackButton';
 
 export type AssetPickerDialogProps = {
   value?: Asset;
@@ -76,7 +75,7 @@ export const AssetPickerDialog: React.FC<
     }, [search, tokens]);
 
     return (
-      <Modal animationType="slide" visible={open}>
+      <Modal animationType="slide" visible={open} onRequestClose={triggerClose}>
         <SafeAreaView style={[styles.modal, dark && styles.modalDark]}>
           <View style={styles.modalBody}>
             <Text style={styles.modalTitle}>{title}</Text>
@@ -103,7 +102,6 @@ export const AssetPickerDialog: React.FC<
             <PressableButton onPress={triggerClose} title="Close" />
           </View>
         </SafeAreaView>
-        {open && <AssetPickerCloser onClose={triggerClose} />}
       </Modal>
     );
   },
@@ -146,11 +144,6 @@ const Item: React.FC<ItemProps> = ({ token, active, onSelect }) => {
       </View>
     </Pressable>
   );
-};
-
-const AssetPickerCloser: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  useHandleBackButton(onClose);
-  return <></>;
 };
 
 const styles = StyleSheet.create({
