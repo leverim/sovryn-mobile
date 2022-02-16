@@ -14,9 +14,15 @@ export const EarnIndex: React.FC<Props> = ({ navigation }) => {
       <ScrollView style={globalStyles.page}>
         <EarnFeature
           title="Lending"
-          description="Lend your assets to earn interest."
+          description="Earn passive income by lending your assets directly to borrowers or to margin traders."
           cta="Start Lending"
           onPress={() => navigation.navigate('lending')}
+        />
+        <EarnFeature
+          title="Market Maker"
+          description="Provide liquidity for Sovryn's protocol and earn fees when users trade with your asset."
+          cta="Start Mining"
+          onPress={() => navigation.navigate('amm')}
         />
       </ScrollView>
     </SafeAreaPage>
