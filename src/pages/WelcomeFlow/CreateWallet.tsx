@@ -24,7 +24,10 @@ export const CreateWallet: React.FC<Props> = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaPage keyboardAvoiding scrollView>
+    <SafeAreaPage
+      keyboardAvoiding
+      scrollView
+      scrollViewProps={{ keyboardShouldPersistTaps: 'handled' }}>
       <PageContainer>
         <Text style={[globalStyles.title, styles.title]}>
           Your Recovery Phrase

@@ -53,10 +53,10 @@ export const ImportWalletView: React.FC<ImportWalletViewProps> = ({
     }
   }, [secret, type, chainId]);
 
-  const handleImport = useCallback(
-    () => onHandleImport(name, value, type!),
-    [onHandleImport, name, value, type],
-  );
+  const handleImport = useCallback(() => {
+    Keyboard.dismiss();
+    onHandleImport(name, value, type!);
+  }, [onHandleImport, name, value, type]);
 
   useDebouncedEffect(
     () => {
@@ -81,7 +81,10 @@ export const ImportWalletView: React.FC<ImportWalletViewProps> = ({
   );
 
   return (
-    <SafeAreaPage keyboardAvoiding scrollView>
+    <SafeAreaPage
+      keyboardAvoiding
+      scrollView
+      scrollViewProps={{ keyboardShouldPersistTaps: 'handled' }}>
       <PageContainer>
         <InputField label="Wallet Name" value={name} onChangeText={setName} />
 
