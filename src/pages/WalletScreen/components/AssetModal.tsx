@@ -84,7 +84,11 @@ const AssetModalContent: React.FC<AssetModalProps> = ({ asset, onClose }) => {
           />
         )}
         <Item title="Network" content={<Text>{network.name}</Text>} />
-        <VestedAssets tokenId={asset.id as TokenId} chainId={asset.chainId} />
+        <VestedAssets
+          tokenId={asset.id as TokenId}
+          chainId={asset.chainId}
+          onPress={onClose}
+        />
         <Button title="Close" onPress={onClose} />
       </View>
     </ModalContent>

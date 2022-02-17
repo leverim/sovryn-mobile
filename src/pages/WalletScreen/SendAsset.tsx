@@ -6,15 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native';
+import { Keyboard, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
@@ -23,7 +15,7 @@ import { getProvider } from 'utils/RpcEngine';
 import { encodeFunctionData } from 'utils/contract-utils';
 import { utils, constants, VoidSigner, BigNumber } from 'ethers/lib.esm';
 import { useAssetBalance } from 'hooks/useAssetBalance';
-import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
 import { transactionController } from 'controllers/TransactionController';
 import { Button } from 'components/Buttons/Button';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
@@ -115,6 +107,7 @@ export const SendAsset: React.FC<Props> = ({
   );
 
   const submit = useCallback(async () => {
+    Keyboard.dismiss();
     setLoading(true);
     try {
       await transactionController.request({
@@ -194,57 +187,55 @@ export const SendAsset: React.FC<Props> = ({
   const tokens = useMemo(() => listAssetsForChains(chainIds), [chainIds]);
 
   return (
-    <SafeAreaPage>
-      <ScrollView style={styles.container}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.detailsContainer}>
-              <AddressField
-                value={receiver}
-                onChange={handleReceiverChange}
-                chainId={token.chainId}
+    <SafeAreaPage
+      keyboardAvoiding
+      scrollView
+      scrollViewProps={{ keyboardShouldPersistTaps: 'handled' }}>
+      <PageContainer>
+        <View style={styles.detailsContainer}>
+          <AddressField
+            value={receiver}
+            onChange={handleReceiverChange}
+            chainId={token.chainId}
+          />
+
+          <View style={styles.amountContainer}>
+            <AssetAmountField
+              token={token}
+              onTokenChanged={setToken}
+              amount={amount}
+              onAmountChanged={setAmount}
+              balance={balance.value!}
+              price={usd.value!}
+              tokens={tokens}
+              fee={formatUnits(fee, token.decimals)}
+            />
+          </View>
+
+          {balanceError === null ? (
+            <ReadWalletAwareWrapper>
+              <Button
+                title={`Send ${token.symbol}`}
+                onPress={submit}
+                disabled={loading || populating}
+                loading={loading || populating}
+                primary
               />
+            </ReadWalletAwareWrapper>
+          ) : (
+            <Button title={balanceError} disabled primary />
+          )}
 
-              <View style={styles.amountContainer}>
-                <AssetAmountField
-                  token={token}
-                  onTokenChanged={setToken}
-                  amount={amount}
-                  onAmountChanged={setAmount}
-                  balance={balance.value!}
-                  price={usd.value!}
-                  tokens={tokens}
-                  fee={formatUnits(fee, token.decimals)}
-                />
-              </View>
+          {fee.toString() !== '0' && (
+            <Text>
+              Transaction fee: {formatAndCommify(fee, token.decimals)}{' '}
+              {token.symbol}
+            </Text>
+          )}
 
-              {balanceError === null ? (
-                <ReadWalletAwareWrapper>
-                  <Button
-                    title={`Send ${token.symbol}`}
-                    onPress={submit}
-                    disabled={loading || populating}
-                    loading={loading || populating}
-                    primary
-                  />
-                </ReadWalletAwareWrapper>
-              ) : (
-                <Button title={balanceError} disabled primary />
-              )}
-
-              {fee.toString() !== '0' && (
-                <Text>
-                  Transaction fee: {formatAndCommify(fee, token.decimals)}{' '}
-                  {token.symbol}
-                </Text>
-              )}
-
-              <PendingTransactions />
-            </View>
-          </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
-      </ScrollView>
+          <PendingTransactions />
+        </View>
+      </PageContainer>
     </SafeAreaPage>
   );
 };

@@ -5,11 +5,23 @@ import { NavGroup } from 'components/NavGroup/NavGroup';
 import { Asset } from 'models/asset';
 import { AssetItem } from './AssetItem';
 import { AssetModal } from './AssetModal';
+import { BalanceContext } from 'context/BalanceContext';
+import { useWalletAddress } from 'hooks/useWalletAddress';
+import { get } from 'lodash';
+import { BigNumber } from 'ethers';
 
 export const AssetList: React.FC = () => {
   const { chainIds } = useContext(AppContext);
+  const { balances } = useContext(BalanceContext);
+  const owner = useWalletAddress()?.toLowerCase();
 
-  const tokens = useMemo(() => listAssetsForChains(chainIds), [chainIds]);
+  const tokens = useMemo(
+    () =>
+      listAssetsForChains(chainIds).filter(item =>
+        BigNumber.from(get(balances, [item.chainId, owner], '0')).gt('0'),
+      ),
+    [chainIds, balances, owner],
+  );
 
   const nativeTokens = useMemo(
     () => tokens.filter(item => item.native),

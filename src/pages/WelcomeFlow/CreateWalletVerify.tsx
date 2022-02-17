@@ -44,7 +44,10 @@ export const CreateWalletVerify: React.FC<Props> = ({
   );
 
   return (
-    <SafeAreaPage keyboardAvoiding scrollView>
+    <SafeAreaPage
+      keyboardAvoiding
+      scrollView
+      scrollViewProps={{ keyboardShouldPersistTaps: 'handled' }}>
       <PageContainer>
         <Text style={[globalStyles.title, styles.title]}>
           Confirm your recovery phrase
