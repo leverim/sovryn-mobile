@@ -270,7 +270,10 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   }, [sendAmount, sendBalance.loading, sendBalance.value, sendToken.symbol]);
 
   return (
-    <SafeAreaPage scrollView keyboardAvoiding>
+    <SafeAreaPage
+      scrollView
+      keyboardAvoiding
+      scrollViewProps={{ keyboardShouldPersistTaps: 'handled' }}>
       <View style={styles.container}>
         <View>
           <SwapAmountField
