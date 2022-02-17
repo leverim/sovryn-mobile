@@ -189,6 +189,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   );
 
   const handleSubmitButton = useCallback(async () => {
+    Keyboard.dismiss();
     setSubmitting(true);
 
     const _sendToken = findAsset(
@@ -223,8 +224,6 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
         ? [path, amount, minReturn]
         : [path, amount, minReturn, owner, AFFILIATE_ACCOUNT, AFFILIATE_FEE],
     );
-
-    console.log('path!', path, amount, minReturn);
 
     await transactionController
       .request({

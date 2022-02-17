@@ -21,7 +21,7 @@ import { transactionController } from 'controllers/TransactionController';
 import { encodeFunctionData } from 'utils/contract-utils';
 import { LendingTokenFlags } from 'models/lending-token';
 import { BigNumber } from 'ethers';
-import { RefreshControl } from 'react-native';
+import { Keyboard, RefreshControl } from 'react-native';
 import { getSovAsset, getUsdAsset } from 'utils/asset-utils';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
@@ -123,6 +123,7 @@ export const LendingWithdraw: React.FC<Props> = ({
 
   const [submitting, setSubmitting] = useState(false);
   const handleWithdraw = useCallback(async () => {
+    Keyboard.dismiss();
     setSubmitting(true);
     try {
       const tx = await transactionController.request({
@@ -160,6 +161,7 @@ export const LendingWithdraw: React.FC<Props> = ({
     <SafeAreaPage
       scrollView
       scrollViewProps={{
+        keyboardShouldPersistTaps: 'handled',
         style: globalStyles.page,
         refreshControl: (
           <RefreshControl refreshing={loading} onRefresh={execute} />
