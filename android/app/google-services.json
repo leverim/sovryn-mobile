@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "69349650564",
+    "project_id": "sovryn-wallet",
+    "storage_bucket": "sovryn-wallet.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:69349650564:android:9e4aa60a888ebc75e112d1",
+        "android_client_info": {
+          "package_name": "com.defray.sovryn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "69349650564-ruliv6l1pnjdp9lknopj540a0tm0j9qm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.defray.sovryn",
+            "certificate_hash": "21dd3dbab90a4c20c19488395ea8944127cfaff6"
+          }
+        },
+        {
+          "client_id": "69349650564-5072cc10qc7nstrkd602e06otnnnac0h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqh7cvxEX6t605IyWfPUfBWDap1LH9rxM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "69349650564-5072cc10qc7nstrkd602e06otnnnac0h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "69349650564-nlk8rskksa7il5sr2b2imbp8uqugnbim.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.defray.sovryn",
+                "app_store_id": "1603993667"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
