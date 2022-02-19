@@ -1,5 +1,5 @@
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { RefreshControl } from 'react-native';
+import { Keyboard, RefreshControl } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { globalStyles } from 'global.styles';
@@ -95,6 +95,7 @@ export const LendingDeposit: React.FC<Props> = ({
 
   const [submitting, setSubmitting] = useState(false);
   const handleDeposit = useCallback(async () => {
+    Keyboard.dismiss();
     setSubmitting(true);
     try {
       const isNative = lendingToken.supplyToken.native;
@@ -195,6 +196,7 @@ export const LendingDeposit: React.FC<Props> = ({
     <SafeAreaPage
       scrollView
       scrollViewProps={{
+        keyboardShouldPersistTaps: 'handled',
         style: globalStyles.page,
         refreshControl: (
           <RefreshControl refreshing={loading} onRefresh={execute} />

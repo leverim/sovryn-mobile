@@ -1,7 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { WalletScreen } from 'pages/WalletScreen';
-import { WalletDetails } from 'pages/WalletScreen/WalletDetails';
 import { WalletVestings } from 'pages/WalletScreen/WalletVestings';
 import { ReceiveAsset } from 'pages/WalletScreen/ReceiveAsset';
 import { SendAsset } from 'pages/WalletScreen/SendAsset';
@@ -12,7 +11,6 @@ import { TransactionHistory } from 'pages/WalletScreen/TransactionHistory';
 export type WalletStackProps = {
   'wallet.list': undefined;
   'wallet.transactions': undefined;
-  'wallet.details': { token: Asset; chainId: ChainId };
   'wallet.vestings': { token: Asset; chainId: ChainId };
   'wallet.receive': { token: Asset };
   'wallet.send': { token: Asset };
@@ -29,7 +27,6 @@ export const WalletPage: React.FC = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen name="wallet.transactions" component={TransactionHistory} />
-      <Stack.Screen name="wallet.details" component={WalletDetails} />
       <Stack.Screen
         name="wallet.vestings"
         component={WalletVestings}
