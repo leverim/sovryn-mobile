@@ -16,6 +16,7 @@ export class AmmPool {
   public readonly supplyToken2: Asset;
   public readonly poolToken1: Asset;
   public readonly poolToken2?: Asset;
+  private _usesLM: boolean = false;
   constructor(
     public readonly chainId: ChainId,
     public readonly version: AmmPoolVersion,
@@ -37,5 +38,14 @@ export class AmmPool {
     if (poolToken2Id) {
       this.poolToken2 = findAsset(chainId, poolToken2Id);
     }
+  }
+
+  public get usesLM() {
+    return this._usesLM;
+  }
+
+  public setUsesLm(value: boolean) {
+    this._usesLM = value;
+    return this;
   }
 }

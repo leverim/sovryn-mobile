@@ -295,7 +295,7 @@ export const assets = checkAssets([
   ),
   new Asset(
     30,
-    'wrbtc/usdt2',
+    'wrbtc/rusdt2',
     '(WR)BTC/USDT2',
     '(WR)BTC/USDT Liquidity Pool2',
     '0x40580E31cc14DbF7a0859f38Ab36A84262df821D',
@@ -670,7 +670,7 @@ export const assets = checkAssets([
   ),
   new Asset(
     31,
-    'twrbtc/usdt2',
+    'twrbtc/rusdt2',
     't(WR)BTC/USDT2',
     '(WR)BTC/USDT Liquidity Pool2',
     '0x7274305BB36d66F70cB8824621EC26d52ABe9069',

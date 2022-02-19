@@ -9,7 +9,7 @@ export const ammPools: AmmPool[] = [
     'sov',
     '0xe76Ea314b32fCf641C6c57f14110c5Baa1e45ff4',
     'wrbtc/sov',
-  ),
+  ).setUsesLm(true),
   new AmmPool(
     30,
     1,
@@ -17,7 +17,7 @@ export const ammPools: AmmPool[] = [
     'xusd',
     '0xa9c3d9681215ef7623dc28ea6b75bf87fdf285d9',
     'wrbtc/xusd',
-  ),
+  ).setUsesLm(true),
   new AmmPool(
     30,
     1,
@@ -42,7 +42,7 @@ export const ammPools: AmmPool[] = [
     'bnbs',
     '0x1684b871ec5f93de142e79a670b541d75be07ead',
     'wrbtc/bnbs',
-  ),
+  ).setUsesLm(true),
   new AmmPool(
     30,
     1,
@@ -50,7 +50,7 @@ export const ammPools: AmmPool[] = [
     'eths',
     '0xa57ec11497f45fe86eca50f4f1c9e75c8016a1af',
     'wrbtc/eths',
-  ),
+  ).setUsesLm(true),
   new AmmPool(
     30,
     1,
@@ -92,7 +92,7 @@ export const ammPools: AmmPool[] = [
     'mynt',
     '0x3a18e61d9c9f1546dea013478dd653c793098f17',
     'wrbtc/mynt',
-  ),
+  ).setUsesLm(true),
   // testnet
   new AmmPool(
     31,
@@ -101,7 +101,7 @@ export const ammPools: AmmPool[] = [
     'tsov',
     '0xc2d05263318e2304fc7cdad40eea6a091b310080',
     'twrbtc/sov',
-  ),
+  ).setUsesLm(true),
   new AmmPool(
     31,
     1,
@@ -109,7 +109,7 @@ export const ammPools: AmmPool[] = [
     'txusd',
     '0xe5e750ead0e564e489b0776273e4a10f3f3d4028',
     'twrbtc/xusd',
-  ),
+  ).setUsesLm(true),
   new AmmPool(
     31,
     1,
@@ -134,7 +134,7 @@ export const ammPools: AmmPool[] = [
     'tbnbs',
     '0xA8D7FDd2f67273F178EFe731d4becd38E2A94E11',
     'twrbtc/bnbs',
-  ),
+  ).setUsesLm(true),
   new AmmPool(
     31,
     1,
@@ -142,7 +142,7 @@ export const ammPools: AmmPool[] = [
     'teths',
     '0x9f570ffe6c421e2c7611aaea14770b807e9fb424',
     'twrbtc/eths',
-  ),
+  ).setUsesLm(true),
   new AmmPool(
     31,
     1,
@@ -175,7 +175,7 @@ export const ammPools: AmmPool[] = [
     'twrbtc',
     'trif',
     '0xA82881bceb367f8653559937A6eFBFffBF2E06DD',
-    'twrbtc/rif1',
+    'twrbtc/rif',
   ),
   new AmmPool(
     31,
@@ -184,5 +184,5 @@ export const ammPools: AmmPool[] = [
     'tmynt',
     '0x84953dAF0E7a9fFb8B4fDf7F948185e1cF85852e',
     'twrbtc/mynt',
-  ),
+  ).setUsesLm(true),
 ];
