@@ -1,5 +1,8 @@
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
+import { Asset } from 'models/asset';
+import { findAsset } from 'utils/asset-utils';
+import { wrappedAssets } from './wrapped-assets';
 
 export const swapables: Partial<Record<ChainId, TokenId[]>> = {
   30: [
@@ -28,20 +31,15 @@ export const swapables: Partial<Record<ChainId, TokenId[]>> = {
   ],
 };
 
-export const wrapSwapables: Partial<Record<ChainId, [TokenId, TokenId]>> = {
-  30: ['rbtc', 'wrbtc'],
-  31: ['trbtc', 'twrbtc'],
-};
-
 export const getSwappableToken = (
   tokenId: TokenId,
   chainId: ChainId,
 ): TokenId => {
   if (
-    wrapSwapables.hasOwnProperty(chainId) &&
-    wrapSwapables[chainId]?.[0] === tokenId
+    wrappedAssets.hasOwnProperty(chainId) &&
+    wrappedAssets[chainId]?.[0] === tokenId
   ) {
-    return wrapSwapables[chainId]![1];
+    return wrappedAssets[chainId]![1];
   }
   return tokenId;
 };
@@ -51,10 +49,30 @@ export const unwrapSwappableToken = (
   chainId: ChainId,
 ): TokenId => {
   if (
-    wrapSwapables.hasOwnProperty(chainId) &&
-    wrapSwapables[chainId]?.[1] === tokenId
+    wrappedAssets.hasOwnProperty(chainId) &&
+    wrappedAssets[chainId]?.[1] === tokenId
   ) {
-    return wrapSwapables[chainId]![0];
+    return wrappedAssets[chainId]![0];
   }
   return tokenId;
+};
+
+export const getSwappableAsset = (token: Asset, chainId: ChainId): Asset => {
+  if (
+    wrappedAssets.hasOwnProperty(chainId) &&
+    wrappedAssets[chainId]?.[0] === token.id
+  ) {
+    return findAsset(chainId, wrappedAssets[chainId]![1]);
+  }
+  return token;
+};
+
+export const unwrapSwappableAsset = (token: Asset, chainId: ChainId): Asset => {
+  if (
+    wrappedAssets.hasOwnProperty(chainId) &&
+    wrappedAssets[chainId]?.[1] === token.id
+  ) {
+    return findAsset(chainId, wrappedAssets[chainId]![0]);
+  }
+  return token;
 };

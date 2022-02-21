@@ -16,8 +16,10 @@ import {
 } from 'react-native';
 import { DarkTheme } from '@react-navigation/native';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
+import { Text } from './Text';
 
 export type AmountFieldBaseProps = {
+  title?: React.ReactNode;
   amount: string;
   onAmountChanged: (amount: string) => void;
   inputProps?: TextInputProps;
@@ -38,11 +40,16 @@ export const AmountFieldBase: React.FC<AmountFieldBaseProps> = ({
   rightElement,
   bottomElement,
   containerStyle,
+  title,
 }) => {
+  const fromOutside = useRef<boolean>(false);
   const [_amount, setAmount] = useState<string | undefined>(amount);
 
   useDebouncedEffect(
     () => {
+      if (fromOutside.current) {
+        return;
+      }
       if (!_amount) {
         onAmountChanged('');
         return;
@@ -61,6 +68,7 @@ export const AmountFieldBase: React.FC<AmountFieldBaseProps> = ({
 
   // amount was changed from outside
   useEffect(() => {
+    fromOutside.current = true;
     setAmount(amount);
   }, [amount]);
 
@@ -82,13 +90,19 @@ export const AmountFieldBase: React.FC<AmountFieldBaseProps> = ({
     }
   }, [_amount, inputWidth]);
 
+  const handleAmountChange = useCallback((value: string) => {
+    fromOutside.current = false;
+    setAmount(value);
+  }, []);
+
   return (
     <View style={[styles.container, containerStyle]}>
+      {title}
       <View style={styles.inputWrapperView}>
         <TextInput
           ref={inputRef}
           value={_amount}
-          onChangeText={setAmount}
+          onChangeText={handleAmountChange}
           keyboardType="numeric"
           autoCapitalize="none"
           autoComplete="off"

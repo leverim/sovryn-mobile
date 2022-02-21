@@ -8287,6 +8287,11 @@ rn-nodeify@^10.3.0:
     semver "^5.0.1"
     xtend "^4.0.0"
 
+rn-tooltip@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/rn-tooltip/-/rn-tooltip-3.0.1.tgz#6441f9ebd0acf59562c4e6ac152c9bf90c11abea"
+  integrity sha512-Re+ViSC/tvyoV+L9SS9liVcoPKET8ANXtmlxMpS0BFjdG1mvpa7IG+IthUJDnX0PBqoP/KptLh1EOxonT3r9Ug==
+
 rsvp@^4.8.4:
   version "4.8.5"
   resolved "https://registry.npmjs.org/rsvp/-/rsvp-4.8.5.tgz"

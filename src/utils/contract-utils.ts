@@ -113,7 +113,9 @@ export async function contractCall<T = Record<string | number, any>>(
         to,
         methodAndTypes,
         args,
+        hexConcat([functionSignature(method), encodeParameters(types, args)]),
         error,
+        request,
       );
       throw error;
     });
@@ -278,24 +280,4 @@ export async function tryAggregateCall<
       Logger.error(error, 'aggregator call');
       throw error;
     });
-}
-
-export async function contractSend(
-  chainId: number,
-  to: string,
-  methodAndTypes: string,
-  args: ReadonlyArray<any>,
-  request?: TransactionRequest,
-): Promise<string> {
-  const data = encodeFunctionData(methodAndTypes, args);
-  // todo
-  return Promise.resolve(data);
-
-  // getProvider(chainId).getSigner().signTransaction()
-  //
-  // return getProvider(chainId).sendTransaction({
-  //   to: to,
-  //   data,
-  //   ...request,
-  // });
 }

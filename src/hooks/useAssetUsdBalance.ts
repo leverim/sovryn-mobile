@@ -1,12 +1,12 @@
-import { BigNumber } from 'ethers';
+import { BigNumber, BigNumberish } from 'ethers';
 import { useMemo } from 'react';
 import { getSwappableToken } from 'config/swapables';
-import { formatUnits, parseUnits } from 'utils/helpers';
+import { formatUnits } from 'utils/helpers';
 import { useCachedUsdPrice } from './app-context/useCachedUsdPrice';
 import { Asset } from 'models/asset';
 import { findAsset, getUsdAsset } from 'utils/asset-utils';
 
-export function useAssetUsdBalance(asset: Asset, amount: string) {
+export function useAssetUsdBalance(asset: Asset, amount?: BigNumberish) {
   const xusdPrice = useCachedUsdPrice(
     asset.chainId,
     asset.native
@@ -26,9 +26,9 @@ export function useAssetUsdBalance(asset: Asset, amount: string) {
     }
 
     if (xusdPrice !== null) {
-      return BigNumber.from(amount)
+      return BigNumber.from(amount || '0')
         .mul(xusdPrice)
-        .div(parseUnits('1', xusdToken.decimals))
+        .div(xusdToken.ONE)
         .toString();
     }
     return null;

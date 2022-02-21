@@ -8,17 +8,18 @@ import { Asset } from 'models/asset';
 type TokenPickerButtonProps = {
   token?: Asset;
   onPress?: (event: GestureResponderEvent) => void;
+  hideCaret?: boolean;
 };
 
 export const TokenPickerButton: React.FC<TokenPickerButtonProps> = React.memo(
-  ({ token, onPress }) => {
+  ({ token, onPress, hideCaret = false }) => {
     return (
       <Pressable onPress={onPress} style={styles.container}>
         {token !== undefined ? (
           <>
-            <AssetLogo source={token.icon} size={18} />
+            <AssetLogo source={token.icon} size={32} />
             <Text style={styles.symbol}>{token.symbol}</Text>
-            <DownIcon fill="white" />
+            {!hideCaret && <DownIcon fill="white" />}
           </>
         ) : (
           <Text>Select</Text>
@@ -34,7 +35,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
     borderRadius: 8,
   },
   symbol: {
