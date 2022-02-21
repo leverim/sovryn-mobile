@@ -20,6 +20,7 @@ type TokenApprovalFlowProps = {
   description?: string;
   loading?: boolean;
   disabled?: boolean;
+  showTokenName?: boolean;
 };
 
 export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
@@ -31,6 +32,7 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
   description,
   loading: parentLoading,
   disabled,
+  showTokenName,
 }) => {
   const isMounted = useIsMounted();
   const owner = useWalletAddress().toLowerCase();
@@ -122,13 +124,22 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
     getAllowance,
   ]);
 
+  const buttonTitle = useMemo(() => {
+    if (showTokenName) {
+      return approving
+        ? `Approving ${token.symbol}...`
+        : `Approve ${token.symbol}`;
+    }
+    return approving ? 'Approving...' : 'Approve';
+  }, [approving, showTokenName, token]);
+
   return (
     <View>
       {hasAllowance ? (
         <>{children}</>
       ) : (
         <Button
-          title={approving ? 'Approving...' : 'Approve'}
+          title={buttonTitle}
           onPress={handleApprove}
           primary
           loading={loading || parentLoading}

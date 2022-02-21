@@ -31,7 +31,7 @@ export const WalletScreen: React.FC = () => {
           ),
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [chainIds, JSON.stringify(balances), owner],
+    [JSON.stringify(chainIds), JSON.stringify(balances), owner],
   );
 
   const nativeTokens = useMemo(

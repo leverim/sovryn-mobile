@@ -1,4 +1,8 @@
-import { DarkTheme } from '@react-navigation/native';
+import {
+  DarkTheme,
+  NavigationProp,
+  useNavigation,
+} from '@react-navigation/native';
 import { AssetLogo } from 'components/AssetLogo';
 import { Button } from 'components/Buttons/Button';
 import { HasRewardsBadge } from 'components/HasRewardsBadge';
@@ -7,6 +11,7 @@ import { globalStyles } from 'global.styles';
 import { AmmPool } from 'models/amm-pool';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { AmmRoutesStackProps } from 'routers/amm.routes';
 import { getSovAsset } from 'utils/asset-utils';
 import { formatAndCommify } from 'utils/helpers';
 import { useAmmPoolData } from '../hooks/useAmmPoolData';
@@ -18,11 +23,10 @@ type AmmPoolItemProps = {
 };
 
 export const AmmPoolItem: React.FC<AmmPoolItemProps> = ({ item, refresh }) => {
+  const navigation = useNavigation<NavigationProp<AmmRoutesStackProps>>();
   const { state, execute, balance, rewards } = useAmmPoolData(item);
   useEffect(() => {
-    if (refresh) {
-      execute();
-    }
+    execute();
   }, [execute, refresh]);
   const sov = getSovAsset(item.chainId);
   return (
@@ -95,7 +99,15 @@ export const AmmPoolItem: React.FC<AmmPoolItemProps> = ({ item, refresh }) => {
           )}
         </View>
         <View>
-          <Button title="Deposit" primary />
+          <Button
+            title="Deposit"
+            primary
+            onPress={() =>
+              navigation.navigate(`amm.deposit.v${item.version}`, {
+                pool: item,
+              })
+            }
+          />
           <Button
             title="Withdraw"
             primary

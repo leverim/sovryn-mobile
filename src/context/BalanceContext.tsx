@@ -96,7 +96,6 @@ export const BalanceProvider: React.FC = ({ children }) => {
               [action.value.chainId, action.value.owner, action.value.tokenId],
               action.value.value,
             ),
-            loading: false,
           };
         case BALANCE_ACTION.INIT_BALANCES:
           return { ...prevState, balances: action.value, loading: false };

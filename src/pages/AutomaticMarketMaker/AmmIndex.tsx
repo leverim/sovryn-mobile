@@ -2,12 +2,12 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, RefreshControl } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
-import { LendingRoutesStackProps } from 'routers/lending.routes';
 import { ammPools } from 'config/amm-pools';
 import { AmmPoolItem } from './components/AmmPoolItem';
 import { useCurrentChain } from 'hooks/useCurrentChain';
+import { AmmRoutesStackProps } from 'routers/amm.routes';
 
-type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.index'>;
+type Props = NativeStackScreenProps<AmmRoutesStackProps, 'amm.index'>;
 
 export const AmmIndex: React.FC<Props> = () => {
   const { chainId } = useCurrentChain();

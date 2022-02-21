@@ -1,5 +1,7 @@
+import { getSwappableAsset, unwrapSwappableAsset } from 'config/swapables';
+import { BigNumberish } from 'ethers';
 import { ChainId } from 'types/network';
-import { parseUnits } from 'utils/helpers';
+import { commifyDecimals, formatAndCommify, formatUnits, parseUnits } from 'utils/helpers';
 
 export enum AssetType {
   NATIVE,
@@ -28,5 +30,23 @@ export class Asset {
   }
   public get erc20() {
     return this.type === AssetType.ERC20;
+  }
+  public getWrappedAsset() {
+    return getSwappableAsset(this, this.chainId);
+  }
+  public getUnwrappedAsset() {
+    return unwrapSwappableAsset(this, this.chainId);
+  }
+  public parseUnits(amount?: string) {
+    return parseUnits(amount, this.decimals);
+  }
+  public formatUnits(amount?: BigNumberish) {
+    return formatUnits(amount, this.decimals);
+  }
+  public commifyDecimals(amount?: string | number) {
+    return commifyDecimals(amount, this.decimals);
+  }
+  public formatAndCommify(amount?: BigNumberish, decimals?: number) {
+    return formatAndCommify(amount, this.decimals, decimals);
   }
 }

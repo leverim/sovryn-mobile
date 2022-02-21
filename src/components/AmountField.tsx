@@ -13,6 +13,9 @@ type Props = {
   decimals?: number;
 };
 
+/**
+ * @deprecated
+ */
 export const AmountField: React.FC<Props & TextInputProps> = ({
   max,
   fee = 0,

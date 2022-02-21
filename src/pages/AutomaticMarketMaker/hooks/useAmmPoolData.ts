@@ -3,7 +3,7 @@ import { useIsMounted } from 'hooks/useIsMounted';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { get, set } from 'lodash';
 import { AmmPool } from 'models/amm-pool';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { cache } from 'utils/cache';
 import { STORAGE_CACHE_AMM_POOLS } from 'utils/constants';
 import { aggregateCall, CallData } from 'utils/contract-utils';
@@ -37,7 +37,7 @@ export function useAmmPoolData(pool: AmmPool) {
   const isMounted = useIsMounted();
   const owner = useWalletAddress()?.toLocaleLowerCase();
   const [state, setState] = useState<ReserveState>({
-    loading: true,
+    loading: false,
     ...get(
       cache.get(STORAGE_CACHE_AMM_POOLS, {}),
       [pool.chainId, owner, pool.converterAddress],
@@ -55,7 +55,7 @@ export function useAmmPoolData(pool: AmmPool) {
     ),
   });
 
-  const execute = useCallback(() => {
+  const execute = useCallback(async () => {
     setState(prevState => ({ ...prevState, loading: true }));
 
     try {
@@ -67,14 +67,14 @@ export function useAmmPoolData(pool: AmmPool) {
         {
           address: pool.converterAddress,
           fnName: 'reserveWeight(address)(uint256)',
-          args: [pool.supplyToken1.address],
+          args: [pool.supplyToken1.getWrappedAsset().address],
           key: 'reserveWeight1',
           parser: result => result[0].toNumber(),
         },
         {
           address: pool.converterAddress,
           fnName: 'reserveWeight(address)(uint256)',
-          args: [pool.supplyToken2.address],
+          args: [pool.supplyToken2.getWrappedAsset().address],
           key: 'reserveWeight2',
           parser: result => result[0].toNumber(),
         },
@@ -109,14 +109,14 @@ export function useAmmPoolData(pool: AmmPool) {
         items = [
           ...items,
           {
-            address: pool.supplyToken1.address,
+            address: pool.supplyToken1.getWrappedAsset().address,
             fnName: 'balanceOf(address)(uint256)',
             args: [pool.converterAddress],
             key: 'reserveStakedBalance1',
             parser: result => result[0].toString(),
           },
           {
-            address: pool.supplyToken2.address,
+            address: pool.supplyToken2.getWrappedAsset().address,
             fnName: 'balanceOf(address)(uint256)',
             args: [pool.converterAddress],
             key: 'reserveStakedBalance2',
@@ -138,14 +138,14 @@ export function useAmmPoolData(pool: AmmPool) {
           {
             address: pool.converterAddress,
             fnName: 'reserveStakedBalance(address)(uint256)',
-            args: [pool.supplyToken1.address],
+            args: [pool.supplyToken1.getWrappedAsset().address],
             key: 'reserveStakedBalance1',
             parser: result => result[0].toString(),
           },
           {
             address: pool.converterAddress,
             fnName: 'reserveStakedBalance(address)(uint256)',
-            args: [pool.supplyToken2.address],
+            args: [pool.supplyToken2.getWrappedAsset().address],
             key: 'reserveStakedBalance2',
             parser: result => result[0].toString(),
           },
@@ -209,14 +209,10 @@ export function useAmmPoolData(pool: AmmPool) {
     pool.poolToken1.address,
     pool.poolToken1Id,
     pool.poolToken2?.address,
-    pool.supplyToken1.address,
-    pool.supplyToken2.address,
+    pool.supplyToken1,
+    pool.supplyToken2,
     pool.version,
   ]);
-
-  useEffect(() => {
-    execute();
-  }, [execute]);
 
   const balance1 = useMemo(() => {
     if (
@@ -225,15 +221,15 @@ export function useAmmPoolData(pool: AmmPool) {
       state.reserveStakedBalance1
     ) {
       return BigNumber.from(state.getUserInfo1.amount || '0')
-        .mul(pool.supplyToken1.ONE)
+        .mul(pool.supplyToken1.getWrappedAsset().ONE)
         .div(state.poolTokenSupply1 || '0')
         .mul(state.reserveStakedBalance1 || '0')
-        .div(pool.supplyToken1.ONE)
+        .div(pool.supplyToken1.getWrappedAsset().ONE)
         .toString();
     }
     return '0';
   }, [
-    pool.supplyToken1.ONE,
+    pool.supplyToken1,
     state.getUserInfo1?.amount,
     state.poolTokenSupply1,
     state.reserveStakedBalance1,
@@ -247,10 +243,10 @@ export function useAmmPoolData(pool: AmmPool) {
         state.reserveStakedBalance2
       ) {
         return BigNumber.from(state.getUserInfo1.amount || '0')
-          .mul(pool.supplyToken2.ONE)
+          .mul(pool.supplyToken2.getWrappedAsset().ONE)
           .div(state.poolTokenSupply1 || '0')
           .mul(state.reserveStakedBalance2 || '0')
-          .div(pool.supplyToken2.ONE)
+          .div(pool.supplyToken2.getWrappedAsset().ONE)
           .toString();
       }
     }
@@ -262,16 +258,16 @@ export function useAmmPoolData(pool: AmmPool) {
         state.reserveStakedBalance2
       ) {
         return BigNumber.from(state.getUserInfo2.amount || '0')
-          .mul(pool.supplyToken2.ONE)
+          .mul(pool.supplyToken2.getWrappedAsset().ONE)
           .div(state.poolTokenSupply2 || '0')
           .mul(state.reserveStakedBalance2 || '0')
-          .div(pool.supplyToken2.ONE)
+          .div(pool.supplyToken2.getWrappedAsset().ONE)
           .toString();
       }
     }
     return '0';
   }, [
-    pool.supplyToken2.ONE,
+    pool.supplyToken2,
     pool.version,
     state.getUserInfo1?.amount,
     state.getUserInfo2?.amount,

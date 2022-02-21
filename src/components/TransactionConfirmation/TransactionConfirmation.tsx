@@ -20,6 +20,7 @@ import { TransactionModal } from './TransactionModal';
 import { TransactionContext } from 'store/transactions';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { clone, sortBy } from 'lodash';
+import { getProvider } from 'utils/RpcEngine';
 
 type TransactionConfirmationProps = {};
 
@@ -93,7 +94,6 @@ export const TransactionConfirmation: React.FC<
     } catch (err: any) {
       setError(err?.message);
       setLoading(false);
-      console.log('authorization error', err);
       return;
     }
 
@@ -101,7 +101,10 @@ export const TransactionConfirmation: React.FC<
       const chainId = (request?.chainId || currentChainId()) as ChainId;
 
       if (request && request?.nonce === undefined && lastNonce !== undefined) {
-        request.nonce = lastNonce + 1;
+        const current = await getProvider(
+          request.chainId as ChainId,
+        ).getTransactionCount(wallet.address);
+        request.nonce = current > lastNonce + 1 ? current : lastNonce + 1;
       }
 
       const tx = await wallet.sendTransaction(chainId, request!, password);
