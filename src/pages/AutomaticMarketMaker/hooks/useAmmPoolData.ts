@@ -206,7 +206,7 @@ export function useAmmPoolData(pool: AmmPool) {
     owner,
     pool.chainId,
     pool.converterAddress,
-    pool.poolToken1.address,
+    pool.poolToken1?.address,
     pool.poolToken1Id,
     pool.poolToken2?.address,
     pool.supplyToken1,

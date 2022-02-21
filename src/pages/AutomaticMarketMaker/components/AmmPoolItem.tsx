@@ -108,11 +108,11 @@ export const AmmPoolItem: React.FC<AmmPoolItemProps> = ({ item, refresh }) => {
               })
             }
           />
-          <Button
+          {/* <Button
             title="Withdraw"
             primary
             disabled={balance.balance1 === '0' && balance.balance2 === '0'}
-          />
+          /> */}
         </View>
       </View>
     </View>

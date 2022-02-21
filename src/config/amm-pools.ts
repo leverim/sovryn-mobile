@@ -83,7 +83,7 @@ export const ammPools: AmmPool[] = [
     'rbtc',
     'rif',
     '0x65528e06371635a338ca804cd65958a11cb11009',
-    'wrbtc/rif1',
+    'wrbtc/rif',
   ),
   new AmmPool(
     30,

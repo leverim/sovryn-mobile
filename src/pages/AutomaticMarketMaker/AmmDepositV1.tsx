@@ -52,10 +52,7 @@ export const AmmDepositV1: React.FC<Props> = ({ route, navigation }) => {
   const [amount2, setAmount2] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
-  const liquidityMiningProxyAddress = getContractAddress(
-    'liquidityMiningProxy',
-    pool.chainId,
-  );
+  const receiverContract = getContractAddress('rbtcWrapper', pool.chainId);
 
   const approvalToken = useMemo(() => {
     if (!pool.supplyToken1.native) {
@@ -168,7 +165,7 @@ export const AmmDepositV1: React.FC<Props> = ({ route, navigation }) => {
   const submit = useCallback(async () => {
     try {
       const tx = await transactionController.request({
-        to: getContractAddress('rbtcWrapper', pool.chainId),
+        to: receiverContract,
         value: getNativeAsset(pool.chainId).parseUnits(nativeBalance),
         data: encodeFunctionData(
           'addLiquidityToV1(address,address[],uint256[],uint256)(uint256)',
@@ -186,7 +183,6 @@ export const AmmDepositV1: React.FC<Props> = ({ route, navigation }) => {
           ],
         ),
       });
-      console.log(tx);
       tx.wait().finally(refresh);
     } catch (e) {
       console.log('amm deposit v1', e);
@@ -200,6 +196,7 @@ export const AmmDepositV1: React.FC<Props> = ({ route, navigation }) => {
     pool.converterAddress,
     pool.supplyToken1,
     pool.supplyToken2,
+    receiverContract,
     refresh,
   ]);
 
@@ -217,6 +214,11 @@ export const AmmDepositV1: React.FC<Props> = ({ route, navigation }) => {
     const b2 = pool.supplyToken1.parseUnits(balance2);
     const a1 = pool.supplyToken1.parseUnits(amount1);
     const a2 = pool.supplyToken1.parseUnits(amount2);
+
+    if (a1.lte(0) || a2.lte(0)) {
+      return 'Enter amount';
+    }
+
     if (b1.lt(a1)) {
       return `Insufficient ${pool.supplyToken1.symbol} balance`;
     }
@@ -284,7 +286,7 @@ export const AmmDepositV1: React.FC<Props> = ({ route, navigation }) => {
           <TokenApprovalFlow
             showTokenName
             chainId={pool.chainId}
-            spender={liquidityMiningProxyAddress}
+            spender={receiverContract}
             tokenId={approvalToken.token.id}
             requiredAmount={approvalToken.token.formatUnits(
               approvalToken.amount,

@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AmmPool, AmmPoolVersion } from 'models/amm-pool';
 import { AmmIndex } from 'pages/AutomaticMarketMaker/AmmIndex';
 import { AmmDepositV1 } from 'pages/AutomaticMarketMaker/AmmDepositV1';
+import { AmmDepositV2 } from 'pages/AutomaticMarketMaker/AmmDepositV2';
 
 export type AmmRoutesStackProps = {
   'amm.index': { verions?: AmmPoolVersion };
@@ -28,7 +29,7 @@ export const AmmRoutes: React.FC = () => {
       />
       <Stack.Screen
         name="amm.deposit.v2"
-        component={AmmDepositV1}
+        component={AmmDepositV2}
         options={{ title: 'Deposit' }}
       />
       {/* <Stack.Screen name="amm.withdraw" component={LendingWithdraw} /> */}

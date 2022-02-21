@@ -111,9 +111,17 @@ export async function contractCall<T = Record<string | number, any>>(
         'contractCallFailed',
         chainId,
         to,
+        hexConcat([
+          functionSignature(method),
+          encodeParameters(types, args),
+        ]),
         methodAndTypes,
         args,
         error,
+        error?.address,
+        error?.args,
+        error?.overrides,
+        request,
       );
       throw error;
     });
