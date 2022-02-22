@@ -1,4 +1,4 @@
-import { Wallet } from 'ethers';
+import { BigNumber, Wallet } from 'ethers';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import { Buffer } from 'buffer';
@@ -13,7 +13,6 @@ import { DEFAULT_DERIVATION_PATH } from './constants';
 import { Encryptor } from './encryptor';
 import { getProvider } from './RpcEngine';
 import { ChainId } from 'types/network';
-import { chain } from 'lodash';
 
 interface UserWallet {
   address: string;
@@ -93,7 +92,22 @@ class WalletManager {
     const wallet = await this.unlockedWallet(accounts.selected, password);
     const signer = wallet.connect(getProvider(chainId as ChainId));
 
-    return signer.sendTransaction(transaction);
+    const tx = await signer.populateTransaction(transaction);
+
+    // Sometimes transactions fails on rsk networks saying tx is out of gas
+    // even though confirmed tx uses a lot less of gas.
+    // This increases estimated limit by 3%.
+    if (
+      [30, 31].includes(transaction.chainId) &&
+      tx.gasLimit?.toString() !== '21000' &&
+      transaction.gasLimit === undefined
+    ) {
+      tx.gasLimit = BigNumber.from(tx.gasLimit).mul(103).div(100).toHexString();
+    }
+
+    const signedTx = await signer.signTransaction(tx);
+
+    return signer.provider.sendTransaction(signedTx);
   }
 
   public async signMessage(message: string, password: string): Promise<string> {

@@ -5,6 +5,7 @@ import { AmmIndex } from 'pages/AutomaticMarketMaker/AmmIndex';
 import { AmmDepositV1 } from 'pages/AutomaticMarketMaker/AmmDepositV1';
 import { AmmDepositV2 } from 'pages/AutomaticMarketMaker/AmmDepositV2';
 import { AmmWithdrawV1 } from 'pages/AutomaticMarketMaker/AmmWithdrawV1';
+import { AmmWithdrawV2 } from 'pages/AutomaticMarketMaker/AmmWithdrawV2';
 
 export type AmmRoutesStackProps = {
   'amm.index': { verions?: AmmPoolVersion };
@@ -37,6 +38,11 @@ export const AmmRoutes: React.FC = () => {
       <Stack.Screen
         name="amm.withdraw.v1"
         component={AmmWithdrawV1}
+        options={{ title: 'Withdraw' }}
+      />
+      <Stack.Screen
+        name="amm.withdraw.v2"
+        component={AmmWithdrawV2}
         options={{ title: 'Withdraw' }}
       />
     </Stack.Navigator>
