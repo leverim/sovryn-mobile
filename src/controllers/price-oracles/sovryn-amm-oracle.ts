@@ -1,6 +1,6 @@
-import { swapables } from 'config/swapables';
 import { ChainId } from 'types/network';
 import { TokenId } from 'types/asset';
+import { ammPools } from 'config/amm-pools';
 import { findAsset, getNativeAsset } from 'utils/asset-utils';
 import { aggregateCall, contractCall } from 'utils/contract-utils';
 import { getContractAddress } from 'utils/helpers';
@@ -37,8 +37,13 @@ class SovrynAmmOracle implements IPriceOracle {
     const targetAddress = targetToken.address;
     const amountOne = targetToken.ONE;
 
+    const swapables = ammPools
+      .filter(item => item.chainId === chainId)
+      .map(item => [item.supplyToken1.id, item.supplyToken2.id])
+      .flat();
+
     const items =
-      swapables[chainId]?.filter(
+      swapables.filter(
         item =>
           item !== targetTokenId[chainId] &&
           item !== getNativeAsset(chainId).id,

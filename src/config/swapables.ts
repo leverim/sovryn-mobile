@@ -4,32 +4,7 @@ import { Asset } from 'models/asset';
 import { findAsset } from 'utils/asset-utils';
 import { wrappedAssets } from './wrapped-assets';
 
-export const swapables: Partial<Record<ChainId, TokenId[]>> = {
-  30: [
-    'rbtc',
-    'wrbtc',
-    'sov',
-    'eths',
-    'fish',
-    'mynt',
-    'doc',
-    'rusdt',
-    'xusd',
-    'bnbs',
-  ],
-  31: [
-    'trbtc',
-    'twrbtc',
-    'tsov',
-    'teths',
-    'tfish',
-    'tmynt',
-    // 'tdoc',
-    'trusdt',
-    'txusd',
-    'tbnbs',
-  ],
-};
+// todo: move these to utils
 
 export const getSwappableToken = (
   tokenId: TokenId,
