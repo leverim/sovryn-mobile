@@ -6,7 +6,7 @@ import { Text } from 'components/Text';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { TransactionType } from './transaction-types';
-import { commifyDecimals, currentChainId, formatUnits } from 'utils/helpers';
+import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { ChainId } from 'types/network';
 import { SendCoinData } from './SendCoinData';
 import { ContractInteractionData } from './ContractInteractionData';
@@ -17,22 +17,19 @@ import { getProvider } from 'utils/RpcEngine';
 import { wallet } from 'utils/wallet';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { Item } from './Item';
-import { BigNumber, Transaction } from 'ethers';
+import { BigNumber } from 'ethers';
 import { ErrorHolder } from './ErrorHolder';
-import { isEqual } from 'lodash';
 import { VestingWithdrawTokensData } from './VestingWithdrawTokensData';
 import { SwapData } from './SwapData';
-import Logger from 'utils/Logger';
 import { LendingDepositData } from './LendingDepositData';
 import { LendingWithdrawData } from './LendingWithdrawData';
-import { findAssetByAddress, getNativeAsset } from 'utils/asset-utils';
+import { getNativeAsset } from 'utils/asset-utils';
 import { getNetworkByChainId } from 'utils/network-utils';
 import {
   getSignatureFromData,
   getTxTitle,
   getTxType,
 } from 'utils/transaction-helpers';
-import { useIsMounted } from 'hooks/useIsMounted';
 import { HandleBackPress } from 'components/HandleBackPress';
 
 export type DataModalProps = {
@@ -150,7 +147,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     await getProvider(request?.chainId as ChainId)
       .call(request!)
       .catch(err => {
-        if (err.error?.body) {
+        if (err?.reason) {
+          setSimulatorError(err.reason);
+        } else if (err.error?.body) {
           try {
             const body = JSON.parse(err.error?.body);
             setSimulatorError(body?.error?.message);
@@ -160,6 +159,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         } else {
           setSimulatorError(err?.message || 'Transaction is likely to fail.');
         }
+        console.warn('tx static call failed: ', JSON.stringify(err));
       });
 
     setDataLoading(false);

@@ -117,7 +117,7 @@ export const TransactionConfirmation: React.FC<
       ref.current?.resolve(tx);
       ref.current = undefined;
     } catch (err: any) {
-      console.log('signature error', err);
+      console.warn('tx confirmation failed: ', JSON.stringify(err));
       if (err?.body) {
         try {
           const _err = JSON.parse(err?.body || '{}');
