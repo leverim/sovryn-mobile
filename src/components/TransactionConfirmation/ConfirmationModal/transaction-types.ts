@@ -14,5 +14,7 @@ export enum TransactionType {
   LENDING_WITHDRAW_NATIVE = '0x0506af04', // burnToBTC(address,uint256,bool)
   LENDING_DEPOSIT = '0xd1a1beb4', // mint(address,uint256,bool)
   LENDING_WITHDRAW = '0x76fd4fdf', // burn(address,uint256,bool)
+  ADD_LIQUIDITY_TO_V1 = '0x60dc20cd', // addLiquidityToV1(address,address[],uint256[],uint256)
+  ADD_LIQUIDITY_TO_V2 = '0xe90988e8', // addLiquidityToV2(address,address,uint256,uint256)
   UNKNOWN = 'unknown',
 }

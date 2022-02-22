@@ -31,6 +31,8 @@ import {
   getTxType,
 } from 'utils/transaction-helpers';
 import { HandleBackPress } from 'components/HandleBackPress';
+import { AmmDepositV1Data } from './AmmDepositV1Data';
+import { AmmDepositV2Data } from './AmmDepositV2Data';
 
 export type DataModalProps = {
   loading: boolean;
@@ -76,6 +78,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const type = useMemo(() => {
     const _signature = (request?.customData?.type ||
       signature) as TransactionType;
+    console.log(_signature);
     return getTxType(_signature);
   }, [request?.customData?.type, signature]);
 
@@ -105,6 +108,10 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       case TransactionType.LENDING_WITHDRAW:
       case TransactionType.LENDING_WITHDRAW_NATIVE:
         return LendingWithdrawData;
+      case TransactionType.ADD_LIQUIDITY_TO_V1:
+        return AmmDepositV1Data;
+      case TransactionType.ADD_LIQUIDITY_TO_V2:
+        return AmmDepositV2Data;
     }
   }, [type]);
 

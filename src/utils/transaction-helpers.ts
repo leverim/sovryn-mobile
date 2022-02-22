@@ -39,5 +39,8 @@ export const getTxTitle = (type: TransactionType, tx: TransactionResponse) => {
     case TransactionType.LENDING_WITHDRAW:
     case TransactionType.LENDING_WITHDRAW_NATIVE:
       return 'Withdraw from Lending Pool';
+    case TransactionType.ADD_LIQUIDITY_TO_V1:
+    case TransactionType.ADD_LIQUIDITY_TO_V2:
+      return 'Deposit to AMM Pool';
   }
 };
