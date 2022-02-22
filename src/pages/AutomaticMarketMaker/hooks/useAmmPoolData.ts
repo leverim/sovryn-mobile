@@ -59,7 +59,6 @@ export function useAmmPoolData(pool: AmmPool) {
   useFocusEffect(
     useCallback(() => {
       if (!state.loading) {
-        console.log('updated state');
         setState(prevState => ({
           ...prevState,
           ...get(

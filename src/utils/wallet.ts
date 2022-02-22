@@ -89,10 +89,15 @@ class WalletManager {
     }
     delete transaction.customData;
 
+    console.time('unlockWallet');
     const wallet = await this.unlockedWallet(accounts.selected, password);
+    console.timeEnd('unlockWallet');
+
     const signer = wallet.connect(getProvider(chainId as ChainId));
 
+    console.time('populateTransaction');
     const tx = await signer.populateTransaction(transaction);
+    console.timeEnd('populateTransaction');
 
     // Sometimes transactions fails on rsk networks saying tx is out of gas
     // even though confirmed tx uses a lot less of gas.
@@ -106,7 +111,6 @@ class WalletManager {
     }
 
     const signedTx = await signer.signTransaction(tx);
-
     return signer.provider.sendTransaction(signedTx);
   }
 

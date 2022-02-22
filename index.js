@@ -3,6 +3,7 @@ import './shim';
 import 'global.shims';
 import 'react-native-get-random-values';
 import '@ethersproject/shims';
+import 'react-native-console-time-polyfill';
 import { AppRegistry, Linking } from 'react-native';
 import notifee, { EventType } from '@notifee/react-native';
 import App from './App';

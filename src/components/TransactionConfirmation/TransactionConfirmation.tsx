@@ -100,14 +100,19 @@ export const TransactionConfirmation: React.FC<
     try {
       const chainId = (request?.chainId || currentChainId()) as ChainId;
 
+
       if (request && request?.nonce === undefined && lastNonce !== undefined) {
         const current = await getProvider(
           request.chainId as ChainId,
-        ).getTransactionCount(wallet.address);
+        ).getTransactionCount(wallet.address, 'pending');
         request.nonce = current > lastNonce + 1 ? current : lastNonce + 1;
       }
 
+      console.time('wallet.sendTransaction');
+
       const tx = await wallet.sendTransaction(chainId, request!, password);
+
+      console.timeEnd('wallet.sendTransaction');
 
       addTransaction(tx!);
 
