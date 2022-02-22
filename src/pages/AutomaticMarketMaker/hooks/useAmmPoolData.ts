@@ -1,9 +1,10 @@
+import { useFocusEffect } from '@react-navigation/native';
 import { BigNumber } from 'ethers';
 import { useIsMounted } from 'hooks/useIsMounted';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { get, set } from 'lodash';
 import { AmmPool } from 'models/amm-pool';
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { cache } from 'utils/cache';
 import { STORAGE_CACHE_AMM_POOLS } from 'utils/constants';
 import { aggregateCall, CallData } from 'utils/contract-utils';
@@ -54,6 +55,22 @@ export function useAmmPoolData(pool: AmmPool) {
       },
     ),
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!state.loading) {
+        console.log('updated state');
+        setState(prevState => ({
+          ...prevState,
+          ...get(
+            cache.get(STORAGE_CACHE_AMM_POOLS, {}),
+            [pool.chainId, owner, pool.converterAddress],
+            {},
+          ),
+        }));
+      }
+    }, [owner, pool.chainId, pool.converterAddress, state.loading]),
+  );
 
   const execute = useCallback(async () => {
     setState(prevState => ({ ...prevState, loading: true }));

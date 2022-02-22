@@ -1,14 +1,13 @@
 import { DarkTheme } from '@react-navigation/native';
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { Keyboard, Pressable, RefreshControl } from 'react-native';
+import { getSovAsset } from 'utils/asset-utils';
 import { useAmmPoolData } from './hooks/useAmmPoolData';
 import { AmmRoutesStackProps } from 'routers/amm.routes';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { AmmAmountField } from './components/AmmAmountField';
-import { useAssetBalance } from 'hooks/useAssetBalance';
-import { useWalletAddress } from 'hooks/useWalletAddress';
 import { TokenApprovalFlow } from 'components/TokenApprovalFlow';
 import { Button } from 'components/Buttons/Button';
 import {
@@ -19,6 +18,7 @@ import {
 } from 'utils/helpers';
 import { useSlippage } from 'hooks/useSlippage';
 import SettingsIcon from 'assets/settings-icon.svg';
+import AddIcon from 'assets/add-icon.svg';
 import ArrowDownIcon from 'assets/arrow-down-icon.svg';
 import { SwapSettingsModal } from 'pages/SwapPage/components/SwapSettingsModal';
 import { transactionController } from 'controllers/TransactionController';
@@ -27,59 +27,56 @@ import { PendingTransactions } from 'components/TransactionHistory/PendingTransa
 import { useIsMounted } from 'hooks/useIsMounted';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { AmountFieldIconWrapper } from 'components/AmountFieldIconWrapper';
-import { SwapAmountField } from 'pages/SwapPage/components/SwapAmountField';
 
-type Props = NativeStackScreenProps<AmmRoutesStackProps, 'amm.deposit.v2'>;
+type Props = NativeStackScreenProps<AmmRoutesStackProps, 'amm.deposit.v1'>;
 
-export const AmmDepositV2: React.FC<Props> = ({ route, navigation }) => {
+export const AmmWithdrawV1: React.FC<Props> = ({ route, navigation }) => {
   const { pool } = route.params;
-  const { state, execute } = useAmmPoolData(pool);
+  const { state, execute, rewards } = useAmmPoolData(pool);
   const isMounted = useIsMounted();
 
-  const [token, setToken] = useState(pool.supplyToken1);
-  const which = useMemo(
-    () => (token.id === pool.supplyToken1.id ? 1 : 2),
-    [pool.supplyToken1.id, token.id],
-  );
-
-  const owner = useWalletAddress();
-  const { value: balance1, execute: executeBalance1 } = useAssetBalance(
-    pool.supplyToken1,
-    owner,
-  );
-  const { value: balance2, execute: executeBalance2 } = useAssetBalance(
-    pool.supplyToken2,
-    owner,
-  );
-
   const [amount, setAmount] = useState('');
+
+  const amount1 = useMemo(() => {
+    return pool.poolToken1
+      .parseUnits(amount)
+      .mul(pool.poolToken1.ONE)
+      .div(state.poolTokenSupply1)
+      .mul(state.reserveStakedBalance1)
+      .div(pool.supplyToken1.ONE)
+      .toString();
+  }, [
+    amount,
+    pool.poolToken1,
+    pool.supplyToken1.ONE,
+    state.poolTokenSupply1,
+    state.reserveStakedBalance1,
+  ]);
+
+  const amount2 = useMemo(() => {
+    return pool.poolToken1
+      .parseUnits(amount)
+      .mul(pool.poolToken1.ONE)
+      .div(state.poolTokenSupply1)
+      .mul(state.reserveStakedBalance2)
+      .div(pool.supplyToken2.ONE)
+      .toString();
+  }, [
+    amount,
+    pool.poolToken1,
+    pool.supplyToken2.ONE,
+    state.poolTokenSupply1,
+    state.reserveStakedBalance2,
+  ]);
+
   const [refreshing, setRefreshing] = useState(false);
 
   const receiverContract = getContractAddress('rbtcWrapper', pool.chainId);
 
-  const expectedPoolTokens = useMemo(() => {
-    const poolTokenSupply =
-      which === 1 ? state.poolTokenSupply1 : state.poolTokenSupply2!;
-    const initialStakedBalance =
-      which === 1 ? state.reserveStakedBalance1 : state.reserveStakedBalance2;
-    const _amount = token.parseUnits(amount);
-    if (poolTokenSupply === '0' || initialStakedBalance === '0') {
-      return amount.toString();
-    }
-    return _amount.mul(poolTokenSupply).div(initialStakedBalance).toString();
-  }, [
-    amount,
-    state.poolTokenSupply1,
-    state.poolTokenSupply2,
-    state.reserveStakedBalance1,
-    state.reserveStakedBalance2,
-    token,
-    which,
-  ]);
-
   const [showSettings, setShowSettings] = useState(false);
-  const [slippage, setSlippage] = useState('0.1');
-  const { minReturn } = useSlippage(expectedPoolTokens, 0, slippage);
+  const [slippage, setSlippage] = useState('0.2');
+  const { minReturn: minReturn1 } = useSlippage(amount1, 0, slippage);
+  const { minReturn: minReturn2 } = useSlippage(amount2, 0, slippage);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -97,62 +94,65 @@ export const AmmDepositV2: React.FC<Props> = ({ route, navigation }) => {
 
   const refresh = useCallback(() => {
     setRefreshing(true);
-    Promise.all([execute(), executeBalance1(), executeBalance2()]).finally(
-      () => {
-        if (isMounted()) {
-          setRefreshing(false);
-        }
-      },
-    );
-  }, [execute, executeBalance1, executeBalance2, isMounted]);
+    execute().finally(() => {
+      if (isMounted()) {
+        setRefreshing(false);
+      }
+    });
+  }, [execute, isMounted]);
 
   const submit = useCallback(async () => {
     try {
+      console.log({ minReturn1, minReturn2 });
       const tx = await transactionController.request({
         to: receiverContract,
-        value: token.native ? token.parseUnits(amount) : 0,
         data: encodeFunctionData(
-          'addLiquidityToV2(address,address,uint256,uint256)(uint256)',
+          'removeLiquidityFromV1(address,uint256,address[],uint256[])(uint256)',
           [
             pool.converterAddress,
-            token.getWrappedAsset().address,
-            token.parseUnits(amount).toString(),
-            minReturn,
+            pool.poolToken1.parseUnits(amount).toString(),
+            [
+              pool.supplyToken1.getWrappedAsset().address,
+              pool.supplyToken2.getWrappedAsset().address,
+            ],
+            // ['1', '1'],
+            [minReturn1, minReturn2],
           ],
         ),
       });
       tx.wait().finally(refresh);
     } catch (e) {
-      console.log('amm deposit v2', e);
+      console.log('amm withdraw v1', e);
     }
   }, [
     amount,
-    minReturn,
+    minReturn1,
+    minReturn2,
     pool.converterAddress,
+    pool.poolToken1,
+    pool.supplyToken1,
+    pool.supplyToken2,
     receiverContract,
     refresh,
-    token,
   ]);
 
-  const balance = useMemo(
-    () => (which === 1 ? balance1 : balance2),
-    [which, balance1, balance2],
-  );
-  const usd = useAssetUsdBalance(token, token.parseUnits(amount));
-  const poolToken = useMemo(
-    () => (which === 1 ? pool.poolToken1 : pool.poolToken2!),
-    [pool.poolToken1, pool.poolToken2, which],
-  );
+  const usd1 = useAssetUsdBalance(pool.supplyToken1, amount1);
+  const usd2 = useAssetUsdBalance(pool.supplyToken2, amount2);
 
   const errorTitle = useMemo(() => {
-    const _amount = token.parseUnits(amount);
-    if (_amount.lte(0)) {
+    const b1 = pool.poolToken1.parseUnits(state.getUserInfo1.amount);
+    const a1 = pool.poolToken1.parseUnits(amount);
+
+    if (a1.lte(0)) {
       return 'Enter amount';
     }
-    if (token.parseUnits(balance).lt(_amount)) {
-      return `Insufficient ${token.symbol} balance`;
+
+    if (b1.lt(a1)) {
+      return `Insufficient ${pool.poolToken1.symbol} balance`;
     }
-  }, [amount, balance, token]);
+  }, [amount, pool.poolToken1, state.getUserInfo1.amount]);
+
+  const sov = getSovAsset(pool.chainId);
 
   return (
     <SafeAreaPage
@@ -168,23 +168,40 @@ export const AmmDepositV2: React.FC<Props> = ({ route, navigation }) => {
         ),
       }}>
       <PageContainer>
-        <SwapAmountField
+        <AmmAmountField
           amount={amount}
           onAmountChanged={setAmount}
-          token={token}
-          balance={balance}
-          price={usd.value!}
-          title={<Text>Deposit {token.symbol}:</Text>}
-          tokens={[pool.supplyToken1, pool.supplyToken2]}
-          onTokenChanged={setToken}
+          token={pool.poolToken1}
+          balance={pool.poolToken1.formatUnits(state.getUserInfo1.amount)}
+          title={<Text>Withdraw {pool.poolToken1.symbol} LP tokens:</Text>}
         />
-
         <AmountFieldIconWrapper control={<ArrowDownIcon fill="white" />}>
           <AmmAmountField
-            title={<Text>LP tokens received:</Text>}
-            amount={floorDecimals(poolToken.formatUnits(expectedPoolTokens), 8)}
+            amount={floorDecimals(pool.supplyToken1.formatUnits(amount1), 8)}
             onAmountChanged={noop}
-            token={poolToken}
+            token={pool.supplyToken1}
+            price={usd1.value!}
+            title={<Text>Receive {pool.supplyToken1.symbol}:</Text>}
+            inputProps={{ editable: false }}
+          />
+        </AmountFieldIconWrapper>
+
+        <AmountFieldIconWrapper control={<AddIcon fill="white" />}>
+          <AmmAmountField
+            amount={floorDecimals(pool.supplyToken2.formatUnits(amount2), 8)}
+            onAmountChanged={noop}
+            token={pool.supplyToken2}
+            price={usd2.value!}
+            title={<Text>Receive {pool.supplyToken2.symbol}:</Text>}
+            inputProps={{ editable: false }}
+          />
+        </AmountFieldIconWrapper>
+        <AmountFieldIconWrapper control={<AddIcon fill="white" />}>
+          <AmmAmountField
+            title={<Text>Vested SOV rewards:</Text>}
+            amount={floorDecimals(sov.formatUnits(rewards.total), 8)}
+            onAmountChanged={noop}
+            token={sov}
             inputProps={{ editable: false }}
           />
         </AmountFieldIconWrapper>
@@ -194,18 +211,14 @@ export const AmmDepositV2: React.FC<Props> = ({ route, navigation }) => {
           <TokenApprovalFlow
             chainId={pool.chainId}
             spender={receiverContract}
-            tokenId={token.id}
+            tokenId={pool.poolToken1.id}
             requiredAmount={amount}>
-            <Button primary title="Deposit" onPress={submit} />
+            <Button primary title="Withdraw" onPress={submit} />
           </TokenApprovalFlow>
         )}
 
         <Text>Slippage: {commifyDecimals(slippage, 3)}%</Text>
-        <Text>
-          Minimum LP tokens received: {poolToken.formatAndCommify(minReturn)}{' '}
-          {poolToken.symbol}
-        </Text>
-        <Text>LP tokens will be owned by Liquidity Mining smart-contract!</Text>
+        <Text>SOV Rewards will be vested for 10 months</Text>
         <PendingTransactions />
         {showSettings && (
           <SwapSettingsModal
