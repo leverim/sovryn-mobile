@@ -41,24 +41,21 @@ export const AmmDepositV1Data: React.FC<DataModalProps> = ({ request }) => {
       <Item
         title="Deposit:"
         content={
-          <Text>
-            {formatAndCommify(amount1, supplyToken1.decimals)}{' '}
-            {supplyToken1.symbol}
-          </Text>
-        }
-      />
-      <Item
-        title=""
-        content={
-          <Text>
-            {formatAndCommify(amount2, supplyToken2.decimals)}{' '}
-            {supplyToken2.symbol}
-          </Text>
+          <>
+            <Text>
+              {formatAndCommify(amount1, supplyToken1.decimals)}{' '}
+              {supplyToken1.symbol}
+            </Text>
+            <Text>
+              {formatAndCommify(amount2, supplyToken2.decimals)}{' '}
+              {supplyToken2.symbol}
+            </Text>
+          </>
         }
       />
       {poolToken && (
         <Item
-          title="Minimum received:"
+          title="Receive (minimum):"
           content={
             <Text>
               {formatAndCommify(minReturn, poolToken.decimals)}{' '}

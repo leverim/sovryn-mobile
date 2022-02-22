@@ -42,5 +42,8 @@ export const getTxTitle = (type: TransactionType, tx: TransactionResponse) => {
     case TransactionType.ADD_LIQUIDITY_TO_V1:
     case TransactionType.ADD_LIQUIDITY_TO_V2:
       return 'Deposit to AMM Pool';
+    case TransactionType.REMOVE_LIQUIDITY_FROM_V1:
+    case TransactionType.REMOVE_LIQUIDITY_FROM_V2:
+      return 'Withdraw from AMM Pool';
   }
 };

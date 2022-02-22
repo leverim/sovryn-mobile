@@ -33,6 +33,8 @@ import {
 import { HandleBackPress } from 'components/HandleBackPress';
 import { AmmDepositV1Data } from './AmmDepositV1Data';
 import { AmmDepositV2Data } from './AmmDepositV2Data';
+import { AmmWithdrawV1Data } from './AmmWithdrawV1Data';
+import { AmmWithdrawV2Data } from './AmmWithdrawV2Data';
 
 export type DataModalProps = {
   loading: boolean;
@@ -112,6 +114,10 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         return AmmDepositV1Data;
       case TransactionType.ADD_LIQUIDITY_TO_V2:
         return AmmDepositV2Data;
+      case TransactionType.REMOVE_LIQUIDITY_FROM_V1:
+        return AmmWithdrawV1Data;
+      case TransactionType.REMOVE_LIQUIDITY_FROM_V2:
+        return AmmWithdrawV2Data;
     }
   }, [type]);
 

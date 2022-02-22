@@ -16,5 +16,7 @@ export enum TransactionType {
   LENDING_WITHDRAW = '0x76fd4fdf', // burn(address,uint256,bool)
   ADD_LIQUIDITY_TO_V1 = '0x60dc20cd', // addLiquidityToV1(address,address[],uint256[],uint256)
   ADD_LIQUIDITY_TO_V2 = '0xe90988e8', // addLiquidityToV2(address,address,uint256,uint256)
+  REMOVE_LIQUIDITY_FROM_V1 = '0xe94190ed', // removeLiquidityFromV1(address,uint256,address[],uint256[])
+  REMOVE_LIQUIDITY_FROM_V2 = '0x0ec9e443', // removeLiquidityFromV2(address,address,uint256,uint256)
   UNKNOWN = 'unknown',
 }
