@@ -6,11 +6,11 @@ import {
 import { Pressable, StyleSheet, View } from 'react-native';
 import { commifyDecimals, floorDecimals, px } from 'utils/helpers';
 import { Text } from 'components/Text';
-import { TokenPickerButton } from './TokenPickerButton';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { ChainId } from 'types/network';
 import { Asset } from 'models/asset';
 import { AssetPickerDialog } from 'components/AssetPickerDialog';
+import { TokenPickerButton } from 'components/TokenPickerButton';
 
 type SwapAmountFieldProps = {
   token: Asset;

@@ -26,6 +26,10 @@ export const AssetLogo: React.FC<Props> = ({
       );
     }
 
+    if (!source) {
+      return null;
+    }
+
     if (source.toLowerCase().endsWith('.svg')) {
       return (
         <SvgUri

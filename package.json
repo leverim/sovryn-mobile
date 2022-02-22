@@ -55,6 +55,7 @@
     "react-native-swipe-list-view": "^3.2.9",
     "react-native-tab-view": "^3.1.1",
     "readable-stream": "1.0.33",
+    "rn-tooltip": "^3.0.1",
     "stream-browserify": "^1.0.0"
   },
   "devDependencies": {

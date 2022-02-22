@@ -1,8 +1,8 @@
 import { ChainId } from 'types/network';
-import { aggregateCall, contractCall, contractSend } from 'utils/contract-utils';
+import { aggregateCall, contractCall } from 'utils/contract-utils';
 
 export const erc20 = {
-  getInfo(chainId: number, address: string) {
+  getInfo(chainId: ChainId, address: string) {
     return aggregateCall(chainId, [
       {
         address,

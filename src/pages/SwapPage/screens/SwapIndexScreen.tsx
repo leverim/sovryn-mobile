@@ -22,7 +22,7 @@ import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SwapStackProps } from '..';
-import { getSwappableToken, swapables, wrapSwapables } from 'config/swapables';
+import { getSwappableToken, swapables } from 'config/swapables';
 import { TokenId } from 'types/asset';
 import { Button } from 'components/Buttons/Button';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
@@ -52,6 +52,8 @@ import { ChainId } from 'types/network';
 import { AppContext } from 'context/AppContext';
 import { Asset } from 'models/asset';
 import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
+import { wrappedAssets } from 'config/wrapped-assets';
+import { AmountFieldIconWrapper } from 'components/AmountFieldIconWrapper';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
@@ -66,7 +68,7 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   const tokens: Asset[] = useMemo(() => {
     return listAssetsForChain(chainId)
       .filter(item => swapables[chainId]?.includes(item.id as TokenId))
-      .filter(item => wrapSwapables[chainId]![1] !== item.id); // exclude wrapped native token;
+      .filter(item => wrappedAssets[chainId]![1] !== item.id); // exclude wrapped native token;
   }, [chainId]);
 
   useLayoutEffect(() => {
@@ -283,8 +285,14 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
             price={sendUSD}
             balance={sendBalance.value}
             tokens={tokens}
+            title={<Text>Send:</Text>}
           />
-          <View style={styles.receiverContainerView}>
+          <AmountFieldIconWrapper
+            control={
+              <Pressable onPress={handleSwapAssets}>
+                <ArrowDownIcon fill="white" />
+              </Pressable>
+            }>
             <SwapAmountField
               amount={
                 Number(receiveAmount) > 0
@@ -301,13 +309,9 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
               difference={difference}
               balance={receiveBalance.value}
               tokens={tokens}
+              title={<Text>Receive:</Text>}
             />
-            <Pressable
-              style={styles.receiverIconButton}
-              onPress={handleSwapAssets}>
-              <ArrowDownIcon fill="white" />
-            </Pressable>
-          </View>
+          </AmountFieldIconWrapper>
         </View>
 
         {validationError ? (
