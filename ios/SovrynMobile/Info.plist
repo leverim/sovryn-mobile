@@ -37,6 +37,8 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Allow Sovryn Wallet to use camera for reading QR codes</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Authenticate to allow unlocking the app using biometrics</string>
 	<key>UILaunchStoryboardName</key>
@@ -57,7 +59,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>NSCameraUsageDescription</key>
-	<string>Allow Sovryn Wallet to use camera for reading QR codes</string>
 </dict>
 </plist>
