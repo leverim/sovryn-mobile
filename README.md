@@ -45,6 +45,8 @@ List of planned and available features:
 ## Compile yourself
 You can easily compile binaries from source code using these instructions yourself
 
+Project uses Google Firebase for interaction and crash logs, follow these instructions https://rnfirebase.io/ to setup your account and get these files `android/app/google-services.json` and `ios/GoogleService-Info.plist`.
+
 ### iOS
 To compile source code for ios usage you will need apple computer with xcode installed.
 ```
@@ -55,6 +57,9 @@ npx react-native run-ios --configuration Release --device
 // or if you want to run on simulator
 npx react-native run-ios --configuration Release
 ```
+
+When building on macbook with M1 chip you will need to use Terminal with Rosetta mode enabled.
+To enable Rosetta go to Applications -> Utilities, click "Get Info" on Terminal and add "Open using Rosetta" checkbox. You can also dublicate Terminal to new one before enabling Rosetta to be able to use both terminals if needed.
 
 ### Android
 We havent tested app on android yet, most likely building would crash because of some unsupported features on react-native for android.
