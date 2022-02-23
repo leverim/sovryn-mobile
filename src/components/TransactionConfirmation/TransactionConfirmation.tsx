@@ -100,14 +100,19 @@ export const TransactionConfirmation: React.FC<
     try {
       const chainId = (request?.chainId || currentChainId()) as ChainId;
 
+
       if (request && request?.nonce === undefined && lastNonce !== undefined) {
         const current = await getProvider(
           request.chainId as ChainId,
-        ).getTransactionCount(wallet.address);
+        ).getTransactionCount(wallet.address, 'pending');
         request.nonce = current > lastNonce + 1 ? current : lastNonce + 1;
       }
 
+      console.time('wallet.sendTransaction');
+
       const tx = await wallet.sendTransaction(chainId, request!, password);
+
+      console.timeEnd('wallet.sendTransaction');
 
       addTransaction(tx!);
 
@@ -117,7 +122,7 @@ export const TransactionConfirmation: React.FC<
       ref.current?.resolve(tx);
       ref.current = undefined;
     } catch (err: any) {
-      console.log('signature error', err);
+      console.warn('tx confirmation failed: ', JSON.stringify(err));
       if (err?.body) {
         try {
           const _err = JSON.parse(err?.body || '{}');

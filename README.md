@@ -23,23 +23,23 @@ List of planned and available features:
 - [x] Vested assets (list)
 - [x] Vested assets (withdraw unlocked)
 - [x] Lending
-- [ ] Liquidity mining
-- [ ] Borrowing
+- [x] Liquidity mining
 - [x] Swapping
+- [x] Multiple wallet accounts
+- [x] Read-only accounts
+- [x] PIN code and/or biometrics middleware
+- [x] Balances in USD
+- [x] Transaction history
+- [ ] Borrowing
 - [ ] Leverage trading
 - [ ] Staking
 - [ ] Voting in bitocracy
-- [x] Multiple wallet accounts
-- [x] Read-only accounts
 - [ ] Ledger using bluetooth
-- [x] Transaction history
 - [ ] Two-Way Fast-BTC
 - [ ] ETH & BSC bridge
 - [ ] In-app browser
-- [x] PIN code and/or biometrics middleware
 - [ ] Add & track custom assets
 - [ ] Update blockchain state each block
-- [x] Balances in USD
 - [ ] Better design / UI / UX
 
 ## Compile yourself

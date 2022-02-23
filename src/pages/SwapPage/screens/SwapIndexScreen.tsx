@@ -22,7 +22,7 @@ import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SwapStackProps } from '..';
-import { getSwappableToken, swapables } from 'config/swapables';
+import { getSwappableToken } from 'config/swapables';
 import { TokenId } from 'types/asset';
 import { Button } from 'components/Buttons/Button';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
@@ -54,6 +54,7 @@ import { Asset } from 'models/asset';
 import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
 import { wrappedAssets } from 'config/wrapped-assets';
 import { AmountFieldIconWrapper } from 'components/AmountFieldIconWrapper';
+import { ammPools } from 'config/amm-pools';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
@@ -66,8 +67,13 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   const [showSettings, setShowSettings] = useState(false);
 
   const tokens: Asset[] = useMemo(() => {
+    const swapables = ammPools
+      .filter(item => item.chainId === chainId)
+      .map(item => [item.supplyToken1.id, item.supplyToken2.id])
+      .flat();
+
     return listAssetsForChain(chainId)
-      .filter(item => swapables[chainId]?.includes(item.id as TokenId))
+      .filter(item => swapables.includes(item.id as TokenId))
       .filter(item => wrappedAssets[chainId]![1] !== item.id); // exclude wrapped native token;
   }, [chainId]);
 

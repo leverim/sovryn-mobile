@@ -11,6 +11,7 @@ import { currentChainId, parseUnits } from 'utils/helpers';
 import { erc20 } from 'utils/interactions';
 import { Button } from './Buttons/Button';
 import { useIsMounted } from 'hooks/useIsMounted';
+import Logger from 'utils/Logger';
 
 type TokenApprovalFlowProps = {
   tokenId: TokenId;
@@ -20,7 +21,6 @@ type TokenApprovalFlowProps = {
   description?: string;
   loading?: boolean;
   disabled?: boolean;
-  showTokenName?: boolean;
 };
 
 export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
@@ -32,7 +32,6 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
   description,
   loading: parentLoading,
   disabled,
-  showTokenName,
 }) => {
   const isMounted = useIsMounted();
   const owner = useWalletAddress().toLowerCase();
@@ -94,19 +93,13 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
           approvalAmount: requiredAmount,
         },
       });
-      await tx
-        .wait()
-        .then(() => {
-          if (isMounted()) {
-            getAllowance(true);
-          }
-        })
-        .catch(() => {
-          if (isMounted()) {
-            getAllowance(true);
-          }
-        });
-    } catch (_) {
+      await tx.wait().finally(() => {
+        if (isMounted()) {
+          getAllowance(true);
+        }
+      });
+    } catch (err) {
+      Logger.error(err, 'token approve');
       //
     } finally {
       if (isMounted()) {
@@ -125,13 +118,10 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
   ]);
 
   const buttonTitle = useMemo(() => {
-    if (showTokenName) {
-      return approving
-        ? `Approving ${token.symbol}...`
-        : `Approve ${token.symbol}`;
-    }
-    return approving ? 'Approving...' : 'Approve';
-  }, [approving, showTokenName, token]);
+    return approving
+      ? `Approving ${token.symbol}...`
+      : `Approve ${token.symbol}`;
+  }, [approving, token]);
 
   return (
     <View>
