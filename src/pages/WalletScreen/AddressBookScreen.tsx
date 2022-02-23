@@ -27,27 +27,33 @@ export const AddressBookScreen: React.FC<Props> = ({ route, navigation }) => {
   );
 
   const handleStartAdd = useCallback(() => {
-    Alert.prompt('Bookmark new address', 'Add address here', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Save',
-        onPress: text => {
-          try {
-            if (isAddress(text?.toLowerCase()!)) {
-              add({
-                address: text!,
-                name: `New bookmark ${addresses.length + 1}`,
-              });
-            } else {
-              throw new Error('Address is not valid.');
+    Alert.prompt(
+      'Bookmark new address',
+      'Add address here',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Save',
+          onPress: text => {
+            try {
+              if (isAddress(text?.toLowerCase()!)) {
+                add({
+                  address: text!,
+                  name: `New bookmark ${addresses.length + 1}`,
+                });
+              } else {
+                throw new Error('Address is not valid.');
+              }
+            } catch (error) {
+              Alert.alert('Failed to add', error.message);
             }
-          } catch (error) {
-            Alert.alert('Failed to add', error.message);
-          }
+          },
         },
-      },
-    ]);
-  }, [add, addresses.length]);
+      ],
+      undefined,
+      route.params.address,
+    );
+  }, [add, addresses.length, route.params.address]);
 
   useLayoutEffect(() => {
     navigation.setOptions({

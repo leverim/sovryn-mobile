@@ -15,7 +15,7 @@ export type WalletStackProps = {
   'wallet.vestings': { token: Asset; chainId: ChainId };
   'wallet.receive': { token: Asset };
   'wallet.send': { token: Asset };
-  addressbook: { id: string };
+  addressbook: { id: string; address?: string };
 };
 
 const Stack = createNativeStackNavigator<WalletStackProps>();

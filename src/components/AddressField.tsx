@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 import {
+  Alert,
   Pressable,
   StyleSheet,
   TextInput,
@@ -23,13 +24,14 @@ import { Text } from './Text';
 import { ChainId } from 'types/network';
 import { currentChainId } from 'utils/helpers';
 import { isAddress } from 'utils/rsk';
-import { Button } from './Buttons/Button';
 import AddressBookIcon from 'assets/book-icon.svg';
 import QrScannerIcon from 'assets/qr-code-scanner-icon.svg';
 import { constants } from 'ethers';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { addressBookSelection } from 'pages/WalletScreen/AddressBookScreen';
 import { useAddressBook } from 'hooks/useAddressBook';
+import { QrScannerModal } from './QrScannerModal';
+import { getNetworkByChainId } from 'utils/network-utils';
 
 export type AddressFieldProps = {
   chainId?: ChainId;
@@ -55,7 +57,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({
   title,
   chainId = currentChainId(),
   hideAddressBook,
-  hideQrCodeScanner = true,
+  hideQrCodeScanner,
 }) => {
   const { get } = useAddressBook();
   const navigation = useNavigation<NavigationProp<WalletStackProps>>();
@@ -122,10 +124,30 @@ export const AddressField: React.FC<AddressFieldProps> = ({
 
   const openAddressBook = useCallback(() => {
     changedManually.current = false;
-    navigation.navigate('addressbook', { id: _id });
-  }, [_id, navigation]);
+    navigation.navigate('addressbook', { id: _id, address: value });
+  }, [_id, navigation, value]);
+
+  const [openScanner, setOpenScanner] = useState(false);
+
+  const openQrScanner = useCallback(() => {
+    setOpenScanner(true);
+  }, []);
+
+  const handleScannerResult = useCallback(
+    (text: string) => {
+      console.log(text);
+      if (isAddress(text.toLowerCase())) {
+        onChangeText(text);
+      } else {
+        Alert.alert('Address is not valid.');
+      }
+    },
+    [onChangeText],
+  );
 
   const name = useMemo(() => get(value)?.name, [get, value]);
+
+  const network = useMemo(() => getNetworkByChainId(chainId), [chainId]);
 
   return (
     <>
@@ -147,7 +169,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({
           />
           <View style={styles.inputAddonView}>
             {!hideQrCodeScanner && (
-              <Pressable style={styles.buttonView}>
+              <Pressable style={styles.buttonView} onPress={openQrScanner}>
                 <QrScannerIcon fill="white" />
               </Pressable>
             )}
@@ -165,14 +187,12 @@ export const AddressField: React.FC<AddressFieldProps> = ({
                 <Text>Enter valid wallet address.</Text>
               </View>
             ) : !validAddress ? (
-              <View>
-                <Text>
-                  Address checksum is not valid, if you are certain that it can
-                  receive this asset
-                  <Button
-                    title="transform address to lowercase"
-                    onPress={() => onChangeText(_value.toLowerCase())}
-                  />
+              <View style={styles.checksumWarning}>
+                <Text onPress={() => onChangeText(_value.toLowerCase())}>
+                  Not valid {network.name} address.{' '}
+                  <Text style={{ color: DarkTheme.colors.primary }}>
+                    Lowercase?
+                  </Text>
                 </Text>
               </View>
             ) : (
@@ -183,6 +203,11 @@ export const AddressField: React.FC<AddressFieldProps> = ({
           </View>
         )}
       </View>
+      <QrScannerModal
+        visible={openScanner}
+        onClose={() => setOpenScanner(false)}
+        onScanned={handleScannerResult}
+      />
     </>
   );
 };
@@ -222,5 +247,8 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     backgroundColor: 'rgba(0, 0, 0, 0.15)',
     borderRadius: 8,
+  },
+  checksumWarning: {
+    flexDirection: 'row',
   },
 });
