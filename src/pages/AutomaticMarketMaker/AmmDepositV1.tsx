@@ -30,6 +30,7 @@ import { PendingTransactions } from 'components/TransactionHistory/PendingTransa
 import { useIsMounted } from 'hooks/useIsMounted';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { AmountFieldIconWrapper } from 'components/AmountFieldIconWrapper';
+import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 
 type Props = NativeStackScreenProps<AmmRoutesStackProps, 'amm.deposit.v1'>;
 
@@ -280,19 +281,21 @@ export const AmmDepositV1: React.FC<Props> = ({ route, navigation }) => {
             inputProps={{ editable: false }}
           />
         </AmountFieldIconWrapper>
-        {errorTitle ? (
-          <Button primary title={errorTitle} onPress={submit} disabled />
-        ) : (
-          <TokenApprovalFlow
-            chainId={pool.chainId}
-            spender={receiverContract}
-            tokenId={approvalToken.token.id}
-            requiredAmount={approvalToken.token.formatUnits(
-              approvalToken.amount,
-            )}>
-            <Button primary title="Deposit" onPress={submit} />
-          </TokenApprovalFlow>
-        )}
+        <ReadWalletAwareWrapper>
+          {errorTitle ? (
+            <Button primary title={errorTitle} onPress={submit} disabled />
+          ) : (
+            <TokenApprovalFlow
+              chainId={pool.chainId}
+              spender={receiverContract}
+              tokenId={approvalToken.token.id}
+              requiredAmount={approvalToken.token.formatUnits(
+                approvalToken.amount,
+              )}>
+              <Button primary title="Deposit" onPress={submit} />
+            </TokenApprovalFlow>
+          )}
+        </ReadWalletAwareWrapper>
 
         <Text>Slippage: {commifyDecimals(slippage, 3)}%</Text>
         <Text>
