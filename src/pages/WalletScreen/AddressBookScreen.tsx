@@ -1,5 +1,6 @@
 import React, { useCallback, useLayoutEffect, useRef } from 'react';
 import { Alert, Dimensions, Pressable, StyleSheet, View } from 'react-native';
+import prompt from 'react-native-prompt-android';
 import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -27,7 +28,7 @@ export const AddressBookScreen: React.FC<Props> = ({ route, navigation }) => {
   );
 
   const handleStartAdd = useCallback(() => {
-    Alert.prompt(
+    prompt(
       'Bookmark new address',
       'Add address here',
       [
@@ -50,8 +51,10 @@ export const AddressBookScreen: React.FC<Props> = ({ route, navigation }) => {
           },
         },
       ],
-      undefined,
-      route.params.address,
+      {
+        defaultValue: route.params.address,
+        placeholder: 'Wallet address to save',
+      },
     );
   }, [add, addresses.length, route.params.address]);
 

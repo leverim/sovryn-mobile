@@ -151,6 +151,10 @@ export const SendAsset: React.FC<Props> = ({
     );
     const _fee = fee;
 
+    if (!receiver) {
+      return 'Enter valid recipient address';
+    }
+
     if (token.native) {
       const _amount = _fee.add(
         utils.parseUnits(amount || '0', nativeToken.decimals),
@@ -177,9 +181,10 @@ export const SendAsset: React.FC<Props> = ({
     nativeToken.decimals,
     nativeToken.symbol,
     fee,
+    receiver,
     token.native,
-    token.symbol,
     token.decimals,
+    token.symbol,
     amount,
     balance.value,
   ]);
@@ -194,6 +199,7 @@ export const SendAsset: React.FC<Props> = ({
       <PageContainer>
         <View style={styles.detailsContainer}>
           <AddressField
+            title={<Text>Recipient</Text>}
             value={receiver}
             onChange={handleReceiverChange}
             chainId={token.chainId}
@@ -201,6 +207,7 @@ export const SendAsset: React.FC<Props> = ({
 
           <View style={styles.amountContainer}>
             <AssetAmountField
+              title={<Text>Amount</Text>}
               token={token}
               onTokenChanged={setToken}
               amount={amount}

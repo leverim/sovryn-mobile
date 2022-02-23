@@ -26,7 +26,6 @@ import { currentChainId } from 'utils/helpers';
 import { isAddress } from 'utils/rsk';
 import AddressBookIcon from 'assets/book-icon.svg';
 import QrScannerIcon from 'assets/qr-code-scanner-icon.svg';
-import { constants } from 'ethers';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { addressBookSelection } from 'pages/WalletScreen/AddressBookScreen';
 import { useAddressBook } from 'hooks/useAddressBook';
@@ -124,8 +123,8 @@ export const AddressField: React.FC<AddressFieldProps> = ({
 
   const openAddressBook = useCallback(() => {
     changedManually.current = false;
-    navigation.navigate('addressbook', { id: _id, address: value });
-  }, [_id, navigation, value]);
+    navigation.navigate('addressbook', { id: _id, address: _value || value });
+  }, [_id, _value, navigation, value]);
 
   const [openScanner, setOpenScanner] = useState(false);
 
@@ -163,8 +162,9 @@ export const AddressField: React.FC<AddressFieldProps> = ({
             autoCorrect={false}
             style={[styles.input, inputProps?.style, { fontSize }]}
             placeholderTextColor={'gray'}
-            placeholder={constants.AddressZero}
+            placeholder="Address"
             onLayout={event => setInputWidth(event.nativeEvent.layout.width)}
+            multiline={true}
             {...inputProps}
           />
           <View style={styles.inputAddonView}>

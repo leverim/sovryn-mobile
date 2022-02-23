@@ -48,6 +48,7 @@
     "react-native-modals": "^0.22.3",
     "react-native-pager-view": "^5.4.9",
     "react-native-permissions": "^3.2.0",
+    "react-native-prompt-android": "^1.1.0",
     "react-native-qrcode-scanner": "^1.5.5",
     "react-native-qrcode-svg": "^6.1.2",
     "react-native-randombytes": "^3.6.1",
