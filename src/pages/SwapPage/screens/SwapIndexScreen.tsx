@@ -6,7 +6,13 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
+import {
+  Keyboard,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import {
   calculateChange,
@@ -276,11 +282,25 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     return null;
   }, [sendAmount, sendBalance.loading, sendBalance.value, sendToken.symbol]);
 
+  const refreshing = useMemo(() => {
+    return sendBalance.loading || receiveBalance.loading;
+  }, [receiveBalance.loading, sendBalance.loading]);
+
+  const execute = useCallback(() => {
+    sendBalance.execute();
+    receiveBalance.execute();
+  }, [receiveBalance, sendBalance]);
+
   return (
     <SafeAreaPage
       scrollView
       keyboardAvoiding
-      scrollViewProps={{ keyboardShouldPersistTaps: 'handled' }}>
+      scrollViewProps={{
+        keyboardShouldPersistTaps: 'handled',
+        refreshControl: (
+          <RefreshControl refreshing={refreshing} onRefresh={execute} />
+        ),
+      }}>
       <View style={styles.container}>
         <View>
           <SwapAmountField
