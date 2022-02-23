@@ -27,6 +27,7 @@ import { PendingTransactions } from 'components/TransactionHistory/PendingTransa
 import { useIsMounted } from 'hooks/useIsMounted';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { AmountFieldIconWrapper } from 'components/AmountFieldIconWrapper';
+import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 
 type Props = NativeStackScreenProps<AmmRoutesStackProps, 'amm.withdraw.v1'>;
 
@@ -204,17 +205,19 @@ export const AmmWithdrawV1: React.FC<Props> = ({ route, navigation }) => {
             inputProps={{ editable: false }}
           />
         </AmountFieldIconWrapper>
-        {errorTitle ? (
-          <Button primary title={errorTitle} onPress={submit} disabled />
-        ) : (
-          <TokenApprovalFlow
-            chainId={pool.chainId}
-            spender={receiverContract}
-            tokenId={pool.poolToken1.id}
-            requiredAmount={amount}>
-            <Button primary title="Withdraw" onPress={submit} />
-          </TokenApprovalFlow>
-        )}
+        <ReadWalletAwareWrapper>
+          {errorTitle ? (
+            <Button primary title={errorTitle} onPress={submit} disabled />
+          ) : (
+            <TokenApprovalFlow
+              chainId={pool.chainId}
+              spender={receiverContract}
+              tokenId={pool.poolToken1.id}
+              requiredAmount={amount}>
+              <Button primary title="Withdraw" onPress={submit} />
+            </TokenApprovalFlow>
+          )}
+        </ReadWalletAwareWrapper>
 
         <Text>Slippage: {commifyDecimals(slippage, 3)}%</Text>
         <Text>SOV Rewards will be vested for 10 months</Text>

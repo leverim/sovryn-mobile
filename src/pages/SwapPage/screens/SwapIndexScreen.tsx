@@ -320,10 +320,10 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
           </AmountFieldIconWrapper>
         </View>
 
-        {validationError ? (
-          <Button title={validationError} primary disabled />
-        ) : (
-          <ReadWalletAwareWrapper>
+        <ReadWalletAwareWrapper>
+          {validationError ? (
+            <Button title={validationError} primary disabled />
+          ) : (
             <TokenApprovalFlow
               tokenId={sendToken.id}
               spender={contractAddress}
@@ -338,8 +338,8 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
                 primary
               />
             </TokenApprovalFlow>
-          </ReadWalletAwareWrapper>
-        )}
+          )}
+        </ReadWalletAwareWrapper>
 
         <View style={styles.estimateView}>
           <Text style={styles.estimateText}>
