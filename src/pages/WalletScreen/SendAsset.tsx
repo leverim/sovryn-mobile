@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { Keyboard, StyleSheet, View } from 'react-native';
+import { Keyboard, RefreshControl, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
@@ -195,7 +195,15 @@ export const SendAsset: React.FC<Props> = ({
     <SafeAreaPage
       keyboardAvoiding
       scrollView
-      scrollViewProps={{ keyboardShouldPersistTaps: 'handled' }}>
+      scrollViewProps={{
+        keyboardShouldPersistTaps: 'handled',
+        refreshControl: (
+          <RefreshControl
+            refreshing={balance.loading}
+            onRefresh={balance.execute}
+          />
+        ),
+      }}>
       <PageContainer>
         <View style={styles.detailsContainer}>
           <AddressField
