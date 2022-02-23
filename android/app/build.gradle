@@ -134,6 +134,7 @@ android {
     defaultConfig {
         configurations.all {
             resolutionStrategy { force 'androidx.core:core:1.6.0' }
+            missingDimensionStrategy 'react-native-camera', 'general'
         }
         applicationId "com.defray.sovryn"
         minSdkVersion rootProject.ext.minSdkVersion

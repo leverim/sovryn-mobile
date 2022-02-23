@@ -10,7 +10,6 @@ import { Button, ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
-import { prettifyTx } from 'utils/helpers';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
