@@ -134,12 +134,14 @@ android {
     defaultConfig {
         configurations.all {
             resolutionStrategy { force 'androidx.core:core:1.6.0' }
+            missingDimensionStrategy 'react-native-camera', 'general'
         }
+        multiDexEnabled true
         applicationId "com.defray.sovryn"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 9
-        versionName "0.8"
+        versionCode 10
+        versionName "0.9"
     }
     splits {
         abi {

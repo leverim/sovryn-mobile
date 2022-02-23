@@ -284,7 +284,6 @@ export const AmmDepositV1: React.FC<Props> = ({ route, navigation }) => {
           <Button primary title={errorTitle} onPress={submit} disabled />
         ) : (
           <TokenApprovalFlow
-            showTokenName
             chainId={pool.chainId}
             spender={receiverContract}
             tokenId={approvalToken.token.id}

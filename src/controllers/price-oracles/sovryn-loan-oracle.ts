@@ -5,8 +5,9 @@ import { TokenId } from 'types/asset';
 import { aggregateCall, CallData } from 'utils/contract-utils';
 import { getContractAddress } from 'utils/helpers';
 import { IPriceOracle, PriceOracleResult } from './price-oracle-interface';
-import { getSwappableToken, swapables } from 'config/swapables';
+import { getSwappableToken } from 'config/swapables';
 import { findAsset } from 'utils/asset-utils';
+import { ammPools } from 'config/amm-pools';
 
 const targetTokenId: Partial<Record<ChainId, TokenId>> = {
   30: 'xusd',
@@ -66,9 +67,14 @@ class SovrynLoanOracle implements IPriceOracle {
   }
 
   async getAll(chainId: ChainId): Promise<PriceOracleResult[]> {
+    const swapables = ammPools
+      .filter(item => item.chainId === chainId)
+      .map(item => [item.supplyToken1.id, item.supplyToken2.id])
+      .flat();
+
     const items = lendingTokens
       .filter(item => item.chainId === chainId)
-      .filter(item => swapables[chainId]?.includes(item.supplyTokenId))
+      .filter(item => swapables.includes(item.supplyTokenId))
       .map(item => item.loanTokenId);
     return Promise.all(items.map(item => this.getOne(chainId, item)));
   }

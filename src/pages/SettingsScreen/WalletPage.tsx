@@ -1,5 +1,6 @@
 import React, { useCallback, useContext } from 'react';
 import { Alert, ScrollView } from 'react-native';
+import prompt from 'react-native-prompt-android';
 import { AppContext } from 'context/AppContext';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { SettingsStackProps } from 'routers/settings.routes';
@@ -27,16 +28,17 @@ export const WalletPage: React.FC<Props> = ({
   );
 
   const onRenameWallet = useCallback(() => {
-    Alert.prompt(
+    prompt(
       'Enter new name',
-      undefined,
+      'here',
       async (value: string) => {
         await accounts.update(params.index, {
           name: value,
         });
       },
-      undefined,
-      account.name,
+      {
+        defaultValue: account.name,
+      },
     );
   }, [params.index, account.name]);
 

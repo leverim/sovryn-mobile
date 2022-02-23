@@ -89,14 +89,16 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = React.memo(
                   </>
                 )}
               </View>
-              <Pressable
-                onPress={handleBalancePress}
-                disabled={!editable}
-                style={styles.balancePressable}>
-                <Text style={styles.balanceText}>
-                  Balance: {commifyDecimals(balance)}
-                </Text>
-              </Pressable>
+              {balance !== undefined && (
+                <Pressable
+                  onPress={handleBalancePress}
+                  disabled={!editable}
+                  style={styles.balancePressable}>
+                  <Text style={styles.balanceText}>
+                    Balance: {commifyDecimals(balance)}
+                  </Text>
+                </Pressable>
+              )}
             </View>
           }
         />

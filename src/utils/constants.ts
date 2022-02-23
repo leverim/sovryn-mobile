@@ -40,3 +40,4 @@ export const STORAGE_CACHE_PRICES = `${prefix}prices`;
 export const STORAGE_CACHE_LOAN_POOLS = `${prefix}loanPools`;
 export const STORAGE_CACHE_AMM_POOLS = `${prefix}ammPools`;
 export const STORAGE_CACHE_TRANSACTIONS = `${prefix}transactions`;
+export const STORAGE_CACHE_ADDRESS_BOOK = `${prefix}addressBook`;

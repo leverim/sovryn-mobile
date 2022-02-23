@@ -6,7 +6,7 @@ import { Text } from 'components/Text';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { TransactionType } from './transaction-types';
-import { commifyDecimals, currentChainId, formatUnits } from 'utils/helpers';
+import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { ChainId } from 'types/network';
 import { SendCoinData } from './SendCoinData';
 import { ContractInteractionData } from './ContractInteractionData';
@@ -17,23 +17,24 @@ import { getProvider } from 'utils/RpcEngine';
 import { wallet } from 'utils/wallet';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { Item } from './Item';
-import { BigNumber, Transaction } from 'ethers';
+import { BigNumber } from 'ethers';
 import { ErrorHolder } from './ErrorHolder';
-import { isEqual } from 'lodash';
 import { VestingWithdrawTokensData } from './VestingWithdrawTokensData';
 import { SwapData } from './SwapData';
-import Logger from 'utils/Logger';
 import { LendingDepositData } from './LendingDepositData';
 import { LendingWithdrawData } from './LendingWithdrawData';
-import { findAssetByAddress, getNativeAsset } from 'utils/asset-utils';
+import { getNativeAsset } from 'utils/asset-utils';
 import { getNetworkByChainId } from 'utils/network-utils';
 import {
   getSignatureFromData,
   getTxTitle,
   getTxType,
 } from 'utils/transaction-helpers';
-import { useIsMounted } from 'hooks/useIsMounted';
 import { HandleBackPress } from 'components/HandleBackPress';
+import { AmmDepositV1Data } from './AmmDepositV1Data';
+import { AmmDepositV2Data } from './AmmDepositV2Data';
+import { AmmWithdrawV1Data } from './AmmWithdrawV1Data';
+import { AmmWithdrawV2Data } from './AmmWithdrawV2Data';
 
 export type DataModalProps = {
   loading: boolean;
@@ -79,6 +80,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const type = useMemo(() => {
     const _signature = (request?.customData?.type ||
       signature) as TransactionType;
+    console.log(_signature);
     return getTxType(_signature);
   }, [request?.customData?.type, signature]);
 
@@ -108,6 +110,14 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       case TransactionType.LENDING_WITHDRAW:
       case TransactionType.LENDING_WITHDRAW_NATIVE:
         return LendingWithdrawData;
+      case TransactionType.ADD_LIQUIDITY_TO_V1:
+        return AmmDepositV1Data;
+      case TransactionType.ADD_LIQUIDITY_TO_V2:
+        return AmmDepositV2Data;
+      case TransactionType.REMOVE_LIQUIDITY_FROM_V1:
+        return AmmWithdrawV1Data;
+      case TransactionType.REMOVE_LIQUIDITY_FROM_V2:
+        return AmmWithdrawV2Data;
     }
   }, [type]);
 
@@ -150,7 +160,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     await getProvider(request?.chainId as ChainId)
       .call(request!)
       .catch(err => {
-        if (err.error?.body) {
+        if (err?.reason) {
+          setSimulatorError(err.reason);
+        } else if (err.error?.body) {
           try {
             const body = JSON.parse(err.error?.body);
             setSimulatorError(body?.error?.message);
@@ -160,6 +172,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         } else {
           setSimulatorError(err?.message || 'Transaction is likely to fail.');
         }
+        console.warn('tx static call failed: ', JSON.stringify(err));
       });
 
     setDataLoading(false);

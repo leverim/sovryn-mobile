@@ -108,11 +108,16 @@ export const AmmPoolItem: React.FC<AmmPoolItemProps> = ({ item, refresh }) => {
               })
             }
           />
-          {/* <Button
+          <Button
             title="Withdraw"
             primary
+            onPress={() =>
+              navigation.navigate(`amm.withdraw.v${item.version}`, {
+                pool: item,
+              })
+            }
             disabled={balance.balance1 === '0' && balance.balance2 === '0'}
-          /> */}
+          />
         </View>
       </View>
     </View>

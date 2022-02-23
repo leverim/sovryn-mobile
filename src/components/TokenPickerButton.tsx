@@ -31,7 +31,7 @@ export const TokenPickerButton: React.FC<TokenPickerButtonProps> = React.memo(
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgb(44, 47, 54)',
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
