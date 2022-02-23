@@ -134,7 +134,6 @@ export const AddressField: React.FC<AddressFieldProps> = ({
 
   const handleScannerResult = useCallback(
     (text: string) => {
-      console.log(text);
       if (isAddress(text.toLowerCase())) {
         onChangeText(text);
       } else {
@@ -162,9 +161,10 @@ export const AddressField: React.FC<AddressFieldProps> = ({
             autoCorrect={false}
             style={[styles.input, inputProps?.style, { fontSize }]}
             placeholderTextColor={'gray'}
-            placeholder="Address"
             onLayout={event => setInputWidth(event.nativeEvent.layout.width)}
             multiline={true}
+            numberOfLines={2}
+            placeholder="Wallet address"
             {...inputProps}
           />
           <View style={styles.inputAddonView}>
@@ -226,14 +226,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+    marginTop: 12,
   },
   input: {
-    fontSize: 32,
+    fontSize: 36,
     flex: 1,
     flexShrink: 1,
     flexGrow: 1,
     color: 'white',
-    height: 64,
+    paddingTop: 0,
+    paddingBottom: 0,
+    textAlignVertical: 'top',
+    maxHeight: 64,
   },
   inputAddonView: {
     marginLeft: 12,
