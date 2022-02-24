@@ -1,4 +1,10 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Keyboard, RefreshControl } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -25,12 +31,12 @@ import { transactionController } from 'controllers/TransactionController';
 import { hexlify } from 'ethers/lib/utils';
 import { contractCall, encodeFunctionData } from 'utils/contract-utils';
 import { LendingTokenFlags } from 'models/lending-token';
-import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { useIsMounted } from 'hooks/useIsMounted';
 import Logger from 'utils/Logger';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { getUsdAsset } from 'utils/asset-utils';
 import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
+import { useFocusEffect } from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 
@@ -57,7 +63,10 @@ export const LendingDeposit: React.FC<Props> = ({
   }, [navigation, lendingToken.supplyToken.symbol]);
 
   const { value: pool, loading, execute } = useLendingPool(lendingToken);
-  const { value: balance } = useAssetBalance(lendingToken.supplyToken, owner);
+  const { value: balance, execute: executeBalance } = useAssetBalance(
+    lendingToken.supplyToken,
+    owner,
+  );
   const { weiValue: sendOneUSD } = useAssetUsdBalance(
     lendingToken.supplyToken,
     parseUnits('1', lendingToken.supplyToken.decimals).toString(),
@@ -110,7 +119,7 @@ export const LendingDeposit: React.FC<Props> = ({
             weiAmount,
             rewardsEnabled,
           ]);
-      await transactionController.request({
+      const tx = await transactionController.request({
         to: lendingToken.loanTokenAddress,
         value: hexlify(isNative ? weiAmount : 0),
         data,
@@ -120,12 +129,20 @@ export const LendingDeposit: React.FC<Props> = ({
         },
       });
       setSubmitting(false);
-      // tx.wait().finally(execute);
+      tx.wait().finally(() => {
+        if (isMounted()) {
+          execute();
+          executeBalance();
+        }
+      });
     } catch (e) {
       setSubmitting(false);
     }
   }, [
     amount,
+    execute,
+    executeBalance,
+    isMounted,
     lendingToken.loanTokenAddress,
     lendingToken.supplyToken.decimals,
     lendingToken.supplyToken.id,
@@ -140,33 +157,35 @@ export const LendingDeposit: React.FC<Props> = ({
   );
   const [interestLoading, setInterestLoading] = useState(true);
 
-  useDebouncedEffect(
-    () => {
-      setInterestLoading(true);
-      contractCall(
-        chainId,
-        lendingToken.loanTokenAddress,
-        'nextSupplyInterestRate(uint256)(uint256)',
-        [parseUnits(amount, lendingToken.supplyToken.decimals)],
-      )
-        .then(response => response[0].toString())
-        .then(response => {
-          if (isMounted()) {
-            setNextInterestRate(response);
-            setInterestLoading(false);
-          }
-        })
-        .catch(error => {
-          Logger.error(error, 'nextSupplyInterestRate');
-          if (isMounted()) {
-            setInterestLoading(undefined!);
-            setInterestLoading(false);
-          }
-        });
-    },
-    300,
-    [chainId, amount, lendingToken.supplyToken.decimals, isMounted],
-  );
+  useEffect(() => {
+    setInterestLoading(true);
+    contractCall(
+      chainId,
+      lendingToken.loanTokenAddress,
+      'nextSupplyInterestRate(uint256)(uint256)',
+      [parseUnits(amount, lendingToken.supplyToken.decimals)],
+    )
+      .then(response => response[0].toString())
+      .then(response => {
+        if (isMounted()) {
+          setNextInterestRate(response);
+          setInterestLoading(false);
+        }
+      })
+      .catch(error => {
+        Logger.error(error, 'nextSupplyInterestRate');
+        if (isMounted()) {
+          setInterestLoading(undefined!);
+          setInterestLoading(false);
+        }
+      });
+  }, [
+    chainId,
+    amount,
+    lendingToken.supplyToken.decimals,
+    isMounted,
+    lendingToken.loanTokenAddress,
+  ]);
 
   const nextInterestRate = useMemo(
     () =>
@@ -192,6 +211,13 @@ export const LendingDeposit: React.FC<Props> = ({
     lendingToken.supplyToken.symbol,
   ]);
 
+  useFocusEffect(
+    useCallback(() => {
+      executeBalance();
+      execute();
+    }, [executeBalance, execute]),
+  );
+
   return (
     <SafeAreaPage
       scrollView
@@ -208,6 +234,7 @@ export const LendingDeposit: React.FC<Props> = ({
         onAmountChanged={setAmount}
         balance={balance}
         price={sendUSD}
+        debounceDelay={300}
       />
       <Text>Interest rate: {formatAndCommify(nextInterestRate, 18, 4)} %</Text>
       <Text>

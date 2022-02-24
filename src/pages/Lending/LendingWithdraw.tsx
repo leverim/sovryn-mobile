@@ -25,6 +25,7 @@ import { Keyboard, RefreshControl } from 'react-native';
 import { getSovAsset, getUsdAsset } from 'utils/asset-utils';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
+import { useIsMounted } from 'hooks/useIsMounted';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 
@@ -34,6 +35,7 @@ export const LendingWithdraw: React.FC<Props> = ({
 }) => {
   const chainId = currentChainId();
   const owner = useWalletAddress().toLowerCase();
+  const isMounted = useIsMounted();
   const lendingToken = useMemo(
     () =>
       lendingTokens.find(
@@ -141,7 +143,11 @@ export const LendingWithdraw: React.FC<Props> = ({
         chainId,
       });
       setSubmitting(false);
-      tx.wait().finally(execute);
+      tx.wait().finally(() => {
+        if (isMounted()) {
+          execute();
+        }
+      });
     } catch (e) {
       setSubmitting(false);
     }
@@ -154,6 +160,7 @@ export const LendingWithdraw: React.FC<Props> = ({
     rewardsEnabled,
     amount,
     chainId,
+    isMounted,
     execute,
   ]);
 

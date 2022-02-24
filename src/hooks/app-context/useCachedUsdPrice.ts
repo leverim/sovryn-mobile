@@ -20,13 +20,13 @@ const syncWithAnotherNetwork: SyncWith = {
     rbtc: [30, 'wrbtc', 'xusd'],
   },
   31: {
-    trbtc: [30, 'twrbtc', 'txusd'],
+    trbtc: [31, 'twrbtc', 'txusd'],
   },
   56: {
     bnb: [30, 'bnbs', 'xusd'],
   },
   97: {
-    tbnb: [31, 'bnbs', 'txusd'],
+    tbnb: [31, 'tbnbs', 'txusd'],
   },
 };
 

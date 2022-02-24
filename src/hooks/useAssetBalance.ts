@@ -11,7 +11,7 @@ import { STORAGE_CACHE_BALANCES } from 'utils/constants';
 import Logger from 'utils/Logger';
 
 export function useAssetBalance(asset: Asset, _owner: string) {
-  const { balances, loading, setBalance } = useContext(BalanceContext);
+  const { balances, loading, loaded, setBalance } = useContext(BalanceContext);
   const owner = _owner?.toLowerCase();
   const [_loading, setLoading] = useState(false);
   const isMounted = useIsMounted();
@@ -62,7 +62,7 @@ export function useAssetBalance(asset: Asset, _owner: string) {
   return {
     value: utils.formatUnits(value, asset.decimals),
     weiValue: value,
-    loading: loading || _loading,
+    loading: _loading || (loading && !loaded),
     execute,
   };
 }

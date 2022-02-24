@@ -11,10 +11,11 @@ type Balances = Partial<
 type BalanceContextState = {
   balances: Balances;
   loading: boolean;
+  loaded: boolean;
 };
 
 type BalanceContextActions = {
-  execute: () => void;
+  execute: (value?: boolean) => void;
   initBalances: (balances: Balances) => void;
   setBalances: (
     chainId: ChainId,
@@ -41,6 +42,7 @@ export enum BALANCE_ACTION {
 type Action =
   | {
       type: BALANCE_ACTION.EXECUTE;
+      value: boolean;
     }
   | {
       type: BALANCE_ACTION.INIT_BALANCES;
@@ -67,6 +69,7 @@ type Action =
 export const BalanceContext = React.createContext<BalanceContextType>({
   balances: {} as Balances,
   loading: false,
+  loaded: false,
 } as unknown as BalanceContextType);
 
 export const BalanceProvider: React.FC = ({ children }) => {
@@ -77,6 +80,7 @@ export const BalanceProvider: React.FC = ({ children }) => {
           return {
             ...prevState,
             loading: true,
+            loaded: action.value ? false : prevState.loaded,
           };
         case BALANCE_ACTION.SET_BALANCES:
           return {
@@ -87,6 +91,7 @@ export const BalanceProvider: React.FC = ({ children }) => {
               action.value.balances,
             ),
             loading: false,
+            loaded: true,
           };
         case BALANCE_ACTION.SET_BALANCE:
           return {
@@ -104,14 +109,16 @@ export const BalanceProvider: React.FC = ({ children }) => {
     {
       balances: {} as Balances,
       loading: true,
+      loaded: false,
     },
   );
 
   const actions: BalanceContextActions = React.useMemo(
     () => ({
-      execute: () => {
+      execute: (showIndicator: boolean = false) => {
         dispatch({
           type: BALANCE_ACTION.EXECUTE,
+          value: showIndicator,
         });
       },
       initBalances: (balances: Balances) => {
