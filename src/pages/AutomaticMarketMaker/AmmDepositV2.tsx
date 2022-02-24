@@ -28,6 +28,7 @@ import { useIsMounted } from 'hooks/useIsMounted';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { AmountFieldIconWrapper } from 'components/AmountFieldIconWrapper';
 import { SwapAmountField } from 'pages/SwapPage/components/SwapAmountField';
+import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
 
 type Props = NativeStackScreenProps<AmmRoutesStackProps, 'amm.deposit.v2'>;
 
@@ -188,17 +189,20 @@ export const AmmDepositV2: React.FC<Props> = ({ route, navigation }) => {
             inputProps={{ editable: false }}
           />
         </AmountFieldIconWrapper>
-        {errorTitle ? (
-          <Button primary title={errorTitle} onPress={submit} disabled />
-        ) : (
-          <TokenApprovalFlow
-            chainId={pool.chainId}
-            spender={receiverContract}
-            tokenId={token.id}
-            requiredAmount={amount}>
-            <Button primary title="Deposit" onPress={submit} />
-          </TokenApprovalFlow>
-        )}
+
+        <ReadWalletAwareWrapper>
+          {errorTitle ? (
+            <Button primary title={errorTitle} onPress={submit} disabled />
+          ) : (
+            <TokenApprovalFlow
+              chainId={pool.chainId}
+              spender={receiverContract}
+              tokenId={token.id}
+              requiredAmount={amount}>
+              <Button primary title="Deposit" onPress={submit} />
+            </TokenApprovalFlow>
+          )}
+        </ReadWalletAwareWrapper>
 
         <Text>Slippage: {commifyDecimals(slippage, 3)}%</Text>
         <Text>

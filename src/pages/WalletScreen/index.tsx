@@ -1,5 +1,5 @@
-import React, { useContext, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { AccountBanner } from 'components/AccountBanner';
 import { globalStyles } from 'global.styles';
@@ -13,13 +13,33 @@ import { AssetModal } from './components/AssetModal';
 import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
 import { BalanceContext } from 'context/BalanceContext';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { get } from 'lodash';
+import { get, set } from 'lodash';
 import { BigNumber } from 'ethers';
+import { getAllBalances } from 'utils/interactions/price';
+import { useIsMounted } from 'hooks/useIsMounted';
+import { cache } from 'utils/cache';
+import { STORAGE_CACHE_BALANCES } from 'utils/constants';
+import Logger from 'utils/Logger';
+import { UsdPriceContext } from 'context/UsdPriceContext';
+import { priceFeeds } from 'controllers/price-feeds';
 
 export const WalletScreen: React.FC = () => {
   const { chainIds } = useContext(AppContext);
-  const { balances } = useContext(BalanceContext);
+  const {
+    balances,
+    execute: startBalances,
+    loading,
+    loaded,
+    setBalances,
+  } = useContext(BalanceContext);
+  const {
+    execute: startPrices,
+    initPrices,
+    loading: loadingPrices,
+    loaded: loadedPrices,
+  } = useContext(UsdPriceContext);
   const owner = useWalletAddress()?.toLowerCase();
+  const isMounted = useIsMounted();
 
   const tokens = useMemo(
     () =>
@@ -48,37 +68,88 @@ export const WalletScreen: React.FC = () => {
 
   const [asset, setAsset] = useState<Asset>();
 
-  return (
-    <SafeAreaPage>
-      <ScrollView>
-        {account && (
-          <View style={globalStyles.page}>
-            <AccountBanner account={account} showActions />
-          </View>
-        )}
-        <View style={styles.balanceContainer}>
-          <PendingTransactions marginTop={-24} />
+  const execute = useCallback(async () => {
+    if (!owner) {
+      return;
+    }
+    try {
+      startBalances(true);
+      for (const chainId of chainIds) {
+        getAllBalances(chainId, owner)
+          .then(response => {
+            if (isMounted()) {
+              setBalances(chainId, owner, response);
+              const cached = cache.get(STORAGE_CACHE_BALANCES, {});
+              cache.set(
+                STORAGE_CACHE_BALANCES,
+                set(cached, [chainId, owner], response),
+              );
+            }
+          })
+          .catch(e => Logger.error(e, 'getAllBalances in wallet screen'));
+      }
+    } catch (e) {
+      Logger.error(e, 'useAccountBalances in wallet screen');
+    }
 
-          <NavGroup>
-            {nativeTokens.map(item => (
-              <AssetItem
-                key={item.id}
-                asset={item}
-                onPress={() => setAsset(item)}
-              />
-            ))}
-          </NavGroup>
-          <NavGroup>
-            {erc20Tokens.map(item => (
-              <AssetItem
-                key={item.id}
-                asset={item}
-                onPress={() => setAsset(item)}
-              />
-            ))}
-          </NavGroup>
+    try {
+      startPrices(true);
+      priceFeeds.getAll(chainIds).then(response => {
+        if (isMounted()) {
+          initPrices(response);
+        }
+      });
+    } catch (e) {
+      Logger.error(e, 'useGlobalUsdPrices');
+    }
+  }, [
+    owner,
+    startBalances,
+    chainIds,
+    isMounted,
+    setBalances,
+    startPrices,
+    initPrices,
+  ]);
+
+  return (
+    <SafeAreaPage
+      scrollView
+      scrollViewProps={{
+        refreshControl: (
+          <RefreshControl
+            refreshing={(loading && !loaded) || (loadedPrices && !loadedPrices)}
+            onRefresh={execute}
+          />
+        ),
+      }}>
+      {account && (
+        <View style={globalStyles.page}>
+          <AccountBanner account={account} showActions />
         </View>
-      </ScrollView>
+      )}
+      <View style={styles.balanceContainer}>
+        <PendingTransactions marginTop={-24} />
+
+        <NavGroup>
+          {nativeTokens.map(item => (
+            <AssetItem
+              key={item.id}
+              asset={item}
+              onPress={() => setAsset(item)}
+            />
+          ))}
+        </NavGroup>
+        <NavGroup>
+          {erc20Tokens.map(item => (
+            <AssetItem
+              key={item.id}
+              asset={item}
+              onPress={() => setAsset(item)}
+            />
+          ))}
+        </NavGroup>
+      </View>
       <AssetModal asset={asset!} onClose={() => setAsset(undefined)} />
     </SafeAreaPage>
   );

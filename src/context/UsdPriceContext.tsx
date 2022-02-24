@@ -9,10 +9,11 @@ export type Prices = Partial<Record<ChainId, PriceOracleResult[]>>;
 type UsdPriceContextState = {
   prices: Prices;
   loading: boolean;
+  loaded: boolean;
 };
 
 type UsdPriceContextActions = {
-  execute: () => void;
+  execute: (value?: boolean) => void;
   initPrices: (prices: Prices) => void;
   setPrices: (chainId: ChainId, prices: PriceOracleResult[]) => void;
 };
@@ -28,6 +29,7 @@ export enum PRICE_ACTION {
 type Action =
   | {
       type: PRICE_ACTION.EXECUTE;
+      value: boolean;
     }
   | {
       type: PRICE_ACTION.INIT_PRICES;
@@ -54,6 +56,7 @@ export const UsdPriceProvider: React.FC = ({ children }) => {
           return {
             ...prevState,
             loading: true,
+            loaded: action.value ? false : prevState.loaded,
           };
         case PRICE_ACTION.SET_PRICES:
           return {
@@ -64,6 +67,7 @@ export const UsdPriceProvider: React.FC = ({ children }) => {
               action.value.prices,
             ),
             loading: false,
+            loaded: true,
           };
         case PRICE_ACTION.INIT_PRICES:
           return { ...prevState, prices: action.value, loading: false };
@@ -72,14 +76,16 @@ export const UsdPriceProvider: React.FC = ({ children }) => {
     {
       prices: {} as Prices,
       loading: true,
+      loaded: false,
     },
   );
 
   const actions: UsdPriceContextActions = React.useMemo(
     () => ({
-      execute: () => {
+      execute: (showIndicator: boolean = false) => {
         dispatch({
           type: PRICE_ACTION.EXECUTE,
+          value: showIndicator,
         });
       },
       initPrices: (balances: Prices) => {

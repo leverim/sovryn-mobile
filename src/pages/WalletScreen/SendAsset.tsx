@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { Keyboard, StyleSheet, View } from 'react-native';
+import { Keyboard, RefreshControl, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
@@ -106,25 +106,6 @@ export const SendAsset: React.FC<Props> = ({
     [owner, transaction, token.chainId],
   );
 
-  const submit = useCallback(async () => {
-    Keyboard.dismiss();
-    setLoading(true);
-    try {
-      await transactionController.request({
-        ...transaction,
-        customData: {
-          tokenId: token.id,
-        },
-      });
-    } catch (e) {
-      console.log('Sending asset failed: ', e);
-    } finally {
-      if (isMounted()) {
-        setLoading(false);
-      }
-    }
-  }, [transaction, token.id, isMounted]);
-
   const fee = useMemo(
     () =>
       BigNumber.from(populated?.gasPrice || 0).mul(populated?.gasLimit || '0'),
@@ -191,11 +172,44 @@ export const SendAsset: React.FC<Props> = ({
 
   const tokens = useMemo(() => listAssetsForChains(chainIds), [chainIds]);
 
+  const submit = useCallback(async () => {
+    Keyboard.dismiss();
+    setLoading(true);
+    try {
+      const tx = await transactionController.request({
+        ...transaction,
+        customData: {
+          tokenId: token.id,
+        },
+      });
+
+      tx.wait().finally(() => {
+        if (isMounted()) {
+          balance.execute();
+        }
+      });
+    } catch (e) {
+      console.log('Sending asset failed: ', e);
+    } finally {
+      if (isMounted()) {
+        setLoading(false);
+      }
+    }
+  }, [transaction, token.id, isMounted, balance]);
+
   return (
     <SafeAreaPage
       keyboardAvoiding
       scrollView
-      scrollViewProps={{ keyboardShouldPersistTaps: 'handled' }}>
+      scrollViewProps={{
+        keyboardShouldPersistTaps: 'handled',
+        refreshControl: (
+          <RefreshControl
+            refreshing={balance.loading}
+            onRefresh={balance.execute}
+          />
+        ),
+      }}>
       <PageContainer>
         <View style={styles.detailsContainer}>
           <AddressField
