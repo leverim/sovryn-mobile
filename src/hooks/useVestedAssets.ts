@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { BigNumber, constants } from 'ethers/lib.esm';
 import { contractCall } from 'utils/contract-utils';
 import { cache } from 'utils/cache';
@@ -8,7 +8,8 @@ import {
   VestingContractType,
 } from 'models/vesting-config';
 import { useDebouncedEffect } from './useDebounceEffect';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useIsMounted } from './useIsMounted';
 
 export type VestingData = {
   // 0 - team vesting, 1 - vesting
@@ -27,7 +28,7 @@ const methodToVestingType = (method: VestingContractMethod) =>
   vestingTypes[method] || 0;
 
 export function useVestedAssets(vesting: VestingConfig, owner: string) {
-  const navigation = useNavigation();
+  const isMounted = useIsMounted();
   const { registryAddress, chainId } = vesting;
   owner = owner.toLowerCase();
   const [stakingContract, setStakingContract] = useState<string>(
@@ -113,7 +114,9 @@ export function useVestedAssets(vesting: VestingConfig, owner: string) {
                 ) as VestingData[],
             )
             .then(response => {
-              setVestings(response);
+              if (isMounted()) {
+                setVestings(response);
+              }
               return cache.set(
                 `vesting_contracts_${chainId}_${registryAddress}_${owner}`,
                 response,
@@ -123,13 +126,18 @@ export function useVestedAssets(vesting: VestingConfig, owner: string) {
         .catch(error => {
           console.log('vestings', error);
         })
-        .finally(() => setLoadingAddresses(false));
+        .finally(() => {
+          if (isMounted()) {
+            setLoadingAddresses(false);
+          }
+        });
     },
     300,
-    [owner, chainId, registryAddress, vesting],
+    [owner, chainId, registryAddress, vesting, isMounted],
   );
 
   const refreshBalances = useCallback(() => {
+    console.log('refresh', vestings.length, stakingContract);
     setBalances(
       cache.get(`vesting_balances_${chainId}_${registryAddress}_${owner}`, []),
     );
@@ -146,7 +154,9 @@ export function useVestedAssets(vesting: VestingConfig, owner: string) {
         ),
       )
         .then(response => {
-          setBalances(response);
+          if (isMounted()) {
+            setBalances(response);
+          }
           cache.set(
             `vesting_balances_${chainId}_${registryAddress}_${owner}`,
             response,
@@ -155,22 +165,15 @@ export function useVestedAssets(vesting: VestingConfig, owner: string) {
         .catch(e => {
           console.log('balance-of', e);
         })
-        .finally(() => setLoadingBalances(false));
+        .finally(() => {
+          if (isMounted()) {
+            setLoadingBalances(false);
+          }
+        });
     }
-  }, [chainId, owner, registryAddress, stakingContract, vestings]);
+  }, [chainId, isMounted, owner, registryAddress, stakingContract, vestings]);
 
-  useDebouncedEffect(
-    () => {
-      refreshBalances();
-    },
-    300,
-    [refreshBalances],
-  );
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', refreshBalances);
-    return unsubscribe;
-  }, [navigation, refreshBalances]);
+  useFocusEffect(useCallback(() => refreshBalances(), [refreshBalances]));
 
   return {
     stakingContract,

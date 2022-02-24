@@ -61,11 +61,14 @@ import { PendingTransactions } from 'components/TransactionHistory/PendingTransa
 import { wrappedAssets } from 'config/wrapped-assets';
 import { AmountFieldIconWrapper } from 'components/AmountFieldIconWrapper';
 import { ammPools } from 'config/amm-pools';
+import Logger from 'utils/Logger';
+import { useIsMounted } from 'hooks/useIsMounted';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
 export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
   const { isTestnet } = useContext(AppContext);
+  const isMounted = useIsMounted();
   const chainId = isTestnet ? 31 : 30;
 
   const owner = useWalletAddress().toLowerCase();
@@ -202,6 +205,15 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     chainId,
   );
 
+  const refreshing = useMemo(() => {
+    return sendBalance.loading || receiveBalance.loading;
+  }, [receiveBalance.loading, sendBalance.loading]);
+
+  const execute = useCallback(() => {
+    sendBalance.execute();
+    receiveBalance.execute();
+  }, [receiveBalance, sendBalance]);
+
   const handleSubmitButton = useCallback(async () => {
     Keyboard.dismiss();
     setSubmitting(true);
@@ -239,24 +251,32 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
         : [path, amount, minReturn, owner, AFFILIATE_ACCOUNT, AFFILIATE_FEE],
     );
 
-    await transactionController
-      .request({
+    try {
+      const tx = await transactionController.request({
         to: contractAddress,
         from: owner,
         value: hexlify(BigNumber.from(sendToken.native ? amount : '0')),
         data,
         chainId: sendToken.chainId,
-      })
-      .then(() => {
-        setSubmitting(false);
-      })
-      .catch(e => {
-        console.warn(e);
-        setSubmitting(false);
       });
+
+      tx.wait().finally(() => {
+        if (isMounted()) {
+          execute();
+        }
+      });
+    } catch (e) {
+      Logger.error(e, 'swap tx failed.');
+    } finally {
+      if (isMounted()) {
+        setSubmitting(false);
+      }
+    }
   }, [
     chainId,
     contractAddress,
+    execute,
+    isMounted,
     minReturn,
     owner,
     receiveToken.chainId,
@@ -276,20 +296,11 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
     if (numberIsEmpty(sendAmount) || Number(sendAmount) < 0) {
       return 'Enter an amount';
     }
-    if (sendBalance.value < sendAmount) {
+    if (Number(sendBalance.value) < Number(sendAmount)) {
       return `Insuficient ${sendToken.symbol} balance`;
     }
     return null;
   }, [sendAmount, sendBalance.loading, sendBalance.value, sendToken.symbol]);
-
-  const refreshing = useMemo(() => {
-    return sendBalance.loading || receiveBalance.loading;
-  }, [receiveBalance.loading, sendBalance.loading]);
-
-  const execute = useCallback(() => {
-    sendBalance.execute();
-    receiveBalance.execute();
-  }, [receiveBalance, sendBalance]);
 
   return (
     <SafeAreaPage

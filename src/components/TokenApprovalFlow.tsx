@@ -49,16 +49,20 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
         erc20
           .getAllowance(chainId, token.address, owner, spender)
           .then(response => {
-            setAllowance(response.toString());
-            afterApprove ? setApproving(false) : setLoading(false);
+            if (isMounted()) {
+              setAllowance(response.toString());
+              afterApprove ? setApproving(false) : setLoading(false);
+            }
           })
           .catch(e => console.warn(e));
       } else {
-        setAllowance('0');
-        afterApprove ? setApproving(false) : setLoading(false);
+        if (isMounted()) {
+          setAllowance('0');
+          afterApprove ? setApproving(false) : setLoading(false);
+        }
       }
     },
-    [chainId, native.id, owner, spender, token.address, token.id],
+    [chainId, isMounted, native.id, owner, spender, token.address, token.id],
   );
 
   useDebouncedEffect(
@@ -100,8 +104,6 @@ export const TokenApprovalFlow: React.FC<TokenApprovalFlowProps> = ({
       });
     } catch (err) {
       Logger.error(err, 'token approve');
-      //
-    } finally {
       if (isMounted()) {
         setApproving(false);
       }
