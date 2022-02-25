@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { RefreshControl } from 'react-native';
 import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LendingRoutesStackProps } from 'routers/lending.routes';
@@ -8,6 +7,7 @@ import { lendingTokens } from 'config/lending-tokens';
 import { LendingPool } from './components/LendingPool';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { useGlobalLoans } from 'hooks/app-context/useGlobalLoans';
+import { RefreshControl } from 'components/RefreshControl';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.index'>;
 
