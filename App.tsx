@@ -8,6 +8,8 @@ import { useIsMounted } from 'hooks/useIsMounted';
 import { BalanceProvider } from 'context/BalanceContext';
 import { UsdPriceProvider } from 'context/UsdPriceContext';
 import { TransactionsProvider } from 'store/transactions';
+import { StatusBar } from 'react-native';
+import { DarkTheme } from '@react-navigation/native';
 
 const App: React.FC = () => {
   const isMounted = useIsMounted();
@@ -44,15 +46,21 @@ const App: React.FC = () => {
   }
 
   return (
-    <UsdPriceProvider>
-      <BalanceProvider>
-        <TransactionsProvider>
-          <AppProvider>
-            <MainScreen />
-          </AppProvider>
-        </TransactionsProvider>
-      </BalanceProvider>
-    </UsdPriceProvider>
+    <>
+      <StatusBar
+        backgroundColor={DarkTheme.colors.background}
+        barStyle="light-content"
+      />
+      <UsdPriceProvider>
+        <BalanceProvider>
+          <TransactionsProvider>
+            <AppProvider>
+              <MainScreen />
+            </AppProvider>
+          </TransactionsProvider>
+        </BalanceProvider>
+      </UsdPriceProvider>
+    </>
   );
 };
 

@@ -118,7 +118,9 @@ export const WalletScreen: React.FC = () => {
       scrollViewProps={{
         refreshControl: (
           <RefreshControl
-            refreshing={(loading && !loaded) || (loadedPrices && !loadedPrices)}
+            refreshing={
+              (loading && !loaded) || (loadingPrices && !loadedPrices)
+            }
             onRefresh={execute}
           />
         ),
