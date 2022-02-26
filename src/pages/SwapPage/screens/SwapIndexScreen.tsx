@@ -6,13 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import {
-  Keyboard,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import {
   calculateChange,
@@ -63,6 +57,7 @@ import { AmountFieldIconWrapper } from 'components/AmountFieldIconWrapper';
 import { ammPools } from 'config/amm-pools';
 import Logger from 'utils/Logger';
 import { useIsMounted } from 'hooks/useIsMounted';
+import { RefreshControl } from 'components/RefreshControl';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 

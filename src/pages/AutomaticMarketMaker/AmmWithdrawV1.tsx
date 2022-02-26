@@ -1,6 +1,6 @@
 import { DarkTheme } from '@react-navigation/native';
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { Keyboard, Pressable, RefreshControl } from 'react-native';
+import { Keyboard, Pressable } from 'react-native';
 import { getSovAsset } from 'utils/asset-utils';
 import { useAmmPoolData } from './hooks/useAmmPoolData';
 import { AmmRoutesStackProps } from 'routers/amm.routes';
@@ -28,6 +28,7 @@ import { useIsMounted } from 'hooks/useIsMounted';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { AmountFieldIconWrapper } from 'components/AmountFieldIconWrapper';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
+import { RefreshControl } from 'components/RefreshControl';
 
 type Props = NativeStackScreenProps<AmmRoutesStackProps, 'amm.withdraw.v1'>;
 
