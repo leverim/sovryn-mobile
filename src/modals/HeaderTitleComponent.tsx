@@ -23,7 +23,7 @@ export const HeaderTitleComponent: React.FC<HeaderTitleComponentProps> = ({
   const { colors } = useTheme();
   return (
     <Animated.View style={styles.container}>
-      <Animated.View style={styles.indicator} />
+      {Platform.OS === 'ios' && <Animated.View style={styles.indicator} />}
       <Animated.Text
         accessibilityRole="header"
         aria-level="1"
