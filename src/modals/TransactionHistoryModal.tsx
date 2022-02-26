@@ -3,7 +3,6 @@ import React, {
   useContext,
   useLayoutEffect,
   useMemo,
-  useState,
 } from 'react';
 import { FlatList } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -14,10 +13,10 @@ import { TransactionItem } from 'components/TransactionHistory/TransactionItem';
 import { TransactionContext } from 'store/transactions';
 import { clone, sortBy } from 'lodash';
 import { TransactionHistoryItem } from 'store/transactions/types';
-import { TransactionModal } from 'components/TransactionConfirmation/TransactionModal';
 import { NavGroup } from 'components/NavGroup/NavGroup';
 import { WarningBadge } from 'components/WarningBadge';
 import { ModalStackRoutes } from 'routers/modal.routes';
+import { useTransactionModal } from 'hooks/useTransactionModal';
 
 type Props = NativeStackScreenProps<ModalStackRoutes, 'modal.transactions'>;
 
@@ -29,17 +28,17 @@ export const TransactionHistoryModal: React.FC<Props> = ({ navigation }) => {
   const { state } = useContext(TransactionContext);
   const owner = useWalletAddress()?.toLowerCase();
 
-  const [hash, setHash] = useState<string>();
+  const showTx = useTransactionModal();
 
   const renderItem = useCallback(
     ({ item }: { item: TransactionHistoryItem }) => (
       <TransactionItem
         tx={item.response}
         receipt={item.receipt}
-        onPress={() => setHash(item.response.hash)}
+        onPress={() => showTx(item.response.hash)}
       />
     ),
-    [],
+    [showTx],
   );
 
   const items = useMemo(
@@ -67,12 +66,6 @@ export const TransactionHistoryModal: React.FC<Props> = ({ navigation }) => {
             ListEmptyComponent={<Text>Nothing to show.</Text>}
           />
         </NavGroup>
-
-        <TransactionModal
-          hash={hash}
-          visible={!!hash}
-          onClose={() => setHash(undefined)}
-        />
       </PageContainer>
     </SafeAreaPage>
   );

@@ -1,13 +1,13 @@
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { clone } from 'lodash';
 import { NavGroup } from 'components/NavGroup/NavGroup';
 import { Text } from 'components/Text';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { TransactionContext } from 'store/transactions';
 import { TransactionItem } from './TransactionItem';
-import { clone } from 'lodash';
 import { TransactionHistoryItem } from 'store/transactions/types';
-import { TransactionModal } from 'components/TransactionConfirmation/TransactionModal';
+import { useTransactionModal } from 'hooks/useTransactionModal';
 
 type PendingTransactionsProps = {
   marginTop?: number;
@@ -18,6 +18,8 @@ export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
 }) => {
   const { state } = useContext(TransactionContext);
   const owner = useWalletAddress()?.toLowerCase();
+
+  const showTx = useTransactionModal();
 
   const items = useMemo(() => {
     return clone(state.transactions)
@@ -31,12 +33,10 @@ export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.transactions, owner]);
 
-  const [hash, setHash] = useState<string>();
   const handleTx = useCallback(
-    (item: TransactionHistoryItem) => setHash(item.response.hash),
-    [],
+    (item: TransactionHistoryItem) => showTx(item.response.hash),
+    [showTx],
   );
-  const handleClose = useCallback(() => setHash(undefined), []);
 
   if (!items.length) {
     return null;
@@ -55,7 +55,6 @@ export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
           />
         ))}
       </NavGroup>
-      <TransactionModal visible={!!hash} hash={hash} onClose={handleClose} />
     </View>
   );
 };

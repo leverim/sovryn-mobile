@@ -6,21 +6,18 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  TransactionRequest,
-  TransactionResponse,
-} from '@ethersproject/abstract-provider';
+import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { transactionController } from 'controllers/TransactionController';
 import { passcode } from 'controllers/PassCodeController';
 import { wallet } from 'utils/wallet';
 import { currentChainId } from 'utils/helpers';
 import { ChainId } from 'types/network';
 import { ConfirmationModal } from './ConfirmationModal/ConfirmationModal';
-import { TransactionModal } from './TransactionModal';
 import { TransactionContext } from 'store/transactions';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { clone, sortBy } from 'lodash';
 import { getProvider } from 'utils/RpcEngine';
+import { useTransactionModal } from 'hooks/useTransactionModal';
 
 type TransactionConfirmationProps = {};
 
@@ -37,11 +34,13 @@ export const TransactionConfirmation: React.FC<
     state,
     actions: { addTransaction },
   } = useContext(TransactionContext);
+
+  const showTx = useTransactionModal();
+
   const [loading, setLoading] = useState(false);
   const [request, setRequest] = useState<TransactionRequest>();
   const [step, setStep] = useState<Step>(Step.REQUEST);
   const ref = useRef<any>();
-  const responseRef = useRef<TransactionResponse>();
 
   const [error, setError] = useState<string>();
 
@@ -67,7 +66,6 @@ export const TransactionConfirmation: React.FC<
         setRequest(tx);
         setStep(Step.REQUEST);
         setError(undefined);
-        responseRef.current = undefined;
         ref.current = { resolve, reject };
       },
     );
@@ -80,7 +78,6 @@ export const TransactionConfirmation: React.FC<
   const onRejectPressed = useCallback(() => {
     setRequest(undefined);
     setStep(Step.NONE);
-    responseRef.current = undefined;
     ref.current?.reject(new Error('User rejected transaction'));
     ref.current = undefined;
   }, []);
@@ -100,7 +97,6 @@ export const TransactionConfirmation: React.FC<
     try {
       const chainId = (request?.chainId || currentChainId()) as ChainId;
 
-
       if (request && request?.nonce === undefined && lastNonce !== undefined) {
         const current = await getProvider(
           request.chainId as ChainId,
@@ -116,11 +112,13 @@ export const TransactionConfirmation: React.FC<
 
       addTransaction(tx!);
 
-      responseRef.current = tx!;
+      showTx(tx.hash);
 
-      setStep(Step.RESPONSE);
       ref.current?.resolve(tx);
       ref.current = undefined;
+
+      setStep(Step.NONE);
+      setRequest(undefined);
     } catch (err: any) {
       console.warn('tx confirmation failed: ', JSON.stringify(err));
       if (err?.body) {
@@ -136,14 +134,7 @@ export const TransactionConfirmation: React.FC<
     } finally {
       setLoading(false);
     }
-  }, [addTransaction, request, lastNonce]);
-
-  const onCloseResponseModal = useCallback(async () => {
-    setStep(Step.NONE);
-    setRequest(undefined);
-    responseRef.current = undefined;
-    ref.current = undefined;
-  }, []);
+  }, [request, lastNonce, addTransaction, showTx]);
 
   const onRequestUpdated = useCallback(
     (value: TransactionRequest) => setRequest(value),
@@ -155,22 +146,14 @@ export const TransactionConfirmation: React.FC<
   }
 
   return (
-    <>
-      <ConfirmationModal
-        visible={step === Step.REQUEST && !!request}
-        request={request}
-        error={error}
-        loading={loading}
-        onConfirm={onConfirmPressed}
-        onReject={onRejectPressed}
-        onRequestUpdated={onRequestUpdated}
-      />
-
-      <TransactionModal
-        visible={step === Step.RESPONSE}
-        onClose={onCloseResponseModal}
-        hash={responseRef.current?.hash}
-      />
-    </>
+    <ConfirmationModal
+      visible={step === Step.REQUEST && !!request}
+      request={request}
+      error={error}
+      loading={loading}
+      onConfirm={onConfirmPressed}
+      onReject={onRejectPressed}
+      onRequestUpdated={onRequestUpdated}
+    />
   );
 };

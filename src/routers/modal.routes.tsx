@@ -4,6 +4,7 @@ export type ModalStackRoutes = {
   'modal.send-asset': { asset: Asset };
   'modal.receive-asset': { asset: Asset };
   'modal.transactions': undefined;
+  'modal.transaction': { hash: string };
   'modal.asset-picker': {
     parentRoute: string;
     pickerKey: string;

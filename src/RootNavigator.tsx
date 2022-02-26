@@ -22,6 +22,7 @@ import { AssetPickerModal } from 'modals/AssetPickerModal';
 import { ReceiveAssetModal } from 'modals/ReceiveAssetModal';
 import { HeaderTitleComponent } from 'modals/HeaderTitleComponent';
 import { TransactionHistoryModal } from 'modals/TransactionHistoryModal';
+import { TransactionModal } from 'modals/TransactionModal';
 
 const Stack = createNativeStackNavigator();
 
@@ -94,6 +95,11 @@ export const RootNavigator: React.FC = () => {
               name="modal.transactions"
               component={TransactionHistoryModal}
               options={{ title: 'Transaction History' }}
+            />
+            <Stack.Screen
+              name="modal.transaction"
+              component={TransactionModal}
+              options={{ title: 'Transaction Details' }}
             />
           </Stack.Group>
         </Stack.Navigator>
