@@ -19,6 +19,9 @@ import { useAccountBalances } from 'hooks/app-context/useAccountBalances';
 import { useGlobalLoan } from 'hooks/app-context/useGlobalLoan';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { AssetPickerModal } from 'modals/AssetPickerModal';
+import { ReceiveAssetModal } from 'modals/ReceiveAssetModal';
+import { HeaderTitleComponent } from 'modals/HeaderTitleComponent';
+import { TransactionHistoryModal } from 'modals/TransactionHistoryModal';
 
 const Stack = createNativeStackNavigator();
 
@@ -74,12 +77,23 @@ export const RootNavigator: React.FC = () => {
             screenOptions={{
               presentation: 'modal',
               headerShown: true,
-              contentStyle: { backgroundColor: 'rgb(15, 15, 15)' },
+              contentStyle: { backgroundColor: 'rgb(34, 34, 34)' },
+              headerTitle: props => <HeaderTitleComponent {...props} />,
             }}>
             <Stack.Screen
               name="modal.asset-picker"
               component={AssetPickerModal}
               options={{ title: 'Select Asset' }}
+            />
+            <Stack.Screen
+              name="modal.receive-asset"
+              component={ReceiveAssetModal}
+              options={{ title: 'Receive Asset' }}
+            />
+            <Stack.Screen
+              name="modal.transactions"
+              component={TransactionHistoryModal}
+              options={{ title: 'Transaction History' }}
             />
           </Stack.Group>
         </Stack.Navigator>

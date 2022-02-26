@@ -11,8 +11,6 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import QRCode from 'react-native-qrcode-svg';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { WalletStackProps } from 'pages/MainScreen/WalletPage';
-import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { TokenPickerButton } from 'components/TokenPickerButton';
@@ -21,17 +19,19 @@ import { listAssetsForChains } from 'utils/asset-utils';
 import { AppContext } from 'context/AppContext';
 import { toChecksumAddress } from 'utils/rsk';
 import { getNetworkByChainId } from 'utils/network-utils';
-import { DarkTheme, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { useModalNavigation } from 'hooks/useModalNavigation';
+import { ModalStackRoutes } from 'routers/modal.routes';
+import { WarningBadge } from 'components/WarningBadge';
 
-type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
+type Props = NativeStackScreenProps<ModalStackRoutes, 'modal.receive-asset'>;
 
-export const ReceiveAsset: React.FC<Props> = ({
+export const ReceiveAssetModal: React.FC<Props> = ({
   route: { params },
   navigation,
 }) => {
   const { chainIds } = useContext(AppContext);
-  const [token, setToken] = useState(params.token);
+  const [token, setToken] = useState(params.asset);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -46,9 +46,7 @@ export const ReceiveAsset: React.FC<Props> = ({
     [address],
   );
 
-  const dark = useIsDarkTheme();
-
-  useEffect(() => setToken(params.token), [params.token]);
+  useEffect(() => setToken(params.asset), [params.asset]);
 
   const tokens = useMemo(() => listAssetsForChains(chainIds), [chainIds]);
   const onTokenChange = useCallback((asset: Asset) => setToken(asset), []);
@@ -84,12 +82,12 @@ export const ReceiveAsset: React.FC<Props> = ({
         <View style={styles.detailsContainer}>
           <TokenPickerButton token={token} onPress={openAssetPicker} />
           <Text style={styles.networkName}>Network: {network.name}</Text>
-          <View style={[styles.qrWrapper, dark && styles.qrWrapperDark]}>
+          <View style={[styles.qrWrapper]}>
             <QRCode
               value={address.toLowerCase()}
-              backgroundColor={dark ? 'black' : 'white'}
-              color={dark ? 'white' : 'black'}
-              size={150}
+              backgroundColor="white"
+              color="black"
+              size={200}
             />
           </View>
           <View style={styles.addressContainer}>
@@ -97,13 +95,12 @@ export const ReceiveAsset: React.FC<Props> = ({
               {toChecksumAddress(address, token.chainId)}
             </Text>
           </View>
-          <Button onPress={onCopyToClipboard} title="Copy" />
           <View style={styles.noteContainer}>
-            <Text style={styles.note}>
-              Only send {token.symbol} to this address. Any other tokens send to
-              this address will be lost.
-            </Text>
+            <WarningBadge
+              text={`Only send ${token.symbol} to this address. Any other tokens send to this address will be lost.`}
+            />
           </View>
+          <Button onPress={onCopyToClipboard} title="Copy Address" />
         </View>
       </ScrollView>
     </SafeAreaPage>
@@ -131,14 +128,15 @@ const styles = StyleSheet.create({
   addressContainer: {
     marginTop: 12,
     padding: 12,
-    backgroundColor: DarkTheme.colors.border,
     borderRadius: 8,
+    maxWidth: 270,
   },
   address: {
-    fontSize: 12,
+    fontSize: 16,
+    textAlign: 'center',
   },
   noteContainer: {
-    marginTop: 24,
+    // marginTop: 24,
     paddingHorizontal: 12,
   },
   note: {
@@ -146,10 +144,8 @@ const styles = StyleSheet.create({
   },
   qrWrapper: {
     marginTop: 8,
-    padding: 8,
+    padding: 24,
+    borderRadius: 12,
     backgroundColor: 'white',
-  },
-  qrWrapperDark: {
-    backgroundColor: 'black',
   },
 });

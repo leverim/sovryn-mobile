@@ -128,8 +128,8 @@ export const AccountBanner: React.FC<AccountBannerProps> = React.memo(
               <Pressable
                 style={styles.action}
                 onPress={() =>
-                  navigation.navigate('wallet.receive', {
-                    token: coin,
+                  navigation.navigate<any>('modal.receive-asset', {
+                    asset: coin,
                   })
                 }>
                 <View style={styles.actionIcon}>
@@ -141,7 +141,9 @@ export const AccountBanner: React.FC<AccountBannerProps> = React.memo(
               {account.type !== AccountType.PUBLIC_ADDRESS && (
                 <Pressable
                   style={styles.action}
-                  onPress={() => navigation.navigate('wallet.transactions')}>
+                  onPress={() =>
+                    navigation.navigate<any>('modal.transactions')
+                  }>
                   <View style={styles.actionIcon}>
                     <HistoryIcon fill="white" />
                   </View>

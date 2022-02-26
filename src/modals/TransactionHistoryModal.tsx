@@ -8,8 +8,7 @@ import React, {
 import { FlatList } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useWalletAddress } from 'hooks/useWalletAddress';
-import { WalletStackProps } from 'pages/MainScreen/WalletPage';
-import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { TransactionItem } from 'components/TransactionHistory/TransactionItem';
 import { TransactionContext } from 'store/transactions';
@@ -18,12 +17,13 @@ import { TransactionHistoryItem } from 'store/transactions/types';
 import { TransactionModal } from 'components/TransactionConfirmation/TransactionModal';
 import { NavGroup } from 'components/NavGroup/NavGroup';
 import { WarningBadge } from 'components/WarningBadge';
+import { ModalStackRoutes } from 'routers/modal.routes';
 
-type Props = NativeStackScreenProps<WalletStackProps, 'wallet.transactions'>;
+type Props = NativeStackScreenProps<ModalStackRoutes, 'modal.transactions'>;
 
-export const TransactionHistory: React.FC<Props> = ({ navigation }) => {
+export const TransactionHistoryModal: React.FC<Props> = ({ navigation }) => {
   useLayoutEffect(() => {
-    navigation.setOptions({ title: 'History' });
+    navigation.setOptions({ title: 'Transaction History' });
   }, [navigation]);
 
   const { state } = useContext(TransactionContext);
@@ -55,23 +55,25 @@ export const TransactionHistory: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaPage>
-      <WarningBadge text="This history tracks only transactions made with this app." />
-      <NavGroup>
-        <FlatList
-          renderItem={renderItem}
-          data={items}
-          keyExtractor={item =>
-            `${item.response.hash}-${item.response.chainId}`
-          }
-          ListEmptyComponent={<Text>Nothing to show.</Text>}
-        />
-      </NavGroup>
+      <PageContainer>
+        <WarningBadge text="This history tracks only transactions made with this app." />
+        <NavGroup>
+          <FlatList
+            renderItem={renderItem}
+            data={items}
+            keyExtractor={item =>
+              `${item.response.hash}-${item.response.chainId}`
+            }
+            ListEmptyComponent={<Text>Nothing to show.</Text>}
+          />
+        </NavGroup>
 
-      <TransactionModal
-        hash={hash}
-        visible={!!hash}
-        onClose={() => setHash(undefined)}
-      />
+        <TransactionModal
+          hash={hash}
+          visible={!!hash}
+          onClose={() => setHash(undefined)}
+        />
+      </PageContainer>
     </SafeAreaPage>
   );
 };

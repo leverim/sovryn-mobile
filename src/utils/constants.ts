@@ -1,8 +1,13 @@
-import { TokenId } from 'types/asset';
+import { Dimensions } from 'react-native';
 
 export const ETH_DERIVATION_PATH = "m/44'/60'/0'/0";
 export const RSK_DERIVATION_PATH = "m/44'/137'/0'/0";
 export const RSK_TESTNET_DERIVATION_PATH = "m/44'/37310'/0'/0";
+
+const { width, height } = Dimensions.get('window');
+
+export const WINDOW_WIDTH = width;
+export const WINDOW_HEIGHT = height;
 
 export const DEFAULT_DERIVATION_PATH = RSK_DERIVATION_PATH;
 
