@@ -25,6 +25,7 @@ import { TransactionHistoryModal } from 'modals/TransactionHistoryModal';
 import { TransactionDetailsModal } from 'modals/TransactionDetailsModal';
 import { TransactionConfirmationModal } from 'modals/TransactionConfirmationModal';
 import { PasscodeConfirmation } from 'modals/PasscodeConfirmationModal';
+import { QrScannerModal } from 'modals/QrScannerModal';
 
 const Stack = createNativeStackNavigator();
 
@@ -112,6 +113,11 @@ export const RootNavigator: React.FC = () => {
               name="modal.passcode-confirm"
               component={PasscodeConfirmation}
               options={{ title: 'Verify with Passcode' }}
+            />
+            <Stack.Screen
+              name="modal.scan-qr"
+              component={QrScannerModal}
+              options={{ title: 'Scan QR Code' }}
             />
           </Stack.Group>
         </Stack.Navigator>
