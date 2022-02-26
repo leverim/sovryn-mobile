@@ -3,7 +3,6 @@ import {
   DarkTheme,
   DefaultTheme,
   NavigationContainer,
-  NavigationContainerRef,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ModalPortal } from 'react-native-modals';
@@ -19,10 +18,11 @@ import { useGlobalUsdPrices } from 'hooks/app-context/useGlobalUsdPrices';
 import { useAccountBalances } from 'hooks/app-context/useAccountBalances';
 import { useGlobalLoan } from 'hooks/app-context/useGlobalLoan';
 import { useWalletAddress } from 'hooks/useWalletAddress';
+import { AssetPickerModal } from 'modals/AssetPickerModal';
 
 const Stack = createNativeStackNavigator();
 
-export const MainScreen: React.FC = () => {
+export const RootNavigator: React.FC = () => {
   const { loading } = useContext(AppContext);
 
   const routeNameRef = useRef();
@@ -61,7 +61,28 @@ export const MainScreen: React.FC = () => {
           <Stack.Screen name="splash" component={SplashScreen} />
         </Stack.Navigator>
       ) : (
-        <>{address === null ? <WelcomeFlow /> : <SignedInScreens />}</>
+        <Stack.Navigator
+          initialRouteName="home"
+          screenOptions={{ headerShown: false }}>
+          <Stack.Group>
+            <Stack.Screen
+              name="home"
+              component={address === null ? WelcomeFlow : SignedInScreens}
+            />
+          </Stack.Group>
+          <Stack.Group
+            screenOptions={{
+              presentation: 'modal',
+              headerShown: true,
+              contentStyle: { backgroundColor: 'rgb(15, 15, 15)' },
+            }}>
+            <Stack.Screen
+              name="modal.asset-picker"
+              component={AssetPickerModal}
+              options={{ title: 'Select Asset' }}
+            />
+          </Stack.Group>
+        </Stack.Navigator>
       )}
       <ModalPortal />
     </NavigationContainer>

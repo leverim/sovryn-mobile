@@ -178,6 +178,8 @@ export const AmmDepositV2: React.FC<Props> = ({ route, navigation }) => {
           title={<Text>Deposit {token.symbol}:</Text>}
           tokens={[pool.supplyToken1, pool.supplyToken2]}
           onTokenChanged={setToken}
+          pickerKey="_deposit"
+          pickerTitle="Asset to deposit"
         />
 
         <AmountFieldIconWrapper control={<ArrowDownIcon fill="white" />}>

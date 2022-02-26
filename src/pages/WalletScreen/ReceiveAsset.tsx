@@ -16,13 +16,13 @@ import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { Text } from 'components/Text';
 import { TokenPickerButton } from 'components/TokenPickerButton';
-import { AssetPickerDialog } from 'components/AssetPickerDialog';
 import { Asset } from 'models/asset';
 import { listAssetsForChains } from 'utils/asset-utils';
 import { AppContext } from 'context/AppContext';
 import { toChecksumAddress } from 'utils/rsk';
 import { getNetworkByChainId } from 'utils/network-utils';
-import { DarkTheme } from '@react-navigation/native';
+import { DarkTheme, useRoute } from '@react-navigation/native';
+import { useModalNavigation } from 'hooks/useModalNavigation';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
 
@@ -32,7 +32,6 @@ export const ReceiveAsset: React.FC<Props> = ({
 }) => {
   const { chainIds } = useContext(AppContext);
   const [token, setToken] = useState(params.token);
-  const [open, setOpen] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -59,14 +58,31 @@ export const ReceiveAsset: React.FC<Props> = ({
     [token.chainId],
   );
 
+  const pickerKey = '_receive';
+
+  const route = useRoute<any>();
+  useEffect(() => {
+    if (route.params?.[pickerKey]) {
+      onTokenChange(route.params[pickerKey]);
+    }
+  }, [route.params, pickerKey, onTokenChange]);
+
+  const nav = useModalNavigation();
+
+  const openAssetPicker = useCallback(() => {
+    nav.navigate('modal.asset-picker', {
+      parentRoute: route.name,
+      pickerKey,
+      value: token,
+      items: tokens,
+    });
+  }, [nav, route.name, token, tokens]);
+
   return (
     <SafeAreaPage>
       <ScrollView style={styles.container}>
         <View style={styles.detailsContainer}>
-          <TokenPickerButton
-            token={token}
-            onPress={() => setOpen(prev => !prev)}
-          />
+          <TokenPickerButton token={token} onPress={openAssetPicker} />
           <Text style={styles.networkName}>Network: {network.name}</Text>
           <View style={[styles.qrWrapper, dark && styles.qrWrapperDark]}>
             <QRCode
@@ -90,13 +106,6 @@ export const ReceiveAsset: React.FC<Props> = ({
           </View>
         </View>
       </ScrollView>
-      <AssetPickerDialog
-        open={open}
-        value={token}
-        items={tokens}
-        onChange={onTokenChange}
-        onClose={() => setOpen(false)}
-      />
     </SafeAreaPage>
   );
 };

@@ -249,8 +249,8 @@ export const SendAsset: React.FC<Props> = ({
 
           {fee.toString() !== '0' && (
             <Text>
-              Transaction fee: {formatAndCommify(fee, token.decimals)}{' '}
-              {token.symbol}
+              Transaction fee: {formatAndCommify(fee, nativeToken.decimals)}{' '}
+              {nativeToken.symbol}
             </Text>
           )}
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import codePush from 'react-native-code-push';
 import notifee, { EventType } from '@notifee/react-native';
 import { AppProvider } from './src/context/AppContext';
-import { MainScreen } from './src/MainScreen';
+import { RootNavigator } from './src/RootNavigator';
 import { notifications } from 'controllers/notifications';
 import { useIsMounted } from 'hooks/useIsMounted';
 import { BalanceProvider } from 'context/BalanceContext';
@@ -55,7 +55,7 @@ const App: React.FC = () => {
         <BalanceProvider>
           <TransactionsProvider>
             <AppProvider>
-              <MainScreen />
+              <RootNavigator />
             </AppProvider>
           </TransactionsProvider>
         </BalanceProvider>

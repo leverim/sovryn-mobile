@@ -9,8 +9,9 @@ import { Text } from 'components/Text';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
 import { ChainId } from 'types/network';
 import { Asset } from 'models/asset';
-import { AssetPickerDialog } from 'components/AssetPickerDialog';
 import { TokenPickerButton } from 'components/TokenPickerButton';
+import { useRoute } from '@react-navigation/native';
+import { useModalNavigation } from 'hooks/useModalNavigation';
 
 type SwapAmountFieldProps = {
   token: Asset;
@@ -20,6 +21,8 @@ type SwapAmountFieldProps = {
   chainId?: ChainId;
   balance?: string;
   tokens: Asset[];
+  pickerKey: string;
+  pickerTitle: string;
 } & AmountFieldBaseProps;
 
 export const SwapAmountField: React.FC<SwapAmountFieldProps> = React.memo(
@@ -32,9 +35,10 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = React.memo(
     difference,
     balance,
     tokens: items,
+    pickerKey,
+    pickerTitle,
     ...props
   }) => {
-    const [open, setOpen] = useState(false);
     const [_token, setToken] = useState<Asset | undefined>(token);
 
     const handleBalancePress = useCallback(
@@ -61,6 +65,25 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = React.memo(
 
     const onTokenChange = useCallback((asset: Asset) => setToken(asset), []);
 
+    const route = useRoute<any>();
+    useEffect(() => {
+      if (route.params?.[pickerKey]) {
+        onTokenChange(route.params[pickerKey]);
+      }
+    }, [route.params, pickerKey, onTokenChange]);
+
+    const navigation = useModalNavigation();
+
+    const openAssetPicker = useCallback(() => {
+      navigation.navigate('modal.asset-picker', {
+        parentRoute: route.name,
+        pickerKey,
+        title: pickerTitle,
+        value: token,
+        items: items,
+      });
+    }, [items, navigation, pickerKey, pickerTitle, route.name, token]);
+
     return (
       <>
         <AmountFieldBase
@@ -68,10 +91,7 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = React.memo(
           amount={amount}
           onAmountChanged={onAmountChanged}
           rightElement={
-            <TokenPickerButton
-              token={token}
-              onPress={() => setOpen(prev => !prev)}
-            />
+            <TokenPickerButton token={token} onPress={openAssetPicker} />
           }
           bottomElement={
             <View style={styles.footerContainer}>
@@ -101,13 +121,6 @@ export const SwapAmountField: React.FC<SwapAmountFieldProps> = React.memo(
               )}
             </View>
           }
-        />
-        <AssetPickerDialog
-          open={open}
-          value={_token}
-          items={items}
-          onChange={onTokenChange}
-          onClose={() => setOpen(false)}
         />
       </>
     );

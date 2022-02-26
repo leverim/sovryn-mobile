@@ -42,7 +42,7 @@ type AccountBannerProps = {
 export const AccountBanner: React.FC<AccountBannerProps> = React.memo(
   ({ account, showActions }) => {
     const navigation =
-      useNavigation<NavigationProp<WalletStackProps, 'wallet.details'>>();
+      useNavigation<NavigationProp<WalletStackProps, 'wallet.list'>>();
     const chainId = currentChainId();
     const coin = getNativeAsset(chainId);
     const usd = getUsdAsset(chainId);
