@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { Keyboard, RefreshControl } from 'react-native';
+import { Keyboard } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { globalStyles } from 'global.styles';
@@ -37,6 +37,7 @@ import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { getUsdAsset } from 'utils/asset-utils';
 import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
 import { useFocusEffect } from '@react-navigation/native';
+import { RefreshControl } from 'components/RefreshControl';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 
