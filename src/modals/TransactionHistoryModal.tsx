@@ -42,6 +42,7 @@ export const TransactionHistoryModal: React.FC<Props> = ({ navigation }) => {
           <NavGroup>
             {items.map(item => (
               <TransactionItem
+                key={item.response.hash}
                 tx={item.response}
                 receipt={item.receipt}
                 onPress={() => showTx(item.response.hash)}
