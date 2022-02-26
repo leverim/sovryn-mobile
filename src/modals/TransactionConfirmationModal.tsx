@@ -1,28 +1,33 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { BottomModal, ModalContent } from 'react-native-modals';
-import { TransactionRequest } from '@ethersproject/abstract-provider';
-import { StyleSheet, View } from 'react-native';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { StyleSheet, View, LogBox } from 'react-native';
 import { Text } from 'components/Text';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
-import { TransactionType } from './transaction-types';
+import { TransactionType } from '../types/transaction-types';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { ChainId } from 'types/network';
-import { SendCoinData } from './SendCoinData';
-import { ContractInteractionData } from './ContractInteractionData';
-import { TransferTokenData } from './TransferTokenData';
-import { ApproveTokenData } from './ApproveTokenData';
+import { SendCoinData } from './components/ConfirmationModal/SendCoinData';
+import { ContractInteractionData } from './components/ConfirmationModal/ContractInteractionData';
+import { TransferTokenData } from './components/ConfirmationModal/TransferTokenData';
+import { ApproveTokenData } from './components/ConfirmationModal/ApproveTokenData';
 import { Button } from 'components/Buttons/Button';
 import { getProvider } from 'utils/RpcEngine';
 import { wallet } from 'utils/wallet';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
-import { Item } from './Item';
+import { Item } from './components/ConfirmationModal/Item';
 import { BigNumber } from 'ethers';
-import { ErrorHolder } from './ErrorHolder';
-import { VestingWithdrawTokensData } from './VestingWithdrawTokensData';
-import { SwapData } from './SwapData';
-import { LendingDepositData } from './LendingDepositData';
-import { LendingWithdrawData } from './LendingWithdrawData';
+import { ErrorHolder } from './components/ConfirmationModal/ErrorHolder';
+import { VestingWithdrawTokensData } from './components/ConfirmationModal/VestingWithdrawTokensData';
+import { SwapData } from './components/ConfirmationModal/SwapData';
+import { LendingDepositData } from './components/ConfirmationModal/LendingDepositData';
+import { LendingWithdrawData } from './components/ConfirmationModal/LendingWithdrawData';
 import { getNativeAsset } from 'utils/asset-utils';
 import { getNetworkByChainId } from 'utils/network-utils';
 import {
@@ -30,42 +35,70 @@ import {
   getTxTitle,
   getTxType,
 } from 'utils/transaction-helpers';
-import { HandleBackPress } from 'components/HandleBackPress';
-import { AmmDepositV1Data } from './AmmDepositV1Data';
-import { AmmDepositV2Data } from './AmmDepositV2Data';
-import { AmmWithdrawV1Data } from './AmmWithdrawV1Data';
-import { AmmWithdrawV2Data } from './AmmWithdrawV2Data';
+import { AmmDepositV1Data } from './components/ConfirmationModal/AmmDepositV1Data';
+import { AmmDepositV2Data } from './components/ConfirmationModal/AmmDepositV2Data';
+import { AmmWithdrawV1Data } from './components/ConfirmationModal/AmmWithdrawV1Data';
+import { AmmWithdrawV2Data } from './components/ConfirmationModal/AmmWithdrawV2Data';
+import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { ModalStackRoutes } from 'routers/modal.routes';
+import { TransactionContext } from 'store/transactions';
+import { useCurrentChain } from 'hooks/useCurrentChain';
+import { passcode } from 'controllers/PassCodeController';
+import { useWalletAddress } from 'hooks/useWalletAddress';
+import { clone, sortBy } from 'lodash';
+import { useTransactionModal } from 'hooks/useTransactionModal';
 
-export type DataModalProps = {
-  loading: boolean;
-  request: TransactionRequest;
-  onEditRequested: () => void;
-  onLoaderFunction: (value: Promise<any>) => void;
-};
+LogBox.ignoreLogs([
+  'Non-serializable values were found in the navigation state',
+]);
 
-type ConfirmationModalProps = {
-  visible: boolean;
-  loading: boolean;
-  request?: TransactionRequest;
-  error?: any;
-  onConfirm: () => void;
-  onReject: () => void;
-  // todo
-  onRequestUpdated: (request: TransactionRequest) => void;
-};
+type Props = NativeStackScreenProps<ModalStackRoutes, 'modal.tx-confirm'>;
 
-export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
-  visible,
-  request,
-  onReject,
-  onConfirm,
-  loading: transactionLoading,
-  error,
+export const TransactionConfirmationModal: React.FC<Props> = ({
+  route,
+  navigation,
 }) => {
+  const {
+    state,
+    actions: { addTransaction },
+  } = useContext(TransactionContext);
   const dark = useIsDarkTheme();
+  const { chainId: currentChainId } = useCurrentChain();
+  const owner = useWalletAddress()?.toLowerCase();
+  const showTx = useTransactionModal();
+
+  const closeHandled = useRef<boolean>(false);
+
   const [dataLoading, setDataLoading] = useState(true);
   const [estimatedGasLimit, setEstimatedGasLimit] = useState(0);
   const [estimatedGasPrice, setEstimatedGasPrice] = useState(0);
+  const [error, setError] = useState<string>();
+  const [transactionLoading, setLoading] = useState(false);
+
+  const { request, onConfirm, onReject } = route.params;
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      if (!closeHandled.current) {
+        onReject(new Error('User rejected transaction'));
+      }
+    });
+    return unsubscribe;
+  }, [navigation, onReject]);
+
+  const lastNonce = useMemo(
+    () =>
+      sortBy(
+        clone(state.transactions).filter(
+          item => item.response.from.toLowerCase() === owner,
+        ),
+        [item => item.response.nonce],
+      )
+        .reverse()
+        .map(item => item.response.nonce)[0] || undefined,
+    [owner, state.transactions],
+  );
 
   const loading = useMemo(
     () => transactionLoading || dataLoading,
@@ -211,10 +244,77 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   const network = getNetworkByChainId(request?.chainId as ChainId);
 
+  const handleRejectPress = useCallback(() => {
+    onReject(new Error('User rejected transaction'));
+    closeHandled.current = true;
+    navigation.goBack();
+  }, [navigation, onReject]);
+
+  const handleConfirmPress = useCallback(async () => {
+    setError(undefined);
+    setLoading(true);
+    let password;
+    try {
+      password = await passcode.request('Authenticate to sign transaction');
+    } catch (err: any) {
+      console.log('failed code', err);
+      setError(err?.message);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const chainId = (request?.chainId || currentChainId) as ChainId;
+
+      if (request && request?.nonce === undefined && lastNonce !== undefined) {
+        const current = await getProvider(
+          request.chainId as ChainId,
+        ).getTransactionCount(wallet.address, 'pending');
+        request.nonce = current > lastNonce + 1 ? current : lastNonce + 1;
+      }
+
+      console.time('wallet.sendTransaction');
+
+      const tx = await wallet.sendTransaction(chainId, request!, password);
+
+      console.timeEnd('wallet.sendTransaction');
+
+      addTransaction(tx!);
+
+      closeHandled.current = true;
+      navigation.goBack();
+
+      showTx(tx.hash);
+
+      onConfirm(tx);
+    } catch (err: any) {
+      console.warn('tx confirmation failed: ', JSON.stringify(err));
+      if (err?.body) {
+        try {
+          const _err = JSON.parse(err?.body || '{}');
+          setError(_err?.error?.message || 'Failed to submit transaction');
+        } catch (_) {
+          setError('Failed to submit transaction');
+        }
+      } else {
+        setError(String(err).substring(0, 100));
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    addTransaction,
+    currentChainId,
+    lastNonce,
+    navigation,
+    onConfirm,
+    request,
+    showTx,
+  ]);
+
   return (
-    <BottomModal visible={visible}>
-      {visible && <HandleBackPress onClose={onReject} />}
-      <ModalContent style={[styles.modal, dark && styles.modalDark]}>
+    <SafeAreaPage>
+      <PageContainer>
         <View style={styles.title}>
           <Text style={styles.titleText}>{renderTitle}</Text>
         </View>
@@ -243,16 +343,16 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <View style={[styles.footer, dark && styles.footerDark]}>
             <Button
               title={renderButtonTitle}
-              onPress={onConfirm}
+              onPress={handleConfirmPress}
               primary
               loading={loading}
               disabled={loading}
             />
-            <Button title="Cancel" onPress={onReject} />
+            <Button title="Cancel" onPress={handleRejectPress} />
           </View>
         </View>
-      </ModalContent>
-    </BottomModal>
+      </PageContainer>
+    </SafeAreaPage>
   );
 };
 

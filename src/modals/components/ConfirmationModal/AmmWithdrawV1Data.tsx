@@ -4,12 +4,14 @@ import { Text } from 'components/Text';
 import { decodeParameters } from 'utils/contract-utils';
 import { formatAndCommify } from 'utils/helpers';
 import { ChainId } from 'types/network';
-import { DataModalProps } from './ConfirmationModal';
 import { Item } from './Item';
 import { findAssetByAddress } from 'utils/asset-utils';
 import { ammPools } from 'config/amm-pools';
+import { TransactionModalDataProps } from 'types/tx-confirmation';
 
-export const AmmWithdrawV1Data: React.FC<DataModalProps> = ({ request }) => {
+export const AmmWithdrawV1Data: React.FC<TransactionModalDataProps> = ({
+  request,
+}) => {
   const {
     supplyToken1,
     supplyToken2,

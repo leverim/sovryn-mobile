@@ -10,7 +10,7 @@ import { ChainId } from 'types/network';
 import { useSelectTransaction } from 'hooks/useSelectTransaction';
 import { getNativeAsset } from 'utils/asset-utils';
 import { getNetworkByChainId } from 'utils/network-utils';
-import { Item } from 'components/TransactionConfirmation/ConfirmationModal/Item';
+import { Item } from 'modals/components/ConfirmationModal/Item';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ModalStackRoutes } from 'routers/modal.routes';
 import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';

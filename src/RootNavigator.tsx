@@ -23,6 +23,8 @@ import { ReceiveAssetModal } from 'modals/ReceiveAssetModal';
 import { HeaderTitleComponent } from 'modals/HeaderTitleComponent';
 import { TransactionHistoryModal } from 'modals/TransactionHistoryModal';
 import { TransactionModal } from 'modals/TransactionModal';
+import { TransactionConfirmationModal } from 'modals/TransactionConfirmationModal';
+import { PasscodeConfirmation } from 'modals/PasscodeConfirmationModal';
 
 const Stack = createNativeStackNavigator();
 
@@ -100,6 +102,16 @@ export const RootNavigator: React.FC = () => {
               name="modal.transaction"
               component={TransactionModal}
               options={{ title: 'Transaction Details' }}
+            />
+            <Stack.Screen
+              name="modal.tx-confirm"
+              component={TransactionConfirmationModal}
+              options={{ title: 'Confirm Transaction' }}
+            />
+            <Stack.Screen
+              name="modal.passcode-confirm"
+              component={PasscodeConfirmation}
+              options={{ title: 'Verify with Passcode' }}
             />
           </Stack.Group>
         </Stack.Navigator>
