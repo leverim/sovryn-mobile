@@ -26,6 +26,7 @@ import { TransactionDetailsModal } from 'modals/TransactionDetailsModal';
 import { TransactionConfirmationModal } from 'modals/TransactionConfirmationModal';
 import { PasscodeConfirmation } from 'modals/PasscodeConfirmationModal';
 import { QrScannerModal } from 'modals/QrScannerModal';
+import { AddressBookModalRoutes } from 'modals/AddressBook/AddressBookModalRoutes';
 
 const Stack = createNativeStackNavigator();
 
@@ -118,6 +119,11 @@ export const RootNavigator: React.FC = () => {
               name="modal.scan-qr"
               component={QrScannerModal}
               options={{ title: 'Scan QR Code' }}
+            />
+            <Stack.Screen
+              name="modal.address-book"
+              component={AddressBookModalRoutes}
+              options={{ headerShown: false }}
             />
           </Stack.Group>
         </Stack.Navigator>

@@ -29,4 +29,5 @@ export type ModalStackRoutes = {
     items: Asset[];
   };
   'modal.scan-qr': { onScanned: (text: string) => void };
+  'modal.address-book': undefined;
 };

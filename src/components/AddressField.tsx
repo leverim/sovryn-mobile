@@ -59,7 +59,6 @@ export const AddressField: React.FC<AddressFieldProps> = ({
   hideQrCodeScanner,
 }) => {
   const { get } = useAddressBook();
-  const navigation = useNavigation<NavigationProp<WalletStackProps>>();
   const modalNav = useModalNavigation();
   const changedManually = useRef<boolean>(false);
   const [_value, setValue] = useState(value);
@@ -109,23 +108,15 @@ export const AddressField: React.FC<AddressFieldProps> = ({
     }
   }, [_value, inputWidth]);
 
-  const _id = useMemo(() => Date.now().toString(), []);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!changedManually.current) {
-        const addressItem = addressBookSelection[_id];
-        if (addressItem) {
-          onChangeText(addressItem.address.toLowerCase());
-        }
-      }
-    }, [_id, onChangeText]),
-  );
-
   const openAddressBook = useCallback(() => {
-    changedManually.current = false;
-    navigation.navigate('addressbook', { id: _id, address: _value || value });
-  }, [_id, _value, navigation, value]);
+    modalNav.navigate<any>('modal.address-book', {
+      screen: 'address-book.index',
+      params: {
+        value,
+        onSelected: onChangeText,
+      },
+    });
+  }, [modalNav, onChangeText, value]);
 
   const handleScannerResult = useCallback(
     (text: string) => {
@@ -137,7 +128,6 @@ export const AddressField: React.FC<AddressFieldProps> = ({
     },
     [onChangeText],
   );
-
 
   const openQrScanner = useCallback(
     () =>
