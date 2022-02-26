@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { Linking, StyleSheet, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { BigNumber } from 'ethers';
 import { Text } from 'components/Text';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
@@ -13,11 +13,15 @@ import { getNetworkByChainId } from 'utils/network-utils';
 import { Item } from 'modals/components/ConfirmationModal/Item';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ModalStackRoutes } from 'routers/modal.routes';
-import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
+import { globalStyles } from 'global.styles';
 
 type Props = NativeStackScreenProps<ModalStackRoutes, 'modal.transaction'>;
 
-export const TransactionModal: React.FC<Props> = ({ route, navigation }) => {
+export const TransactionDetailsModal: React.FC<Props> = ({
+  route,
+  navigation,
+}) => {
   const { hash } = route.params;
 
   const dark = useIsDarkTheme();
@@ -41,39 +45,41 @@ export const TransactionModal: React.FC<Props> = ({ route, navigation }) => {
 
   return (
     <SafeAreaPage>
-      <PageContainer style={styles.container}>
-        <View style={styles.main}>
-          <Item title="Network:" content={<Text>{network.name}</Text>} />
-          <Item
-            title="Hash:"
-            content={<TransactionBadge txHash={response.hash} />}
-          />
-          <Item
-            title="Status:"
-            content={
-              <Text>
-                {receipt?.status === 1 && 'Confirmed'}
-                {receipt?.status === 0 && 'Failed'}
-                {(!response.confirmations || !receipt) && 'Pending'}
-              </Text>
-            }
-          />
-          <Item title="Nonce:" content={<Text>{response.nonce}</Text>} />
-          <Item
-            title="Fee:"
-            content={
-              <Text>
-                {formatAndCommify(fee, coin.decimals)} {coin.symbol}
-              </Text>
-            }
-            hideBorder
-          />
-        </View>
-        <View style={[styles.footer, dark && styles.footerDark]}>
-          <Button title="Close" onPress={navigation.goBack} primary />
-          <Button title="Open in explorer" onPress={handleOpenInExplorer} />
-        </View>
-      </PageContainer>
+      <View style={styles.container}>
+        <ScrollView>
+          <View style={styles.main}>
+            <Item title="Network:" content={<Text>{network.name}</Text>} />
+            <Item
+              title="Hash:"
+              content={<TransactionBadge txHash={response.hash} />}
+            />
+            <Item
+              title="Status:"
+              content={
+                <Text>
+                  {receipt?.status === 1 && 'Confirmed'}
+                  {receipt?.status === 0 && 'Failed'}
+                  {(!response.confirmations || !receipt) && 'Pending'}
+                </Text>
+              }
+            />
+            <Item title="Nonce:" content={<Text>{response.nonce}</Text>} />
+            <Item
+              title="Fee:"
+              content={
+                <Text>
+                  {formatAndCommify(fee, coin.decimals)} {coin.symbol}
+                </Text>
+              }
+              hideBorder
+            />
+          </View>
+        </ScrollView>
+      </View>
+      <View style={[styles.footer, dark && styles.footerDark]}>
+        <Button title="Close" onPress={navigation.goBack} primary />
+        <Button title="Open in explorer" onPress={handleOpenInExplorer} />
+      </View>
     </SafeAreaPage>
   );
 };
@@ -83,17 +89,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
   },
-  main: {},
+  main: {
+    paddingHorizontal: globalStyles.page.paddingHorizontal,
+  },
   modalView: {
     width: '100%',
   },
   modalViewDark: {
     // backgroundColor: DarkTheme.colors.card,
   },
-
   footer: {
     width: '100%',
-    marginTop: 36,
+    marginTop: 12,
+    paddingHorizontal: globalStyles.page.paddingHorizontal,
   },
   footerDark: {},
 });

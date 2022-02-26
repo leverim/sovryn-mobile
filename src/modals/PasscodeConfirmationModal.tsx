@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
   },
   keyboardView: {
-    padding: 20,
+    padding: 10,
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',

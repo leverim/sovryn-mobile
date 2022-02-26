@@ -22,7 +22,7 @@ import { AssetPickerModal } from 'modals/AssetPickerModal';
 import { ReceiveAssetModal } from 'modals/ReceiveAssetModal';
 import { HeaderTitleComponent } from 'modals/HeaderTitleComponent';
 import { TransactionHistoryModal } from 'modals/TransactionHistoryModal';
-import { TransactionModal } from 'modals/TransactionModal';
+import { TransactionDetailsModal } from 'modals/TransactionDetailsModal';
 import { TransactionConfirmationModal } from 'modals/TransactionConfirmationModal';
 import { PasscodeConfirmation } from 'modals/PasscodeConfirmationModal';
 
@@ -100,7 +100,7 @@ export const RootNavigator: React.FC = () => {
             />
             <Stack.Screen
               name="modal.transaction"
-              component={TransactionModal}
+              component={TransactionDetailsModal}
               options={{ title: 'Transaction Details' }}
             />
             <Stack.Screen

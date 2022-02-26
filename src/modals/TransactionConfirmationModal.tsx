@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, View, LogBox } from 'react-native';
+import { StyleSheet, View, LogBox, ScrollView } from 'react-native';
 import { Text } from 'components/Text';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
@@ -48,6 +48,7 @@ import { passcode } from 'controllers/PassCodeController';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { clone, sortBy } from 'lodash';
 import { useTransactionModal } from 'hooks/useTransactionModal';
+import { globalStyles } from 'global.styles';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -314,49 +315,55 @@ export const TransactionConfirmationModal: React.FC<Props> = ({
 
   return (
     <SafeAreaPage>
-      <PageContainer>
-        <View style={styles.title}>
-          <Text style={styles.titleText}>{renderTitle}</Text>
-        </View>
-        <View style={[styles.modalView, dark && styles.modalViewDark]}>
-          <RenderContent
-            loading={loading}
-            request={request!}
-            onEditRequested={() => {}}
-            onLoaderFunction={onLoaderFunctionReceiver}
-          />
+      <View style={styles.container}>
+        <ScrollView>
+          <View style={[styles.main]}>
+            <Item title={renderTitle} content={<></>} />
 
-          <Item title="Network:" content={<Text>{network.name}</Text>} />
-          <Item
-            title="Transaction fee:"
-            content={
-              <Text>
-                {commifyDecimals(formatUnits(gasFee, coin.decimals))}{' '}
-                {coin.symbol}
-              </Text>
-            }
-            hideBorder
-          />
-
-          {errorMessage && <ErrorHolder text={errorMessage} />}
-
-          <View style={[styles.footer, dark && styles.footerDark]}>
-            <Button
-              title={renderButtonTitle}
-              onPress={handleConfirmPress}
-              primary
+            <RenderContent
               loading={loading}
-              disabled={loading}
+              request={request!}
+              onEditRequested={() => {}}
+              onLoaderFunction={onLoaderFunctionReceiver}
             />
-            <Button title="Cancel" onPress={handleRejectPress} />
+
+            <Item title="Network:" content={<Text>{network.name}</Text>} />
+            <Item
+              title="Transaction fee:"
+              content={
+                <Text>
+                  {commifyDecimals(formatUnits(gasFee, coin.decimals))}{' '}
+                  {coin.symbol}
+                </Text>
+              }
+              hideBorder
+            />
           </View>
-        </View>
-      </PageContainer>
+        </ScrollView>
+      </View>
+      <View style={[styles.footer, dark && styles.footerDark]}>
+        {errorMessage && <ErrorHolder text={errorMessage} />}
+        <Button
+          title={renderButtonTitle}
+          onPress={handleConfirmPress}
+          primary
+          loading={loading}
+          disabled={loading}
+        />
+        <Button title="Cancel" onPress={handleRejectPress} />
+      </View>
     </SafeAreaPage>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  main: {
+    paddingHorizontal: globalStyles.page.paddingHorizontal,
+  },
   modal: {
     backgroundColor: DefaultTheme.colors.card,
   },
@@ -382,7 +389,7 @@ const styles = StyleSheet.create({
 
   footer: {
     width: '100%',
-    marginTop: 36,
+    marginTop: 12,
   },
   footerDark: {},
 });

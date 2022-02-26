@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useLayoutEffect,
-  useMemo,
-} from 'react';
-import { FlatList } from 'react-native';
+import React, { useContext, useLayoutEffect, useMemo } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
@@ -12,7 +6,6 @@ import { Text } from 'components/Text';
 import { TransactionItem } from 'components/TransactionHistory/TransactionItem';
 import { TransactionContext } from 'store/transactions';
 import { clone, sortBy } from 'lodash';
-import { TransactionHistoryItem } from 'store/transactions/types';
 import { NavGroup } from 'components/NavGroup/NavGroup';
 import { WarningBadge } from 'components/WarningBadge';
 import { ModalStackRoutes } from 'routers/modal.routes';
@@ -30,17 +23,6 @@ export const TransactionHistoryModal: React.FC<Props> = ({ navigation }) => {
 
   const showTx = useTransactionModal();
 
-  const renderItem = useCallback(
-    ({ item }: { item: TransactionHistoryItem }) => (
-      <TransactionItem
-        tx={item.response}
-        receipt={item.receipt}
-        onPress={() => showTx(item.response.hash)}
-      />
-    ),
-    [showTx],
-  );
-
   const items = useMemo(
     () =>
       sortBy(
@@ -53,19 +35,22 @@ export const TransactionHistoryModal: React.FC<Props> = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaPage>
+    <SafeAreaPage scrollView>
       <PageContainer>
         <WarningBadge text="This history tracks only transactions made with this app." />
-        <NavGroup>
-          <FlatList
-            renderItem={renderItem}
-            data={items}
-            keyExtractor={item =>
-              `${item.response.hash}-${item.response.chainId}`
-            }
-            ListEmptyComponent={<Text>Nothing to show.</Text>}
-          />
-        </NavGroup>
+        {items.length > 0 ? (
+          <NavGroup>
+            {items.map(item => (
+              <TransactionItem
+                tx={item.response}
+                receipt={item.receipt}
+                onPress={() => showTx(item.response.hash)}
+              />
+            ))}
+          </NavGroup>
+        ) : (
+          <Text>Nothing to show.</Text>
+        )}
       </PageContainer>
     </SafeAreaPage>
   );
