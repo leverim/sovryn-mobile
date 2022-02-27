@@ -9,6 +9,7 @@ export const RefreshControl: React.FC<RefreshControlProps> = ({ ...props }) => {
       tintColor={REFRESH_CONTROL_COLOR}
       colors={[REFRESH_CONTROL_COLOR]}
       titleColor={REFRESH_CONTROL_COLOR}
+      progressBackgroundColor="rgba(255, 255, 255, 0.3)"
       {...props}
     />
   );
