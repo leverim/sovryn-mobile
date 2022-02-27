@@ -13,10 +13,10 @@ export const WarningBadge: React.FC<WarningBadgeProps> = ({
 }) => {
   return (
     <View style={styles.container}>
-      <View>
-        <WarningIcon fill="#f4a361" />
+      <View style={styles.icon}>
+        <WarningIcon fill="#f4a361" width={28} />
       </View>
-      <View>
+      <View style={styles.content}>
         {text && !children && <Text style={styles.text}>{text}</Text>}
         {text && children && children}
       </View>
@@ -33,9 +33,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center',
+    width: '100%',
+    flexShrink: 1,
+  },
+  icon: {
+    flexShrink: 0,
+    flexGrow: 0,
+    width: 28,
+  },
+  content: {
+    marginLeft: 8,
+    flexGrow: 1,
+    flexShrink: 1,
   },
   text: {
-    marginLeft: 8,
     fontSize: 12,
     fontWeight: '300',
   },

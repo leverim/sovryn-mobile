@@ -1,4 +1,4 @@
-import { TransactionType } from 'components/TransactionConfirmation/ConfirmationModal/transaction-types';
+import { TransactionType } from 'types/transaction-types';
 import { BytesLike } from 'ethers';
 import { TransactionResponse } from '@ethersproject/providers';
 import { ChainId } from 'types/network';

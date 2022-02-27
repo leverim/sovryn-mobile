@@ -1,13 +1,13 @@
 import React from 'react';
 import { Text } from 'components/Text';
-import { DataModalProps } from './ConfirmationModal';
 import { Item } from './Item';
 import { AddressBadge } from 'components/AddressBadge';
 import { ChainId } from 'types/network';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { getNativeAsset } from 'utils/asset-utils';
+import { TransactionModalDataProps } from 'types/tx-confirmation';
 
-export const ContractInteractionData: React.FC<DataModalProps> = ({
+export const ContractInteractionData: React.FC<TransactionModalDataProps> = ({
   request,
 }) => {
   const coin = getNativeAsset(request.chainId as ChainId);

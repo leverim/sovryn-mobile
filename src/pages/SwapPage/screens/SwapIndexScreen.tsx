@@ -318,6 +318,8 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
             balance={sendBalance.value}
             tokens={tokens}
             title={<Text>Send:</Text>}
+            pickerKey="_send"
+            pickerTitle="Asset to send"
           />
           <AmountFieldIconWrapper
             control={
@@ -342,6 +344,8 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
               balance={receiveBalance.value}
               tokens={tokens}
               title={<Text>Receive:</Text>}
+              pickerKey="_receive"
+              pickerTitle="Asset to receive"
             />
           </AmountFieldIconWrapper>
         </View>

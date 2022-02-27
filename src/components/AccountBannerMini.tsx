@@ -27,7 +27,7 @@ export const AccountBannerMini: React.FC<AccountBannerProps> = ({
   showActions,
 }) => {
   const navigation =
-    useNavigation<NavigationProp<WalletStackProps, 'wallet.details'>>();
+    useNavigation<NavigationProp<WalletStackProps, 'wallet.list'>>();
   const chainId = currentChainId();
   const coin = getNativeAsset(chainId);
 

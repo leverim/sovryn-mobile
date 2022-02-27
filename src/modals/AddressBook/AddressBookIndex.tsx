@@ -1,62 +1,36 @@
 import React, { useCallback, useLayoutEffect, useRef } from 'react';
-import { Alert, Dimensions, Pressable, StyleSheet, View } from 'react-native';
-import prompt from 'react-native-prompt-android';
+import { Dimensions, Pressable, StyleSheet, View } from 'react-native';
 import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
-import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Text } from 'components/Text';
 import { AddressBookItem, useAddressBook } from 'hooks/useAddressBook';
 import { DarkTheme } from '@react-navigation/native';
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { isAddress } from 'utils/rsk';
 import AddBoxIcon from 'assets/add-box-icon.svg';
+import { AddressBookModalStackProps } from './AddressBookModalRoutes';
 
-type Props = NativeStackScreenProps<WalletStackProps, 'addressbook'>;
+type Props = NativeStackScreenProps<
+  AddressBookModalStackProps,
+  'address-book.index'
+>;
 
 export const addressBookSelection: Record<string, AddressBookItem> = {};
 
-export const AddressBookScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { addresses, add, removeByAddress } = useAddressBook();
+export const AddressBookIndex: React.FC<Props> = ({ route, navigation }) => {
+  const { addresses, removeByAddress } = useAddressBook();
   const animationIsRunning = useRef(false);
 
   const handleSelection = useCallback(
-    (value: AddressBookItem) => {
-      addressBookSelection[route.params?.id || 'default'] = value;
+    (item: AddressBookItem) => {
+      route.params.onSelected(item.address.toLowerCase());
       navigation.goBack();
     },
-    [navigation, route.params?.id],
+    [navigation, route.params],
   );
 
   const handleStartAdd = useCallback(() => {
-    prompt(
-      'Bookmark new address',
-      'Add address here',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Save',
-          onPress: text => {
-            try {
-              if (isAddress(text?.toLowerCase()!)) {
-                add({
-                  address: text!,
-                  name: `New bookmark ${addresses.length + 1}`,
-                });
-              } else {
-                throw new Error('Address is not valid.');
-              }
-            } catch (error) {
-              Alert.alert('Failed to add', error.message);
-            }
-          },
-        },
-      ],
-      {
-        defaultValue: route.params.address,
-        placeholder: 'Wallet address to save',
-      },
-    );
-  }, [add, addresses.length, route.params.address]);
+    navigation.navigate('address-book.create');
+  }, [navigation]);
 
   useLayoutEffect(() => {
     navigation.setOptions({

@@ -1,14 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Modal,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
-import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { AssetLogo } from 'components/AssetLogo';
 import { InputField } from 'components/InputField';
 import { formatAndCommify } from 'utils/helpers';
@@ -16,45 +14,51 @@ import { Asset } from 'models/asset';
 import { useAssetBalance } from 'hooks/useAssetBalance';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
-import { Text } from './Text';
-import { PressableButton } from './PressableButton';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { ModalStackRoutes } from 'routers/modal.routes';
+import { PressableButton } from 'components/PressableButton';
+import { Text } from 'components/Text';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
 
-export type AssetPickerDialogProps = {
-  value?: Asset;
-  items: Asset[];
-  onChange?: (value: Asset) => void;
-  title?: string;
-};
+type Props = NativeStackScreenProps<ModalStackRoutes, 'modal.asset-picker'>;
 
-type AssetPickerExtraProps = {
-  open: boolean;
-  onClose?: () => void;
-};
+export const AssetPickerModal: React.FC<Props> = React.memo(
+  ({ navigation, route }) => {
+    const {
+      title = 'Select Asset',
+      value,
+      items,
+      parentRoute,
+      pickerKey,
+    } = route.params;
 
-export const AssetPickerDialog: React.FC<
-  AssetPickerDialogProps & AssetPickerExtraProps
-> = React.memo(
-  ({ value, items, onChange, open, onClose, title = 'Choose asset' }) => {
-    const dark = useIsDarkTheme();
+    useLayoutEffect(() => {
+      navigation.setOptions({
+        title,
+      });
+    }, [navigation, title]);
 
     const [_value, setValue] = useState<Asset | undefined>(value);
     const [search, setSearch] = useState('');
 
     const triggerClose = useCallback(() => {
-      if (onClose) {
-        onClose();
-      }
-    }, [onClose]);
+      navigation.goBack();
+    }, [navigation]);
 
     const onSelectItem = useCallback(
       (item: Asset) => {
         setValue(item);
-        if (onChange) {
-          onChange(item);
+        if (parentRoute) {
+          navigation.navigate<any>({
+            name: parentRoute,
+            params: { [pickerKey]: item },
+            merge: true,
+          });
+        } else {
+          triggerClose();
         }
-        triggerClose();
       },
-      [onChange, triggerClose],
+      [navigation, parentRoute, pickerKey, triggerClose],
     );
 
     useEffect(() => {
@@ -75,34 +79,31 @@ export const AssetPickerDialog: React.FC<
     }, [search, tokens]);
 
     return (
-      <Modal animationType="slide" visible={open} onRequestClose={triggerClose}>
-        <SafeAreaView style={[styles.modal, dark && styles.modalDark]}>
-          <View style={styles.modalBody}>
-            <Text style={styles.modalTitle}>{title}</Text>
-            <View style={styles.searchInput}>
-              <InputField
-                value={search}
-                onChangeText={setSearch}
-                placeholder="Search for asset..."
-              />
-            </View>
-
-            <ScrollView>
-              {filteredItems.map(item => (
-                <Item
-                  key={item.id}
-                  token={item}
-                  active={
-                    item.id === _value?.id && item.chainId === _value?.chainId
-                  }
-                  onSelect={onSelectItem}
-                />
-              ))}
-            </ScrollView>
-            <PressableButton onPress={triggerClose} title="Close" />
+      <SafeAreaPage>
+        <View style={styles.modalBody}>
+          <View style={styles.searchInput}>
+            <InputField
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search for asset..."
+            />
           </View>
-        </SafeAreaView>
-      </Modal>
+
+          <ScrollView>
+            {filteredItems.map(item => (
+              <Item
+                key={item.id}
+                token={item}
+                active={
+                  item.id === _value?.id && item.chainId === _value?.chainId
+                }
+                onSelect={onSelectItem}
+              />
+            ))}
+          </ScrollView>
+          <PressableButton onPress={triggerClose} title="Close" />
+        </View>
+      </SafeAreaPage>
     );
   },
 );
@@ -184,11 +185,6 @@ const styles = StyleSheet.create({
   modalBody: {
     flex: 1,
     padding: 12,
-  },
-  modalTitle: {
-    marginBottom: 12,
-    fontSize: 16,
-    textAlign: 'center',
   },
   modalItem: {
     marginBottom: 6,

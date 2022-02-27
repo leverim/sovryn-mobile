@@ -84,22 +84,6 @@ export const AmmWithdrawV2: React.FC<Props> = ({ route, navigation }) => {
     state.reserveStakedBalance1,
   ]);
 
-  const amount2 = useMemo(() => {
-    return pool.poolToken1
-      .parseUnits(amount)
-      .mul(pool.poolToken1.ONE)
-      .div(state.poolTokenSupply1)
-      .mul(state.reserveStakedBalance2)
-      .div(pool.supplyToken2.ONE)
-      .toString();
-  }, [
-    amount,
-    pool.poolToken1,
-    pool.supplyToken2.ONE,
-    state.poolTokenSupply1,
-    state.reserveStakedBalance2,
-  ]);
-
   const [refreshing, setRefreshing] = useState(false);
 
   const receiverContract = getContractAddress('rbtcWrapper', pool.chainId);
@@ -199,6 +183,8 @@ export const AmmWithdrawV2: React.FC<Props> = ({ route, navigation }) => {
           title={<Text>Withdraw {pool.poolToken1.symbol} LP tokens:</Text>}
           tokens={[pool.poolToken1, pool.poolToken2!]}
           onTokenChanged={setPoolToken}
+          pickerKey="_withdraw"
+          pickerTitle="Asset to withdraw"
         />
 
         <AmountFieldIconWrapper control={<ArrowDownIcon fill="white" />}>
@@ -211,6 +197,8 @@ export const AmmWithdrawV2: React.FC<Props> = ({ route, navigation }) => {
             inputProps={{ editable: false }}
             tokens={[pool.supplyToken1, pool.supplyToken2]}
             onTokenChanged={setSupplyToken}
+            pickerKey="_receive"
+            pickerTitle="Asset to receive"
           />
         </AmountFieldIconWrapper>
         <AmountFieldIconWrapper control={<AddIcon fill="white" />}>

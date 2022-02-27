@@ -4,14 +4,16 @@ import { Text } from 'components/Text';
 import { decodeParameters } from 'utils/contract-utils';
 import { formatAndCommify } from 'utils/helpers';
 import { ChainId } from 'types/network';
-import { DataModalProps } from './ConfirmationModal';
 import { Item } from './Item';
-import { TransactionType } from './transaction-types';
+import { TransactionType } from '../../../types/transaction-types';
 import { lendingTokens } from 'config/lending-tokens';
 import { AddressBadge } from 'components/AddressBadge';
 import { findAssetByAddress } from 'utils/asset-utils';
+import { TransactionModalDataProps } from 'types/tx-confirmation';
 
-export const LendingDepositData: React.FC<DataModalProps> = ({ request }) => {
+export const LendingDepositData: React.FC<TransactionModalDataProps> = ({
+  request,
+}) => {
   const { receiver, amount, rewardsEnabled, supplyToken, loanToken } =
     useMemo(() => {
       const signature = request?.data?.toString().substring(0, 10) || '0x';
