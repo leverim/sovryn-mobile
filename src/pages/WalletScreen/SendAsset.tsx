@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { Keyboard, RefreshControl, StyleSheet, View } from 'react-native';
+import { Keyboard, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
@@ -30,6 +30,7 @@ import { Text } from 'components/Text';
 import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { formatUnits } from 'ethers/lib/utils';
+import { RefreshControl } from 'components/RefreshControl';
 
 type Props = NativeStackScreenProps<WalletStackProps, 'wallet.send'>;
 
@@ -249,8 +250,8 @@ export const SendAsset: React.FC<Props> = ({
 
           {fee.toString() !== '0' && (
             <Text>
-              Transaction fee: {formatAndCommify(fee, token.decimals)}{' '}
-              {token.symbol}
+              Transaction fee: {formatAndCommify(fee, nativeToken.decimals)}{' '}
+              {nativeToken.symbol}
             </Text>
           )}
 

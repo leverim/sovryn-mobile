@@ -1,6 +1,6 @@
 import { DarkTheme } from '@react-navigation/native';
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { Keyboard, Pressable, RefreshControl } from 'react-native';
+import { Keyboard, Pressable } from 'react-native';
 import { getSovAsset } from 'utils/asset-utils';
 import { useAmmPoolData } from './hooks/useAmmPoolData';
 import { AmmRoutesStackProps } from 'routers/amm.routes';
@@ -31,6 +31,7 @@ import { SwapAmountField } from 'pages/SwapPage/components/SwapAmountField';
 import { Asset } from 'models/asset';
 import { BigNumber } from 'ethers';
 import { ReadWalletAwareWrapper } from 'components/ReadWalletAwareWapper';
+import { RefreshControl } from 'components/RefreshControl';
 
 type Props = NativeStackScreenProps<AmmRoutesStackProps, 'amm.withdraw.v2'>;
 
@@ -81,22 +82,6 @@ export const AmmWithdrawV2: React.FC<Props> = ({ route, navigation }) => {
     pool.supplyToken1.ONE,
     state.poolTokenSupply1,
     state.reserveStakedBalance1,
-  ]);
-
-  const amount2 = useMemo(() => {
-    return pool.poolToken1
-      .parseUnits(amount)
-      .mul(pool.poolToken1.ONE)
-      .div(state.poolTokenSupply1)
-      .mul(state.reserveStakedBalance2)
-      .div(pool.supplyToken2.ONE)
-      .toString();
-  }, [
-    amount,
-    pool.poolToken1,
-    pool.supplyToken2.ONE,
-    state.poolTokenSupply1,
-    state.reserveStakedBalance2,
   ]);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -198,6 +183,8 @@ export const AmmWithdrawV2: React.FC<Props> = ({ route, navigation }) => {
           title={<Text>Withdraw {pool.poolToken1.symbol} LP tokens:</Text>}
           tokens={[pool.poolToken1, pool.poolToken2!]}
           onTokenChanged={setPoolToken}
+          pickerKey="_withdraw"
+          pickerTitle="Asset to withdraw"
         />
 
         <AmountFieldIconWrapper control={<ArrowDownIcon fill="white" />}>
@@ -210,6 +197,8 @@ export const AmmWithdrawV2: React.FC<Props> = ({ route, navigation }) => {
             inputProps={{ editable: false }}
             tokens={[pool.supplyToken1, pool.supplyToken2]}
             onTokenChanged={setSupplyToken}
+            pickerKey="_receive"
+            pickerTitle="Asset to receive"
           />
         </AmountFieldIconWrapper>
         <AmountFieldIconWrapper control={<AddIcon fill="white" />}>

@@ -4,12 +4,12 @@ import { Text } from 'components/Text';
 import { decodeParameters } from 'utils/contract-utils';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { ChainId } from 'types/network';
-import { DataModalProps } from './ConfirmationModal';
 import { AddressBadge } from 'components/AddressBadge';
 import { Item } from './Item';
 import { findAsset, getNativeAsset } from 'utils/asset-utils';
+import { TransactionModalDataProps } from 'types/tx-confirmation';
 
-export const VestingWithdrawTokensData: React.FC<DataModalProps> = ({
+export const VestingWithdrawTokensData: React.FC<TransactionModalDataProps> = ({
   request,
 }) => {
   const [receiver] = useMemo(() => {

@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { AccountBanner } from 'components/AccountBanner';
 import { globalStyles } from 'global.styles';
@@ -22,6 +22,7 @@ import { STORAGE_CACHE_BALANCES } from 'utils/constants';
 import Logger from 'utils/Logger';
 import { UsdPriceContext } from 'context/UsdPriceContext';
 import { priceFeeds } from 'controllers/price-feeds';
+import { RefreshControl } from 'components/RefreshControl';
 
 export const WalletScreen: React.FC = () => {
   const { chainIds } = useContext(AppContext);
@@ -118,7 +119,9 @@ export const WalletScreen: React.FC = () => {
       scrollViewProps={{
         refreshControl: (
           <RefreshControl
-            refreshing={(loading && !loaded) || (loadedPrices && !loadedPrices)}
+            refreshing={
+              (loading && !loaded) || (loadingPrices && !loadedPrices)
+            }
             onRefresh={execute}
           />
         ),

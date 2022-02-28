@@ -4,14 +4,14 @@ import { Text } from 'components/Text';
 import { decodeParameters } from 'utils/contract-utils';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { ChainId } from 'types/network';
-import { DataModalProps } from './ConfirmationModal';
 import { Item } from './Item';
-import { TransactionType } from './transaction-types';
+import { TransactionType } from '../../../types/transaction-types';
 import { unwrapSwappableToken } from 'config/swapables';
 import { TokenId } from 'types/asset';
 import { findAsset, findAssetByAddress } from 'utils/asset-utils';
+import { TransactionModalDataProps } from 'types/tx-confirmation';
 
-export const SwapData: React.FC<DataModalProps> = ({ request }) => {
+export const SwapData: React.FC<TransactionModalDataProps> = ({ request }) => {
   const { tokenSend, tokenReceive, amount, minReturn } = useMemo(() => {
     const signature = request?.data?.toString().substring(0, 10) || '0x';
 

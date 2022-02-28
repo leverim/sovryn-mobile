@@ -1,36 +1,34 @@
 import React, { useMemo } from 'react';
+import { View } from 'react-native';
 import { Text } from 'components/Text';
 import { decodeParameters } from 'utils/contract-utils';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { ChainId } from 'types/network';
-import { DataModalProps } from './ConfirmationModal';
 import { AddressBadge } from 'components/AddressBadge';
 import { Item } from './Item';
-import { Description } from './Description';
-import { findAssetByAddress } from 'utils/asset-utils';
+import { findAssetByAddress, getNativeAsset } from 'utils/asset-utils';
+import { TransactionModalDataProps } from 'types/tx-confirmation';
 
-export const ApproveTokenData: React.FC<DataModalProps> = ({ request }) => {
-  const [spender, amount] = useMemo(() => {
+export const TransferTokenData: React.FC<TransactionModalDataProps> = ({
+  request,
+}) => {
+  const [receiver, amount] = useMemo(() => {
     return decodeParameters(
       ['address', 'uint256'],
       `0x${request.data!.toString().substring(10)}`,
     );
   }, [request.data]);
 
-  const token = findAssetByAddress(request.chainId as ChainId, request.to!);
+  const coin = getNativeAsset(request.chainId! as ChainId);
+  const token = findAssetByAddress(request.chainId! as ChainId, request.to!);
 
-  const description = useMemo(() => {
-    return (
-      request?.customData?.approvalReason ||
-      `To continue, you need to allow Sovryn smart contract to use your ${
-        token.symbol || 'token'
-      }.`
-    );
-  }, [request.customData, token.symbol]);
+  const nativeValue = useMemo(
+    () => formatUnits(request.value, coin.decimals),
+    [request.value, coin.decimals],
+  );
 
   return (
-    <>
-      <Description text={description} />
+    <View>
       <Item
         title="Token:"
         content={
@@ -44,16 +42,16 @@ export const ApproveTokenData: React.FC<DataModalProps> = ({ request }) => {
         }
       />
       <Item
-        title="Spender:"
+        title="Receiver:"
         content={
           <AddressBadge
-            address={spender}
+            address={receiver}
             chainId={request.chainId as ChainId}
           />
         }
       />
       <Item
-        title={`Amount ${token.symbol}:`}
+        title="Amount:"
         content={
           <Text>
             {commifyDecimals(formatUnits(amount, token.decimals))}{' '}
@@ -61,6 +59,18 @@ export const ApproveTokenData: React.FC<DataModalProps> = ({ request }) => {
           </Text>
         }
       />
-    </>
+
+      {nativeValue !== '0.0' && (
+        <Item
+          title={`Amount ${coin.symbol}`}
+          content={
+            <Text>
+              {commifyDecimals(formatUnits(amount, coin.decimals))}{' '}
+              {coin.symbol}
+            </Text>
+          }
+        />
+      )}
+    </View>
   );
 };

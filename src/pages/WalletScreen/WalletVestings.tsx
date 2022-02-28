@@ -17,7 +17,7 @@ import { AssetLogo } from 'components/AssetLogo';
 import { commifyDecimals, formatUnits } from 'utils/helpers';
 import { WithdrawVestingModal } from './components/VestedAssets/WithdrawVestingModal';
 
-type Props = NativeStackScreenProps<WalletStackProps, 'wallet.receive'>;
+type Props = NativeStackScreenProps<WalletStackProps, 'wallet.vestings'>;
 
 export const WalletVestings: React.FC<Props> = ({ route: { params } }) => {
   const owner = useWalletAddress();

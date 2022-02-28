@@ -29,8 +29,8 @@ import QrScannerIcon from 'assets/qr-code-scanner-icon.svg';
 import { WalletStackProps } from 'pages/MainScreen/WalletPage';
 import { addressBookSelection } from 'pages/WalletScreen/AddressBookScreen';
 import { useAddressBook } from 'hooks/useAddressBook';
-import { QrScannerModal } from './QrScannerModal';
 import { getNetworkByChainId } from 'utils/network-utils';
+import { useModalNavigation } from 'hooks/useModalNavigation';
 
 export type AddressFieldProps = {
   chainId?: ChainId;
@@ -59,7 +59,7 @@ export const AddressField: React.FC<AddressFieldProps> = ({
   hideQrCodeScanner,
 }) => {
   const { get } = useAddressBook();
-  const navigation = useNavigation<NavigationProp<WalletStackProps>>();
+  const modalNav = useModalNavigation();
   const changedManually = useRef<boolean>(false);
   const [_value, setValue] = useState(value);
 
@@ -108,29 +108,15 @@ export const AddressField: React.FC<AddressFieldProps> = ({
     }
   }, [_value, inputWidth]);
 
-  const _id = useMemo(() => Date.now().toString(), []);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!changedManually.current) {
-        const addressItem = addressBookSelection[_id];
-        if (addressItem) {
-          onChangeText(addressItem.address.toLowerCase());
-        }
-      }
-    }, [_id, onChangeText]),
-  );
-
   const openAddressBook = useCallback(() => {
-    changedManually.current = false;
-    navigation.navigate('addressbook', { id: _id, address: _value || value });
-  }, [_id, _value, navigation, value]);
-
-  const [openScanner, setOpenScanner] = useState(false);
-
-  const openQrScanner = useCallback(() => {
-    setOpenScanner(true);
-  }, []);
+    modalNav.navigate<any>('modal.address-book', {
+      screen: 'address-book.index',
+      params: {
+        value,
+        onSelected: onChangeText,
+      },
+    });
+  }, [modalNav, onChangeText, value]);
 
   const handleScannerResult = useCallback(
     (text: string) => {
@@ -141,6 +127,14 @@ export const AddressField: React.FC<AddressFieldProps> = ({
       }
     },
     [onChangeText],
+  );
+
+  const openQrScanner = useCallback(
+    () =>
+      modalNav.navigate('modal.scan-qr', {
+        onScanned: handleScannerResult,
+      }),
+    [handleScannerResult, modalNav],
   );
 
   const name = useMemo(() => get(value)?.name, [get, value]);
@@ -203,11 +197,6 @@ export const AddressField: React.FC<AddressFieldProps> = ({
           </View>
         )}
       </View>
-      <QrScannerModal
-        visible={openScanner}
-        onClose={() => setOpenScanner(false)}
-        onScanned={handleScannerResult}
-      />
     </>
   );
 };

@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, RefreshControl } from 'react-native';
+import { FlatList } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { ammPools } from 'config/amm-pools';
 import { AmmPoolItem } from './components/AmmPoolItem';
 import { useCurrentChain } from 'hooks/useCurrentChain';
 import { AmmRoutesStackProps } from 'routers/amm.routes';
+import { RefreshControl } from 'components/RefreshControl';
 
 type Props = NativeStackScreenProps<AmmRoutesStackProps, 'amm.index'>;
 

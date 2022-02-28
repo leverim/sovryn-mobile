@@ -21,11 +21,12 @@ import { transactionController } from 'controllers/TransactionController';
 import { encodeFunctionData } from 'utils/contract-utils';
 import { LendingTokenFlags } from 'models/lending-token';
 import { BigNumber } from 'ethers';
-import { Keyboard, RefreshControl } from 'react-native';
+import { Keyboard } from 'react-native';
 import { getSovAsset, getUsdAsset } from 'utils/asset-utils';
 import { useAssetUsdBalance } from 'hooks/useAssetUsdBalance';
 import { PendingTransactions } from 'components/TransactionHistory/PendingTransactions';
 import { useIsMounted } from 'hooks/useIsMounted';
+import { RefreshControl } from 'components/RefreshControl';
 
 type Props = NativeStackScreenProps<LendingRoutesStackProps, 'lending.deposit'>;
 

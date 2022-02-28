@@ -6,13 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import {
-  Keyboard,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import { useWalletAddress } from 'hooks/useWalletAddress';
 import {
   calculateChange,
@@ -63,6 +57,7 @@ import { AmountFieldIconWrapper } from 'components/AmountFieldIconWrapper';
 import { ammPools } from 'config/amm-pools';
 import Logger from 'utils/Logger';
 import { useIsMounted } from 'hooks/useIsMounted';
+import { RefreshControl } from 'components/RefreshControl';
 
 type Props = NativeStackScreenProps<SwapStackProps, 'swap.index'>;
 
@@ -323,6 +318,8 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
             balance={sendBalance.value}
             tokens={tokens}
             title={<Text>Send:</Text>}
+            pickerKey="_send"
+            pickerTitle="Asset to send"
           />
           <AmountFieldIconWrapper
             control={
@@ -347,6 +344,8 @@ export const SwapIndexScreen: React.FC<Props> = ({ navigation }) => {
               balance={receiveBalance.value}
               tokens={tokens}
               title={<Text>Receive:</Text>}
+              pickerKey="_receive"
+              pickerTitle="Asset to receive"
             />
           </AmountFieldIconWrapper>
         </View>
