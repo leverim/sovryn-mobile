@@ -1,9 +1,11 @@
 import { TransactionResponse } from '@ethersproject/providers';
 import { Dispatch } from 'react';
+import Snackbar from 'react-native-snackbar';
 import { NoUpdate, UpdateWithSideEffect } from 'store/side-effects';
 import { ChainId } from 'types/network';
 import { cache } from 'utils/cache';
 import { STORAGE_CACHE_TRANSACTIONS } from 'utils/constants';
+import { prettifyTx } from 'utils/helpers';
 import { getProvider } from 'utils/RpcEngine';
 import { Action, State, TransactionAction } from './types';
 
@@ -66,8 +68,15 @@ export const reducer = (prevState: State = initialState, action: Action) => {
         prevState.transactions[index].response.confirmations =
           action.value.confirmations;
       }
+
       return UpdateWithSideEffect<State>(prevState, state => {
         cache.set(STORAGE_CACHE_TRANSACTIONS, state.transactions);
+        Snackbar.show({
+          text: `Transaction ${prettifyTx(action.value.transactionHash)} ${
+            action.value.status ? 'confirmed' : 'failed'
+          }!`,
+          duration: Snackbar.LENGTH_SHORT,
+        });
       });
     default:
       return NoUpdate();

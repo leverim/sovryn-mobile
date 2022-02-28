@@ -493,6 +493,8 @@ PODS:
   - RNScreens (3.10.1):
     - React-Core
     - React-RCTImage
+  - RNSnackbar (2.4.0):
+    - React-Core
   - RNSVG (12.1.1):
     - React
   - SSZipArchive (2.2.3)
@@ -578,6 +580,7 @@ DEPENDENCIES:
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - RNSnackbar (from `../node_modules/react-native-snackbar`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -723,6 +726,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-permissions"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNSnackbar:
+    :path: "../node_modules/react-native-snackbar"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   Yoga:
@@ -811,6 +816,7 @@ SPEC CHECKSUMS:
   RNNotifee: f1ba270897bd7491f889a1a257d0c038a43376f7
   RNPermissions: f7ebe52db07c00901127966ca080b4ec6a6ceb0a
   RNScreens: 522705f2e5c9d27efb17f24aceb2bf8335bc7b8e
+  RNSnackbar: be3333a21a453ccc272f41a8add5a71f7d44dfcd
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   Yoga: 32a18c0e845e185f4a2a66ec76e1fd1f958f22fa

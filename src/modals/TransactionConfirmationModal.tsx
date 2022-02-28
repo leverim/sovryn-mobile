@@ -7,11 +7,12 @@ import React, {
   useState,
 } from 'react';
 import { StyleSheet, View, LogBox, ScrollView } from 'react-native';
+import Snackbar from 'react-native-snackbar';
 import { Text } from 'components/Text';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
 import { TransactionType } from '../types/transaction-types';
-import { commifyDecimals, formatUnits } from 'utils/helpers';
+import { commifyDecimals, formatUnits, prettifyTx } from 'utils/helpers';
 import { ChainId } from 'types/network';
 import { SendCoinData } from './components/ConfirmationModal/SendCoinData';
 import { ContractInteractionData } from './components/ConfirmationModal/ContractInteractionData';
@@ -39,7 +40,7 @@ import { AmmDepositV1Data } from './components/ConfirmationModal/AmmDepositV1Dat
 import { AmmDepositV2Data } from './components/ConfirmationModal/AmmDepositV2Data';
 import { AmmWithdrawV1Data } from './components/ConfirmationModal/AmmWithdrawV1Data';
 import { AmmWithdrawV2Data } from './components/ConfirmationModal/AmmWithdrawV2Data';
-import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ModalStackRoutes } from 'routers/modal.routes';
 import { TransactionContext } from 'store/transactions';
@@ -281,6 +282,11 @@ export const TransactionConfirmationModal: React.FC<Props> = ({
       console.timeEnd('wallet.sendTransaction');
 
       addTransaction(tx!);
+
+      Snackbar.show({
+        text: `Transaction ${prettifyTx(tx.hash)} submitted.`,
+        duration: Snackbar.LENGTH_SHORT,
+      });
 
       closeHandled.current = true;
       navigation.goBack();
