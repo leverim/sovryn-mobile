@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import codePush from 'react-native-code-push';
+import { StatusBar } from 'react-native';
+import { DarkTheme } from '@react-navigation/native';
 import notifee, { EventType } from '@notifee/react-native';
 import { AppProvider } from './src/context/AppContext';
 import { RootNavigator } from './src/RootNavigator';
@@ -8,8 +10,6 @@ import { useIsMounted } from 'hooks/useIsMounted';
 import { BalanceProvider } from 'context/BalanceContext';
 import { UsdPriceProvider } from 'context/UsdPriceContext';
 import { TransactionsProvider } from 'store/transactions';
-import { StatusBar } from 'react-native';
-import { DarkTheme } from '@react-navigation/native';
 
 const App: React.FC = () => {
   const isMounted = useIsMounted();

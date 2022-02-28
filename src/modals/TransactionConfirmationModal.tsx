@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, View, LogBox, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
 import { Text } from 'components/Text';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
@@ -39,7 +39,7 @@ import { AmmDepositV1Data } from './components/ConfirmationModal/AmmDepositV1Dat
 import { AmmDepositV2Data } from './components/ConfirmationModal/AmmDepositV2Data';
 import { AmmWithdrawV1Data } from './components/ConfirmationModal/AmmWithdrawV1Data';
 import { AmmWithdrawV2Data } from './components/ConfirmationModal/AmmWithdrawV2Data';
-import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ModalStackRoutes } from 'routers/modal.routes';
 import { TransactionContext } from 'store/transactions';
@@ -49,10 +49,6 @@ import { useWalletAddress } from 'hooks/useWalletAddress';
 import { clone, sortBy } from 'lodash';
 import { useTransactionModal } from 'hooks/useTransactionModal';
 import { globalStyles } from 'global.styles';
-
-LogBox.ignoreLogs([
-  'Non-serializable values were found in the navigation state',
-]);
 
 type Props = NativeStackScreenProps<ModalStackRoutes, 'modal.tx-confirm'>;
 
