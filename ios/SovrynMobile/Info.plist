@@ -24,6 +24,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CodePushDeploymentKey</key>
 	<string>$(CODEPUSH_KEY)</string>
+	<key>FIREBASE_ANALYTICS_COLLECTION_ENABLED</key>
+	<string>$(FIREBASE_ANALYTICS_COLLECTION_ENABLED)</string>
+	<key>FirebaseScreenReportingEnabled</key>
+	<string>$(FIREBASE_ANALYTICS_COLLECTION_ENABLED)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -59,9 +63,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>FIREBASE_ANALYTICS_COLLECTION_ENABLED</key>
-	<string>$(FIREBASE_ANALYTICS_COLLECTION_ENABLED)</string>
-	<key>FirebaseScreenReportingEnabled</key>
-	<string>$(FIREBASE_ANALYTICS_COLLECTION_ENABLED)</string>
 </dict>
 </plist>
