@@ -1,6 +1,10 @@
+type ToastType = import('react-native-toast-notifications').ToastType;
+
 type Nullable<T = any> = T | null;
 
 type Mutable<T> = { -readonly [K in keyof T]: Mutable<T[K]> };
+
+declare var toast: ToastType;
 
 declare module '*.svg' {
   import React = require('react');

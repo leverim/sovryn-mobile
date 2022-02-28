@@ -24,7 +24,7 @@ export const networks = checkNetworks([
     id: 'rsk',
     chainId: 30,
     name: 'RSK',
-    rpc: ['https://public-node.rsk.co', 'https://mainnet.sovryn.app/rpc'],
+    rpc: ['https://mainnet.sovryn.app/rpc', 'https://public-node.rsk.co'],
     explorer: ['https://explorer.rsk.co'],
     multicallContract: '0x6c62bf5440de2cb157205b15c424bceb5c3368f5',
   },

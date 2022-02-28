@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -10,6 +10,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { useHeaderHeight } from '@react-navigation/elements';
+import Toast from 'react-native-toast-notifications';
 import { globalStyles } from 'global.styles';
 
 type SafeAreaPageProps = {
@@ -26,6 +27,7 @@ export const SafeAreaPage: React.FC<SafeAreaPageProps> = ({
   scrollViewProps,
 }) => {
   const offset = useHeaderHeight();
+  const toastRef = useRef<any>();
 
   const renderScrollView = useMemo(() => {
     if (scrollView) {
@@ -36,7 +38,10 @@ export const SafeAreaPage: React.FC<SafeAreaPageProps> = ({
 
   const renderChildren = useMemo(
     () => (
-      <SafeAreaView style={styles.container}>{renderScrollView}</SafeAreaView>
+      <SafeAreaView style={styles.container}>
+        {renderScrollView}
+        <Toast ref={toastRef!} />
+      </SafeAreaView>
     ),
     [renderScrollView],
   );

@@ -7,7 +7,6 @@ import React, {
   useState,
 } from 'react';
 import { StyleSheet, View, LogBox, ScrollView } from 'react-native';
-import Snackbar from 'react-native-snackbar';
 import { Text } from 'components/Text';
 import { DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useIsDarkTheme } from 'hooks/useIsDarkTheme';
@@ -50,6 +49,7 @@ import { useWalletAddress } from 'hooks/useWalletAddress';
 import { clone, sortBy } from 'lodash';
 import { useTransactionModal } from 'hooks/useTransactionModal';
 import { globalStyles } from 'global.styles';
+import { toast } from 'controllers/SnackbarController';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -93,13 +93,15 @@ export const TransactionConfirmationModal: React.FC<Props> = ({
     () =>
       sortBy(
         clone(state.transactions).filter(
-          item => item.response.from.toLowerCase() === owner,
+          item =>
+            item.response.from.toLowerCase() === owner &&
+            item.response.chainId === request.chainId,
         ),
         [item => item.response.nonce],
       )
         .reverse()
         .map(item => item.response.nonce)[0] || undefined,
-    [owner, state.transactions],
+    [owner, request.chainId, state.transactions],
   );
 
   const loading = useMemo(
@@ -283,17 +285,17 @@ export const TransactionConfirmationModal: React.FC<Props> = ({
 
       addTransaction(tx!);
 
-      Snackbar.show({
-        text: `Transaction ${prettifyTx(tx.hash)} submitted.`,
-        duration: Snackbar.LENGTH_SHORT,
-      });
-
       closeHandled.current = true;
       navigation.goBack();
 
       showTx(tx.hash);
 
       onConfirm(tx);
+
+      global.toast.show(`Transaction ${prettifyTx(tx.hash)} submitted.`, {
+        type: 'success',
+        placement: 'top',
+      });
     } catch (err: any) {
       console.warn('tx confirmation failed: ', JSON.stringify(err));
       if (err?.body) {

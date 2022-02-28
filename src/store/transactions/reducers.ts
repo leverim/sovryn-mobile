@@ -1,6 +1,5 @@
 import { TransactionResponse } from '@ethersproject/providers';
 import { Dispatch } from 'react';
-import Snackbar from 'react-native-snackbar';
 import { NoUpdate, UpdateWithSideEffect } from 'store/side-effects';
 import { ChainId } from 'types/network';
 import { cache } from 'utils/cache';
@@ -71,12 +70,16 @@ export const reducer = (prevState: State = initialState, action: Action) => {
 
       return UpdateWithSideEffect<State>(prevState, state => {
         cache.set(STORAGE_CACHE_TRANSACTIONS, state.transactions);
-        Snackbar.show({
-          text: `Transaction ${prettifyTx(action.value.transactionHash)} ${
+
+        global.toast.show(
+          `Transaction ${prettifyTx(action.value.transactionHash)} ${
             action.value.status ? 'confirmed' : 'failed'
           }!`,
-          duration: Snackbar.LENGTH_SHORT,
-        });
+          {
+            type: 'success',
+            placement: 'top',
+          },
+        );
       });
     default:
       return NoUpdate();
