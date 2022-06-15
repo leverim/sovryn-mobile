@@ -16,6 +16,12 @@ export type LoanTokenInfo = {
   getUserPoolTokenBalance: string;
 };
 
+export type BorrowTokenInfo = {
+  borrowInterestRate: string;
+  marketLiquidity: string;
+  tokenPrice: string;
+};
+
 export const getLoanTokenInfo = async (
   lendingToken: LendingToken,
   owner: string,
@@ -98,6 +104,36 @@ export const getLoanTokenInfo = async (
   }
 
   return aggregateCall<LoanTokenInfo>(lendingToken.chainId, calls).then(
+    ({ returnData }) => returnData,
+  );
+};
+
+export const getBorrowTokenInfo = async (lendingToken: LendingToken) => {
+  const calls: CallData[] = [
+    {
+      address: lendingToken.loanTokenAddress,
+      fnName: 'marketLiquidity()(uint256)',
+      args: [],
+      key: 'marketLiquidity',
+      parser: value => value[0].toString(),
+    },
+    {
+      address: lendingToken.loanTokenAddress,
+      fnName: 'tokenPrice()(uint256)',
+      args: [],
+      key: 'tokenPrice',
+      parser: value => value[0].toString(),
+    },
+    {
+      address: lendingToken.loanTokenAddress,
+      fnName: 'borrowInterestRate()(uint256)',
+      args: [],
+      key: 'borrowInterestRate',
+      parser: value => value[0].toString(),
+    },
+  ];
+
+  return aggregateCall<BorrowTokenInfo>(lendingToken.chainId, calls).then(
     ({ returnData }) => returnData,
   );
 };

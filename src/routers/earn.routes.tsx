@@ -3,10 +3,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { EarnIndex } from 'pages/Earn/EarnIndex';
 import { LendingRoutes } from './lending.routes';
 import { AmmRoutes } from './amm.routes';
+import { BorrowRoutes } from './borrow.routes';
 
 export type EarnRoutesStackProps = {
   'earn.index': undefined;
   lending: undefined;
+  borrow: undefined;
   amm: undefined;
 };
 
@@ -29,6 +31,11 @@ export const EarnRoutes: React.FC = () => {
         name="amm"
         component={AmmRoutes}
         options={{ title: 'Automatic Market Maker', headerShown: false }}
+      />
+      <Stack.Screen
+        name="borrow"
+        component={BorrowRoutes}
+        options={{ title: 'Borrow', headerShown: false }}
       />
     </Stack.Navigator>
   );

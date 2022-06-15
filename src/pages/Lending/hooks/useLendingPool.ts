@@ -8,7 +8,7 @@ import { cache } from 'utils/cache';
 import { STORAGE_CACHE_LOAN_POOLS } from 'utils/constants';
 import { get, set } from 'lodash';
 
-export function useLendingPool(lendingToken: LendingToken) {
+export const useLendingPool = (lendingToken: LendingToken) => {
   const { loanPools, setLoanPools } = useContext(AppContext);
 
   const owner = useWalletAddress().toLowerCase();
@@ -57,4 +57,4 @@ export function useLendingPool(lendingToken: LendingToken) {
     loading,
     execute,
   };
-}
+};

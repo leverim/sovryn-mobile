@@ -46,6 +46,7 @@ export const networks = checkNetworks([
     name: 'Binance Smart Chain',
     chainId: 56,
     rpc: [
+      'https://bsc.sovryn.app/mainnet',
       'https://bsc-dataseed.binance.org',
       // 'https://bsc-dataseed1.defibit.io',
       // 'https://bsc-dataseed1.ninicoin.io',
@@ -59,6 +60,7 @@ export const networks = checkNetworks([
     name: 'Binance Smart Testnet',
     chainId: 97,
     rpc: [
+      'https://bsc-testnet.sovryn.app',
       'https://data-seed-prebsc-1-s1.binance.org:8545',
       // 'https://data-seed-prebsc-2-s1.binance.org:8545',
       // 'https://data-seed-prebsc-1-s2.binance.org:8545',

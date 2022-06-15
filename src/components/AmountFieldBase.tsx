@@ -1,22 +1,13 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  NativeSyntheticEvent,
   StyleSheet,
   TextInput,
-  TextInputContentSizeChangeEventData,
   TextInputProps,
   View,
   ViewStyle,
 } from 'react-native';
 import { DarkTheme } from '@react-navigation/native';
 import { useDebouncedEffect } from 'hooks/useDebounceEffect';
-import { Text } from './Text';
 
 export type AmountFieldBaseProps = {
   title?: React.ReactNode;

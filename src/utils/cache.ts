@@ -30,12 +30,16 @@ class CacheManager extends EventEmitter {
       }
     });
     this.onUpdated();
+    this.onLoaded();
   }
   protected async save() {
     await storeItem(STORAGE_CACHE, JSON.stringify(this._items));
   }
   protected async onUpdated() {
     this.emit('updated', this._items);
+  }
+  protected async onLoaded() {
+    this.emit('loaded', this._items);
   }
 }
 

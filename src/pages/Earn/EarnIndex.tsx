@@ -24,6 +24,12 @@ export const EarnIndex: React.FC<Props> = ({ navigation }) => {
           cta="Start Mining"
           onPress={() => navigation.navigate('amm')}
         />
+        <EarnFeature
+          title="Borrow"
+          description="Borrow from Sovryn."
+          cta="Borrow"
+          onPress={() => navigation.navigate('borrow')}
+        />
       </ScrollView>
     </SafeAreaPage>
   );
