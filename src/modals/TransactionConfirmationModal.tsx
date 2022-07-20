@@ -39,7 +39,7 @@ import { AmmDepositV1Data } from './components/ConfirmationModal/AmmDepositV1Dat
 import { AmmDepositV2Data } from './components/ConfirmationModal/AmmDepositV2Data';
 import { AmmWithdrawV1Data } from './components/ConfirmationModal/AmmWithdrawV1Data';
 import { AmmWithdrawV2Data } from './components/ConfirmationModal/AmmWithdrawV2Data';
-import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ModalStackRoutes } from 'routers/modal.routes';
 import { TransactionContext } from 'store/transactions';

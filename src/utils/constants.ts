@@ -16,6 +16,8 @@ export const AFFILIATE_FEE = '5';
 
 export const PASSCODE_LENGTH = 4;
 
+export const SECONDS_IN_DAY = 86400;
+
 export const DEBUG_SEED =
   'setup tank interest shuffle mobile this devote journey mistake viable right advice';
 
@@ -43,6 +45,8 @@ export const STORAGE_CACHE_SOVRYN_CHAIN = `${prefix}sovrynChain`;
 export const STORAGE_CACHE_BALANCES = `${prefix}balances`;
 export const STORAGE_CACHE_PRICES = `${prefix}prices`;
 export const STORAGE_CACHE_LOAN_POOLS = `${prefix}loanPools`;
+export const STORAGE_CACHE_BORROW_POOLS = `${prefix}borrowPools`;
+export const STORAGE_CACHE_BORROW_LOAN_LIST = `${prefix}borrowLoanList`;
 export const STORAGE_CACHE_AMM_POOLS = `${prefix}ammPools`;
 export const STORAGE_CACHE_TRANSACTIONS = `${prefix}transactions`;
 export const STORAGE_CACHE_ADDRESS_BOOK = `${prefix}addressBook`;

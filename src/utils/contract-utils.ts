@@ -15,6 +15,7 @@ import { getContractAddress } from './helpers';
 import { ContractName } from 'types/contract';
 import { ChainId, Network } from 'types/network';
 import Logger from './Logger';
+import { Contract } from 'ethers';
 
 const INSIDE_EVERY_PARENTHESES = /\((?:[^()]|\([^()]*\))*\)/g;
 
@@ -54,6 +55,14 @@ export const prepareFunction = (method: string) => {
     : [];
   return {
     method: method.split('(')[0] + '(' + input + ')',
+    methodName: method.split('(')[0],
+    abi:
+      'function ' +
+      method.split('(')[0] +
+      '(' +
+      input +
+      ')' +
+      (outputTypes ? ' returns (' + output + ')' : ''),
     types: inputTypes,
     // args,
     returnTypes: outputTypes,

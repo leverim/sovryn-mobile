@@ -10,6 +10,7 @@ import { UsdPriceProvider } from 'context/UsdPriceContext';
 import { TransactionsProvider } from 'store/transactions';
 import { StatusBar } from 'react-native';
 import { DarkTheme } from '@react-navigation/native';
+import { BorrowPoolProvider } from 'store/borrow-pools';
 
 const App: React.FC = () => {
   const isMounted = useIsMounted();
@@ -55,7 +56,9 @@ const App: React.FC = () => {
         <BalanceProvider>
           <TransactionsProvider>
             <AppProvider>
-              <RootNavigator />
+              <BorrowPoolProvider>
+                <RootNavigator />
+              </BorrowPoolProvider>
             </AppProvider>
           </TransactionsProvider>
         </BalanceProvider>

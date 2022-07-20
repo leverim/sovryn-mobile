@@ -107,7 +107,7 @@ export const ammPools: AmmPool[] = [
     1,
     'trbtc',
     'txusd',
-    '0xe5e750ead0e564e489b0776273e4a10f3f3d4028',
+    '0xD877fd00ECF08eD78BF549fbc74bac3001aBBb07',
     'twrbtc/xusd',
   ).setUsesLm(true),
   new AmmPool(

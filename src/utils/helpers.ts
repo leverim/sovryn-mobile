@@ -110,8 +110,15 @@ export const px = (dp: number) => dp / scale;
 export const calculateChange = (a: number, b: number) =>
   ((b - a) / Math.abs(a)) * 100;
 
-export const numberIsEmpty = (value: string | number | undefined) =>
-  !value || Number(value) === 0;
+export const numberIsEmpty = (value: BigNumberish | undefined) =>
+  value === undefined ||
+  value === null ||
+  !value ||
+  Number(value) === 0 ||
+  isNaN(Number(value));
+
+export const isPositiveNumber = (value: BigNumberish | undefined) =>
+  !numberIsEmpty(value) && Number(value) > 0;
 
 export const isTestnet = () => cache.get(STORAGE_IS_TESTNET) === '1';
 export const isMainnet = () => !isTestnet();
@@ -129,3 +136,5 @@ export const setEnabledChainIds = (chainIds: ChainId[]) =>
 
 export const setSovrynChainId = (chainId: ChainId) =>
   cache.set(STORAGE_CACHE_SOVRYN_CHAIN, chainId);
+
+// export const isEmpty
