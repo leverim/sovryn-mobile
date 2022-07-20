@@ -36,6 +36,8 @@ import { transactionController } from 'controllers/TransactionController';
 import { getSwappableAsset } from 'config/swapables';
 import { hexlify } from 'ethers/lib/utils';
 import { constants } from 'ethers';
+import { useActiveLoanList } from './hooks/useActiveLoanList';
+import { LoanType } from 'utils/interactions/protocol';
 
 type Props = NativeStackScreenProps<BorrowRoutesStackProps, 'borrow.index'>;
 
@@ -429,6 +431,14 @@ export const BorrowIndex: React.FC<Props> = () => {
         .toString(),
     [initialLoanDuration],
   );
+
+  const { value, execute: executeLoans } = useActiveLoanList(LoanType.BORROW);
+  console.log(value);
+
+  useEffect(() => {
+    executeLoans();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <SafeAreaPage
