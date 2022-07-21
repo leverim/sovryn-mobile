@@ -5,6 +5,8 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
+    "ios:11": "react-native run-ios --simulator='iPhone 11 Pro Max (13.7)'",
+    "ios:devices": "xcrun simctl list devices",
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
