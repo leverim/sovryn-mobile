@@ -2,6 +2,8 @@
 IOS and Android wallet for sovryn.app created with react-native.
 App is created by community members and are not officialy supported by Sovryn team.
 
+**Update:** Since *Jun 15, 2022* company Defray Labs OU and app is owned by @grinry (aka @creed-victor, core Sovryn contributor).
+
 Test on:
 
 iOS: [Testflight](https://testflight.apple.com/join/cSfETSV5)
