@@ -62,5 +62,4 @@ buck-out/
 /src/env.ts
 
 # Firebase
-/ios/GoogleService-Info.plist
 /android/app/google-services.json
