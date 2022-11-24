@@ -1,6 +1,6 @@
 **Privacy Policy**
 
-Defray Labs OU built the Sovryn Wallet app as [open source/free/freemium/ad-supported/commercial] app. This SERVICE is provided by Defray Labs OU at no cost and is intended for use as is.
+Leverim OU (formerly Defray Labs OU) built the Sovryn Wallet app as open source app. This SERVICE is provided by Leverim OU at no cost and is intended for use as is.
 
 This page is used to inform visitors regarding our policies with the collection, use, and disclosure of Personal Information if anyone decided to use our Service.
 
@@ -38,8 +38,8 @@ These Services do not address anyone under the age of 13. We do not knowingly co
 
 We may update our Privacy Policy from time to time. Thus, you are advised to review this page periodically for any changes. We will notify you of any changes by posting the new Privacy Policy on this page.
 
-This policy is effective as of 2022-02-14
+This policy is effective as of 2022-11-24
 
 **Contact Us**
 
-If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us at contact@defraylabs.com.
+If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us at contact@leverim.com.
