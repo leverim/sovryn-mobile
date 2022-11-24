@@ -13,7 +13,7 @@ export const networks = checkNetworks([
     name: 'Ethereum Mainnet',
     rpc: [
       'https://cloudflare-eth.com',
-      'https://api.mycryptoapi.com/eth',
+      // 'https://api.mycryptoapi.com/eth',
       // `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
     ],
     explorer: ['https://etherscan.io'],
