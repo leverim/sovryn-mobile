@@ -16,6 +16,10 @@ Latest release:
 
 [Google Play](https://play.google.com/store/apps/details?id=com.defray.sovryn)
 
+# Development
+
+Use node v 16, otherwise app may crash because of `crypto` dependency having breaking changes on node@17+
+If you are using nvm, ensure that node@16 is default (nvm alias default 16) - to make sure newly opened terminals are using correct node version.
 
 ## Features
 List of planned and available features:
