@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import codePush from 'react-native-code-push';
 import notifee, { EventType } from '@notifee/react-native';
+import Toast from 'react-native-toast-notifications';
 import { AppProvider } from './src/context/AppContext';
 import { RootNavigator } from './src/RootNavigator';
 import { notifications } from 'controllers/notifications';
@@ -60,6 +61,7 @@ const App: React.FC = () => {
           </TransactionsProvider>
         </BalanceProvider>
       </UsdPriceProvider>
+      <Toast ref={ref => (global.toast = ref!)} />
     </>
   );
 };
