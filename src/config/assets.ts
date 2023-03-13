@@ -75,6 +75,17 @@ export const assets = checkAssets([
   ),
   new Asset(
     30,
+    'zusd',
+    'ZUSD',
+    'ZUSD',
+    '0xdB107FA69E33f05180a4C2cE9c2E7CB481645C2d',
+    18,
+    require('assets/tokens/zusd.png'),
+    '',
+    AssetType.ERC20,
+  ),
+  new Asset(
+    30,
     'wrbtc',
     'wRBTC',
     'Wrapped Smart Bitcoin',
