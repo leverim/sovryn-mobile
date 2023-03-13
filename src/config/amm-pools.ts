@@ -185,4 +185,12 @@ export const ammPools: AmmPool[] = [
     '0x84953dAF0E7a9fFb8B4fDf7F948185e1cF85852e',
     'twrbtc/mynt',
   ).setUsesLm(true),
+  new AmmPool(
+    31,
+    1,
+    'trbtc',
+    'tdllr',
+    '0x5fc0b3ac4683bd8af8e244e646d897a2c3f2a6ac',
+    'twrbtc/dllr',
+  ).setUsesLm(true),
 ];
