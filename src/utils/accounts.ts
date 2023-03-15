@@ -123,10 +123,10 @@ class AccountManager extends EventEmitter {
   }
   public async update(index: number, config: Partial<AccountUpdate>) {
     const account = this._accounts[index];
-    account.name = config.name || account.name;
-    account.dPath = config.dPath || account.dPath;
-    account.index = config.index || account.index;
-    account.address = config.address || account.address;
+    account.name = config.name ?? account.name;
+    account.dPath = config.dPath ?? account.dPath;
+    account.index = config.index ?? account.index;
+    account.address = config.address ?? account.address;
     this._accounts[index] = account;
     await this.save();
     this.onSelected();

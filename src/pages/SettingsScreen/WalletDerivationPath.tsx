@@ -66,6 +66,8 @@ export const WalletDerivationPath: React.FC<Props> = ({
   }, [masterSeed, page]);
 
   const handleChange = useCallback(() => {
+    console.log('params', params.index);
+    console.log('selected', selectedWallet);
     accounts.update(params.index, {
       index: selectedWallet,
       address: toChecksumAddress(
