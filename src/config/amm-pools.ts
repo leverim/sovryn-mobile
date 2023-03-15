@@ -93,6 +93,14 @@ export const ammPools: AmmPool[] = [
     '0x3a18e61d9c9f1546dea013478dd653c793098f17',
     'wrbtc/mynt',
   ).setUsesLm(true),
+  new AmmPool(
+    30,
+    1,
+    'rbtc',
+    'dllr',
+    '0xe81373285eb8cdee2e0108e98c5aa022948da9d2',
+    'wrbtc/dllr',
+  ),
   // testnet
   new AmmPool(
     31,
@@ -185,4 +193,12 @@ export const ammPools: AmmPool[] = [
     '0x84953dAF0E7a9fFb8B4fDf7F948185e1cF85852e',
     'twrbtc/mynt',
   ).setUsesLm(true),
+  new AmmPool(
+    31,
+    1,
+    'trbtc',
+    'tdllr',
+    '0x5fc0b3ac4683bd8af8e244e646d897a2c3f2a6ac',
+    'twrbtc/dllr',
+  ),
 ];
