@@ -39,7 +39,7 @@ import { AmmDepositV1Data } from './components/ConfirmationModal/AmmDepositV1Dat
 import { AmmDepositV2Data } from './components/ConfirmationModal/AmmDepositV2Data';
 import { AmmWithdrawV1Data } from './components/ConfirmationModal/AmmWithdrawV1Data';
 import { AmmWithdrawV2Data } from './components/ConfirmationModal/AmmWithdrawV2Data';
-import { PageContainer, SafeAreaPage } from 'templates/SafeAreaPage';
+import { SafeAreaPage } from 'templates/SafeAreaPage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ModalStackRoutes } from 'routers/modal.routes';
 import { TransactionContext } from 'store/transactions';
@@ -92,13 +92,16 @@ export const TransactionConfirmationModal: React.FC<Props> = ({
     () =>
       sortBy(
         clone(state.transactions).filter(
-          item => item.response.from.toLowerCase() === owner,
+          item =>
+            item.response.from.toLowerCase() === owner &&
+            item.response.chainId ===
+              Number(request?.chainId || currentChainId),
         ),
         [item => item.response.nonce],
       )
         .reverse()
         .map(item => item.response.nonce)[0] || undefined,
-    [owner, state.transactions],
+    [currentChainId, owner, request?.chainId, state.transactions],
   );
 
   const loading = useMemo(
@@ -114,7 +117,6 @@ export const TransactionConfirmationModal: React.FC<Props> = ({
   const type = useMemo(() => {
     const _signature = (request?.customData?.type ||
       signature) as TransactionType;
-    console.log(_signature);
     return getTxType(_signature);
   }, [request?.customData?.type, signature]);
 

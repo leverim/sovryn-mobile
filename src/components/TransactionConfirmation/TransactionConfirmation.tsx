@@ -1,21 +1,9 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract-provider';
+import React, { useCallback, useEffect, useRef } from 'react';
+import {
+  TransactionRequest,
+  TransactionResponse,
+} from '@ethersproject/abstract-provider';
 import { transactionController } from 'controllers/TransactionController';
-import { passcode } from 'controllers/PassCodeController';
-import { wallet } from 'utils/wallet';
-import { ChainId } from 'types/network';
-import { TransactionContext } from 'store/transactions';
-import { useWalletAddress } from 'hooks/useWalletAddress';
-import { clone, sortBy } from 'lodash';
-import { getProvider } from 'utils/RpcEngine';
-import { useTransactionModal } from 'hooks/useTransactionModal';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { ModalStackRoutes } from 'routers/modal.routes';
 import { useCurrentChain } from 'hooks/useCurrentChain';
