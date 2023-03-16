@@ -100,7 +100,7 @@ export const ammPools: AmmPool[] = [
     'dllr',
     '0xe81373285eb8cdee2e0108e98c5aa022948da9d2',
     'wrbtc/dllr',
-  ),
+  ).setUsesLm(true),
   // testnet
   new AmmPool(
     31,

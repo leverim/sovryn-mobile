@@ -101,31 +101,25 @@ export function useAmmPoolData(pool: AmmPool) {
           key: 'poolTokenSupply1',
           parser: result => result[0].toString(),
         },
+        {
+          address: liquidityMiningProxyAddress,
+          fnName: 'getUserInfo(address,address)((uint256,uint256,uint256))',
+          args: [pool.poolToken1.address, owner],
+          key: 'getUserInfo1',
+          parser: result => ({
+            amount: result[0][0].toString(),
+            rewardDebt: result[0][1].toString(), // todo: fgure out what's this
+            accumulatedReward: result[0][2].toString(),
+          }),
+        },
+        {
+          address: liquidityMiningProxyAddress,
+          fnName: 'getUserAccumulatedReward(address,address)(uint256)',
+          args: [pool.poolToken1.address, owner],
+          key: 'getUserAccumulatedReward1',
+          parser: result => result[0].toString(),
+        },
       ];
-
-      if (pool.usesLM) {
-        items = [
-          ...items,
-          {
-            address: liquidityMiningProxyAddress,
-            fnName: 'getUserInfo(address,address)((uint256,uint256,uint256))',
-            args: [pool.poolToken1.address, owner],
-            key: 'getUserInfo1',
-            parser: result => ({
-              amount: result[0][0].toString(),
-              rewardDebt: result[0][1].toString(), // todo: fgure out what's this
-              accumulatedReward: result[0][2].toString(),
-            }),
-          },
-          {
-            address: liquidityMiningProxyAddress,
-            fnName: 'getUserAccumulatedReward(address,address)(uint256)',
-            args: [pool.poolToken1.address, owner],
-            key: 'getUserAccumulatedReward1',
-            parser: result => result[0].toString(),
-          },
-        ];
-      }
 
       if (pool.version === 1) {
         items = [
@@ -182,20 +176,14 @@ export function useAmmPoolData(pool: AmmPool) {
               accumulatedReward: result[0][2].toString(),
             }),
           },
+          {
+            address: liquidityMiningProxyAddress,
+            fnName: 'getUserAccumulatedReward(address,address)(uint256)',
+            args: [pool.poolToken2?.address, owner],
+            key: 'getUserAccumulatedReward2',
+            parser: result => result[0].toString(),
+          },
         ];
-
-        if (pool.usesLM) {
-          items = [
-            ...items,
-            {
-              address: liquidityMiningProxyAddress,
-              fnName: 'getUserAccumulatedReward(address,address)(uint256)',
-              args: [pool.poolToken2?.address, owner],
-              key: 'getUserAccumulatedReward2',
-              parser: result => result[0].toString(),
-            },
-          ];
-        }
       }
 
       aggregateCall<AggregatorResult>(pool.chainId, items)
@@ -239,7 +227,6 @@ export function useAmmPoolData(pool: AmmPool) {
     pool.poolToken2?.address,
     pool.supplyToken1,
     pool.supplyToken2,
-    pool.usesLM,
     pool.version,
   ]);
 
