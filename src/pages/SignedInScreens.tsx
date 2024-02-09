@@ -16,6 +16,8 @@ import { TransactionConfirmation } from 'components/TransactionConfirmation/Tran
 import { PasscodeConfirmation } from 'components/PassCode/PasscodeConfirmation';
 import { EarnRoutes } from 'routers/earn.routes';
 
+const _USE_LOCK_SCREEN = !__DEV__;
+
 export type SignedInScreensTabProps = {
   wallet: undefined;
   swap: undefined;
@@ -32,6 +34,7 @@ export const SignedInScreens = () => {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (appState.current === 'background' && nextAppState === 'active') {
+        console.log('app has come to the foreground!');
         passcode.setUnlocked(false);
         setAskToUnlock(true);
       }
@@ -44,8 +47,11 @@ export const SignedInScreens = () => {
   }, []);
 
   const handleUnlock = useCallback(() => {
-    setAskToUnlock(false);
-    passcode.setUnlocked(true);
+    console.log('unlocking');
+    process.nextTick(() => {
+      setAskToUnlock(false);
+      passcode.setUnlocked(true);
+    });
   }, []);
 
   return (
@@ -84,7 +90,7 @@ export const SignedInScreens = () => {
           }}
         />
       </Tab.Navigator>
-      {!__DEV__ && (
+      {_USE_LOCK_SCREEN && (
         <PassCodeModal visible={askToUnlock} onUnlocked={handleUnlock} />
       )}
       <TransactionConfirmation />
