@@ -17,6 +17,7 @@ import { PasscodeConfirmation } from 'components/PassCode/PasscodeConfirmation';
 import { EarnRoutes } from 'routers/earn.routes';
 
 const _USE_LOCK_SCREEN = !__DEV__;
+// const _USE_LOCK_SCREEN = true;
 
 export type SignedInScreensTabProps = {
   wallet: undefined;
@@ -34,7 +35,6 @@ export const SignedInScreens = () => {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
       if (appState.current === 'background' && nextAppState === 'active') {
-        console.log('app has come to the foreground!');
         passcode.setUnlocked(false);
         setAskToUnlock(true);
       }
@@ -47,7 +47,6 @@ export const SignedInScreens = () => {
   }, []);
 
   const handleUnlock = useCallback(() => {
-    console.log('unlocking');
     process.nextTick(() => {
       setAskToUnlock(false);
       passcode.setUnlocked(true);
