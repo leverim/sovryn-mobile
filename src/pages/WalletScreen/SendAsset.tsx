@@ -79,6 +79,7 @@ export const SendAsset: React.FC<Props> = ({
 
   const transaction: TransactionRequest = useMemo(
     () => ({
+      chainId: token.chainId,
       to,
       value: token.native ? utils.parseUnits(amount || '0', token.decimals) : 0,
       data: token.native
@@ -88,7 +89,7 @@ export const SendAsset: React.FC<Props> = ({
             utils.parseUnits(amount || '0', token.decimals).toString(),
           ]),
     }),
-    [amount, receiver, to, token.decimals, token.native],
+    [amount, receiver, to, token.chainId, token.decimals, token.native],
   );
 
   useDebouncedEffect(

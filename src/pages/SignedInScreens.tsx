@@ -16,6 +16,9 @@ import { TransactionConfirmation } from 'components/TransactionConfirmation/Tran
 import { PasscodeConfirmation } from 'components/PassCode/PasscodeConfirmation';
 import { EarnRoutes } from 'routers/earn.routes';
 
+const _USE_LOCK_SCREEN = !__DEV__;
+// const _USE_LOCK_SCREEN = true;
+
 export type SignedInScreensTabProps = {
   wallet: undefined;
   swap: undefined;
@@ -44,8 +47,10 @@ export const SignedInScreens = () => {
   }, []);
 
   const handleUnlock = useCallback(() => {
-    setAskToUnlock(false);
-    passcode.setUnlocked(true);
+    process.nextTick(() => {
+      setAskToUnlock(false);
+      passcode.setUnlocked(true);
+    });
   }, []);
 
   return (
@@ -84,7 +89,7 @@ export const SignedInScreens = () => {
           }}
         />
       </Tab.Navigator>
-      {!__DEV__ && (
+      {_USE_LOCK_SCREEN && (
         <PassCodeModal visible={askToUnlock} onUnlocked={handleUnlock} />
       )}
       <TransactionConfirmation />
