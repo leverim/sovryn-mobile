@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-community/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ethers } from 'ethers';
 import { Platform } from 'react-native';
 import EncryptedStorage from 'react-native-encrypted-storage';
